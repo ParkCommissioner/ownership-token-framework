@@ -2621,5 +2621,512 @@
         }
       ]
     }
+  ],
+  "swise": [
+    {
+      "id": "onchain-ctrl",
+      "name": "Onchain Control",
+      "tags": ["Metric 1"],
+      "about": "This metric evaluates whether economically material outcomes are mediated through tokenholder governance, or whether admins, multisigs, security councils, or other privileged roles retain onchain powers that can change the rules or selectively restrict use and exit.",
+      "summary": "SWISE holders vote **off-chain via Snapshot** with execution through a **4-of-7 multisig** (SafeSnap). The multisig can override token holder votes. The SWISE token is **upgradeable** (EIP-1967 proxy) and includes a **pause function**. Fixed 1B supply with no mint function in current implementation, but upgradeability means this could change.",
+      "criteria": [
+        {
+          "id": "onchain-ctrl__governance-workflow",
+          "name": "Onchain Governance Workflow",
+          "about": "Evaluates whether an onchain process exists that grants tokenholders ultimate authority over protocol decisions.",
+          "status": "⚠️",
+          "notes": "StakeWise uses **off-chain Snapshot voting** with SafeSnap module execution through a **4-of-7 multisig**. Only 4 signers are required to execute transactions, meaning a minority coalition can control treasury and protocol. The multisig has the capacity to **override token holder votes**.\n\n**Governance Flow:** SWISE holders → Snapshot vote → SafeSnap module → Reality.eth oracle → DAO Multisig (can override) → Protocol contracts.\n\n**Quorum:** 3,000,000 SWISE (static).\n\n**Critical Concern:** This is fundamentally different from onchain governance (e.g., Aave, Compound) where vote outcomes directly execute through Timelock contracts.",
+          "evidence": [
+            {
+              "name": "Snapshot Space Configuration",
+              "summary": "Voting strategy: SWISE token balance + vested SWISE + delegated power (Ethereum + Gnosis Chain). Quorum: 3M SWISE. Space: stakewise.eth.",
+              "urls": [
+                {
+                  "name": "Snapshot Space",
+                  "url": "https://snapshot.org/#/stakewise.eth",
+                  "type": "docs"
+                },
+                {
+                  "name": "Snapshot API",
+                  "url": "https://hub.snapshot.org/api/spaces/stakewise.eth",
+                  "type": "docs"
+                }
+              ]
+            },
+            {
+              "name": "DAO Multisig (4-of-7)",
+              "summary": "Gnosis Safe with 4-of-7 threshold. SafeSnap module enabled at 0xB5cF5363c3e766e64B37b2fB9554bFE8D48ED1A0.\n\n**Signers:**\n1. 0xC46e791d4fB1207fAB8Cb0e44889127138539c69\n2. 0x9cC9c3de8e710781983a65b90B7efEaaD2D3D7D8\n3. 0x9Aa6Db877742aD8D8c7fE209F561fbd2bE19D5F4\n4. 0x7E36F1fF26cffD6906c11Cd7Eca5f6E993Ba6CE3\n5. 0x1C86117156Ba31b5d62f02eB56bE9aC5a06610d3\n6. 0xc0c9707B552C6970f66Ab91D563Bf9b6048E9da6\n7. 0x61B01a33Aea3e827B3941Ab097778bd3FA48a332",
+              "urls": [
+                {
+                  "name": "DAO Multisig",
+                  "url": "https://etherscan.io/address/0x144a98cb1CdBb23610501fE6108858D9B7D24934",
+                  "type": "explorer"
+                },
+                {
+                  "name": "Safe Transaction Service API",
+                  "url": "https://api.safe.global/tx-service/eth/api/v1/safes/0x144a98cb1CdBb23610501fE6108858D9B7D24934/",
+                  "type": "docs"
+                }
+              ]
+            },
+            {
+              "name": "Governance Process Documentation",
+              "summary": "Phase 1: Ideation (informal). Phase 2: Specification (5 days, informal poll). Phase 3: Snapshot vote (7 days, relative majority). Quorum requirement \"removed until more SWISE gets into circulation.\"",
+              "urls": [
+                {
+                  "name": "StakeWise DAO Governance Process",
+                  "url": "https://forum.stakewise.io/t/stakewise-dao-governance-process/49",
+                  "type": "docs"
+                }
+              ]
+            },
+            {
+              "name": "Reality.eth Oracle",
+              "summary": "SafeSnap uses Reality.eth for dispute resolution. Parameters include bond, timeout, and cooldown period. Exact values for StakeWise module are [UNVERIFIED].",
+              "urls": [
+                {
+                  "name": "Zodiac Reality Module Documentation",
+                  "url": "https://github.com/gnosisguild/zodiac-module-reality",
+                  "type": "github"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "onchain-ctrl__role-accountability",
+          "name": "Role Accountability",
+          "about": "Determines whether all privileged or value-impacting roles are governed, revocable, and accountable to tokenholders.",
+          "status": "⚠️",
+          "notes": "V3 protocol contracts use `Ownable2Step` pattern with ownership chains leading to addresses that appear to be multisig-controlled. Direct tokenholder accountability is **mediated through off-chain voting**, not enforced on-chain.\n\n**Key Functions Controlled by Owner:**\n- `OsTokenVaultController.setFeePercent()` - Protocol fee rate\n- `OsTokenVaultController.setTreasury()` - Fee recipient\n- `VaultsRegistry.addVaultImpl()` / `removeVaultImpl()` - Vault upgrades\n- `Keeper.addOracle()` / `removeOracle()` - Oracle management",
+          "evidence": [
+            {
+              "name": "Ownable2Step Pattern",
+              "summary": "Core contracts (Keeper, VaultsRegistry, OsTokenVaultController, OsToken) use Ownable2Step. Ownership is presumed to be multisig-controlled but accountability to token holders is indirect.",
+              "urls": [
+                {
+                  "name": "KeeperOracles.sol",
+                  "url": "https://github.com/stakewise/v3-core/blob/main/contracts/keeper/KeeperOracles.sol#L32-L51",
+                  "type": "github"
+                },
+                {
+                  "name": "OsTokenVaultController.sol",
+                  "url": "https://github.com/stakewise/v3-core/blob/main/contracts/tokens/OsTokenVaultController.sol#L156-L197",
+                  "type": "github"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "onchain-ctrl__protocol-upgrade",
+          "name": "Protocol Upgrade Authority",
+          "about": "Determines whether core protocol logic can be upgraded and whether such upgrades are controlled by tokenholders.",
+          "status": "⚠️",
+          "notes": "V3 core contracts (Keeper, VaultsRegistry, OsTokenVaultController, OsToken) are **non-upgradeable**. However, vault implementations can be added/removed through VaultsRegistry owner. The SWISE token itself **is upgradeable** via EIP-1967 proxy.",
+          "evidence": [
+            {
+              "name": "V3 Contracts Non-Upgradeable",
+              "summary": "Core contracts do not use proxy pattern. New vault types require adding new implementation contracts via VaultsRegistry.",
+              "urls": [
+                {
+                  "name": "VaultsRegistry",
+                  "url": "https://etherscan.io/address/0x3a0008a588772446f6e656133C2D5029CC4FC20E",
+                  "type": "explorer"
+                },
+                {
+                  "name": "Contract Addresses",
+                  "url": "https://github.com/stakewise/contracts/blob/main/networks/mainnet.md",
+                  "type": "github"
+                }
+              ]
+            },
+            {
+              "name": "SWISE Token Upgradeable",
+              "summary": "SWISE uses EIP-1967 Transparent Proxy pattern. Proxy Admin at 0x3EB0175dcD67d3AB139aA03165e24AA2188A4C22 controls upgrades.",
+              "urls": [
+                {
+                  "name": "SWISE Proxy",
+                  "url": "https://etherscan.io/address/0x48C3399719B582dD63eB5AADf12A40B4C3f52FA2",
+                  "type": "explorer"
+                },
+                {
+                  "name": "SWISE Implementation",
+                  "url": "https://etherscan.io/address/0xa28c2d79f0c5b78cec699dab0303008179815396",
+                  "type": "explorer"
+                },
+                {
+                  "name": "Proxy Admin",
+                  "url": "https://etherscan.io/address/0x3EB0175dcD67d3AB139aA03165e24AA2188A4C22",
+                  "type": "explorer"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "onchain-ctrl__token-upgrade",
+          "name": "Token Upgrade Authority",
+          "about": "Assesses whether token behavior can be modified and, if so, whether such changes are controlled by tokenholder governance.",
+          "status": "⚠️",
+          "notes": "The SWISE token is an **upgradeable proxy**. The proxy admin can change the implementation contract, potentially modifying token behavior (adding mint, blacklist, or other functions). Proxy admin control is **not directly enforced** by token holder votes.",
+          "evidence": [
+            {
+              "name": "Token Contract Structure",
+              "summary": "StakeWiseToken inherits OwnablePausableUpgradeable and ERC20PermitUpgradeable. 1B tokens minted at initialization to admin address.",
+              "urls": [
+                {
+                  "name": "StakeWiseToken.sol",
+                  "url": "https://github.com/stakewise/contracts/blob/main/contracts/tokens/StakeWiseToken.sol#L12-L32",
+                  "type": "github"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "onchain-ctrl__supply",
+          "name": "Supply Control",
+          "about": "Evaluates whether token supply changes are programmatic or subject exclusively to tokenholder-approved governance processes.",
+          "status": "✅",
+          "notes": "Fixed supply of **1,000,000,000 SWISE**. No mint() function exists in the current implementation. All tokens minted at initialization.\n\n**Caveat:** Since the token is upgradeable, a new implementation could theoretically add a mint function via proxy admin action.",
+          "evidence": [
+            {
+              "urls": [
+                {
+                  "name": "Token Initialization (no mint function)",
+                  "url": "https://github.com/stakewise/contracts/blob/main/contracts/tokens/StakeWiseToken.sol#L28-L31",
+                  "type": "github"
+                },
+                {
+                  "name": "SWISE Token on Etherscan",
+                  "url": "https://etherscan.io/token/0x48c3399719b582dd63eb5aadf12a40b4c3f52fa2",
+                  "type": "explorer"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "onchain-ctrl__access-gating",
+          "name": "Privileged Access Gating",
+          "about": "Assesses whether any bounded actor set can block or selectively restrict economically meaningful protocol actions or exit paths, versus access that is permissionless and symmetric for similarly situated users.",
+          "status": "⚠️",
+          "notes": "The SWISE token inherits `OwnablePausableUpgradeable`, which allows addresses with **PAUSER_ROLE** to pause all token transfers. This is an emergency mechanism but affects exit paths.\n\n[UNVERIFIED] Current PAUSER_ROLE holder addresses.",
+          "evidence": [
+            {
+              "name": "Pause Mechanism",
+              "summary": "pause() function gated by onlyPauser modifier. _transfer() function includes whenNotPaused check.",
+              "urls": [
+                {
+                  "name": "OwnablePausableUpgradeable.sol",
+                  "url": "https://github.com/stakewise/contracts/blob/main/contracts/presets/OwnablePausableUpgradeable.sol#L96-L98",
+                  "type": "github"
+                },
+                {
+                  "name": "StakeWiseToken._transfer()",
+                  "url": "https://github.com/stakewise/contracts/blob/main/contracts/tokens/StakeWiseToken.sol#L51-L57",
+                  "type": "github"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "onchain-ctrl__censorship",
+          "name": "Token Censorship",
+          "about": "Examines whether any roles exist that can freeze, blacklist, seize, or otherwise censor token balances or transfers.",
+          "status": "✅",
+          "notes": "The SWISE token does **not** contain blacklist, freeze, or forced transfer functions in its current implementation. No per-address transfer restrictions exist. Pause affects all transfers globally, not selectively.\n\n**Caveat:** Token upgradeability means censorship capabilities could be added in a future implementation.",
+          "evidence": [
+            {
+              "urls": [
+                {
+                  "name": "StakeWiseToken.sol (no blacklist functions)",
+                  "url": "https://github.com/stakewise/contracts/blob/main/contracts/tokens/StakeWiseToken.sol",
+                  "type": "github"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "val-accrual",
+      "name": "Value Accrual",
+      "tags": ["Metric 2"],
+      "about": "This metric evaluates whether the system's operation produces observable, onchain value flows (or token-scarcity effects) that accrue value to tokenholders under rule-based constraints that do not rely on manual transfers, trusted executors, or other unenforced expectations.",
+      "summary": "Protocol fees flow to the DAO treasury, but there is **no active distribution mechanism** directing value to SWISE token holders. Multiple tokenomics proposals (veSWISE, xSWISE, dLP) have been discussed but **remain unimplemented**. Holding SWISE only grants governance participation rights.",
+      "criteria": [
+        {
+          "id": "val-accrual__active",
+          "name": "Accrual Active",
+          "about": "Assesses whether value flows to tokenholders are currently active rather than merely theoretical or proposed.",
+          "status": "⚠️",
+          "notes": "**No active distribution mechanism** exists for SWISE holders. Protocol fees (DAO fee [UNVERIFIED rate]) flow to treasury via OsTokenVaultController but are not distributed to token holders.\n\n**Proposed but Unimplemented:**\n- veSWISE (Aug 2022): Vote-locking with 3% of DAO fees for buybacks\n- xSWISE/rSWISE (Oct 2022): Staking mechanism\n- dLP (Jun 2023): Dynamic Liquidity Provision\n\nAll remain unimplemented. SWISE provides **governance rights only**, no direct economic benefit.",
+          "evidence": [
+            {
+              "name": "Fee Collection Mechanism",
+              "summary": "Fees mint osETH shares to treasury address via IOsToken(_osToken).mint(_treasury, treasuryShares).",
+              "urls": [
+                {
+                  "name": "OsTokenVaultController.sol fee collection",
+                  "url": "https://github.com/stakewise/v3-core/blob/main/contracts/tokens/OsTokenVaultController.sol#L269-L272",
+                  "type": "github"
+                }
+              ]
+            },
+            {
+              "name": "Treasury Holdings",
+              "summary": "Treasury holds ~$1.2M in assets (osETH, SWISE, SAFE). No programmatic distribution to SWISE holders.",
+              "urls": [
+                {
+                  "name": "DAO Treasury",
+                  "url": "https://etherscan.io/address/0x144a98cb1CdBb23610501fE6108858D9B7D24934",
+                  "type": "explorer"
+                }
+              ]
+            },
+            {
+              "name": "Unimplemented Tokenomics Proposals",
+              "urls": [
+                {
+                  "name": "veSWISE Proposal",
+                  "url": "https://forum.stakewise.io/t/stakewise-tokenomics-proposal-veswise/836",
+                  "type": "docs"
+                },
+                {
+                  "name": "dLP Proposal",
+                  "url": "https://forum.stakewise.io/t/updated-swise-tokenomics-via-dynamic-liquidity-provision-dlp-staking/1154",
+                  "type": "docs"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "val-accrual__treasury",
+          "name": "Treasury Ownership",
+          "about": "Determines whether protocol treasury assets are programmatically controlled by tokenholder governance.",
+          "status": "⚠️",
+          "notes": "The DAO treasury is a **Gnosis Safe multisig** with SafeSnap module. Token holders can propose treasury actions through Snapshot, but **execution depends on multisig signers** (4-of-7 threshold).\n\n**Treasury:** ~$1.2M (varies with market).",
+          "evidence": [
+            {
+              "name": "Treasury Configuration",
+              "summary": "Gnosis Safe at 0x144a98cb1CdBb23610501fE6108858D9B7D24934 with 4-of-7 threshold and SafeSnap module enabled.",
+              "urls": [
+                {
+                  "name": "DAO Treasury",
+                  "url": "https://etherscan.io/address/0x144a98cb1CdBb23610501fE6108858D9B7D24934",
+                  "type": "explorer"
+                },
+                {
+                  "name": "DAO Treasury Documentation",
+                  "url": "https://docs.stakewise.io/governance/dao-treasury",
+                  "type": "docs"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "val-accrual__mechanism",
+          "name": "Accrual Mechanism Control",
+          "about": "Evaluates whether tokenholders can modify parameters governing value capture, such as fees or revenue routing.",
+          "status": "⚠️",
+          "notes": "Fee parameters are controlled by `OsTokenVaultController` owner (presumed to be DAO multisig). Token holders have **indirect control** through off-chain voting, but not direct on-chain enforcement.\n\n**Controllable Parameters:**\n- feePercent: Protocol fee rate (max 100%)\n- treasury: Fee recipient address\n- capacity: osETH minting capacity",
+          "evidence": [
+            {
+              "name": "Fee Control Functions",
+              "summary": "setFeePercent(), setTreasury(), setCapacity() are onlyOwner functions. Owner is presumed to be multisig.",
+              "urls": [
+                {
+                  "name": "OsTokenVaultController.setFeePercent()",
+                  "url": "https://github.com/stakewise/v3-core/blob/main/contracts/tokens/OsTokenVaultController.sol#L172-L179",
+                  "type": "github"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "val-accrual__offchain",
+          "name": "Offchain Value Accrual",
+          "about": "Are there additional offchain value accrual flows that benefit tokenholders?",
+          "status": "⚠️",
+          "notes": "StakeWise Labs OÜ operates as a commercial entity providing node operator services. There is **no evidence** of revenue sharing agreements between Labs and SWISE tokenholders.",
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "id": "verifiability",
+      "name": "Verifiability",
+      "tags": ["Metric 3"],
+      "about": "This metric measures whether a token's economically material code and deployments are independently verifiable from primary evidence without relying on insider assurances.",
+      "summary": "Both SWISE proxy and implementation contracts are **verified on Etherscan**. All V3 core contracts are verified with matching open-source code on GitHub. The repository has undergone **security audits** (Sigma Prime, Sep 2024).",
+      "criteria": [
+        {
+          "id": "verifiability__token-source",
+          "name": "Token Contract Source Verification",
+          "about": "Determines whether the token contract's source code is publicly available and verifiably matches the deployed bytecode.",
+          "status": "✅",
+          "notes": "Both the SWISE proxy and implementation contracts are **verified on Etherscan** with matching source code on GitHub (stakewise/contracts repository).",
+          "evidence": [
+            {
+              "urls": [
+                {
+                  "name": "SWISE Proxy (Verified)",
+                  "url": "https://etherscan.io/address/0x48C3399719B582dD63eB5AADf12A40B4C3f52FA2#code",
+                  "type": "explorer"
+                },
+                {
+                  "name": "SWISE Implementation (Verified)",
+                  "url": "https://etherscan.io/address/0xa28c2d79f0c5b78cec699dab0303008179815396#code",
+                  "type": "explorer"
+                },
+                {
+                  "name": "Source Repository",
+                  "url": "https://github.com/stakewise/contracts",
+                  "type": "github"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "verifiability__protocol-source",
+          "name": "Protocol Component Source Verification",
+          "about": "Determines whether core protocol contracts are publicly accessible and verifiable against their onchain deployments.",
+          "status": "✅",
+          "notes": "All V3 core contracts are **verified on Etherscan** and match the open-source v3-core repository. **Sigma Prime audit** (Sep 2024) available.",
+          "evidence": [
+            {
+              "urls": [
+                {
+                  "name": "V3-Core Repository",
+                  "url": "https://github.com/stakewise/v3-core",
+                  "type": "github"
+                },
+                {
+                  "name": "Sigma Prime Audit (Sep 2024)",
+                  "url": "https://github.com/stakewise/v3-core/blob/main/audits/2024-09-Sigma-Prime.pdf",
+                  "type": "github"
+                },
+                {
+                  "name": "OsTokenVaultController (Verified)",
+                  "url": "https://etherscan.io/address/0x2A261e60FB14586B474C208b1B7AC6D0f5000306",
+                  "type": "explorer"
+                },
+                {
+                  "name": "VaultsRegistry (Verified)",
+                  "url": "https://etherscan.io/address/0x3a0008a588772446f6e656133C2D5029CC4FC20E",
+                  "type": "explorer"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "distribution",
+      "name": "Token Distribution",
+      "tags": ["Metric 4"],
+      "about": "This metric evaluates whether ownership and therefore effective voting power in governance is meaningfully distributed.",
+      "summary": "SWISE has approximately **2,719 holders**. Original distribution plan allocated 51% to community (2021-2025). DAO treasury and team/investor wallets likely hold significant portions. Vesting schedule (4 years from April 2021) should be near-complete.",
+      "criteria": [
+        {
+          "id": "distribution__concentration",
+          "name": "Ownership Concentration",
+          "about": "Measures whether a single actor or coordinated group controls a majority of the voting supply.",
+          "status": "TBD",
+          "notes": "**~2,719 holders** as of research date. Original token distribution plan (2021): 51% to community (2021-2025), remaining split between team, investors, treasury.\n\n**Total Supply:** 1,000,000,000 SWISE\n**Circulating:** ~750,000,000 SWISE [UNVERIFIED]\n\n[UNVERIFIED] Detailed holder concentration analysis (top 10 holders and percentages) requires direct Etherscan data.",
+          "evidence": [
+            {
+              "urls": [
+                {
+                  "name": "SWISE Token Holders",
+                  "url": "https://etherscan.io/token/0x48c3399719b582dd63eb5aadf12a40b4c3f52fa2#balances",
+                  "type": "explorer"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "distribution__supply-schedule",
+          "name": "Future Token Unlocks",
+          "about": "Are there known, future events (such as vesting cliffs) that will materially affect the concentration of tokens?",
+          "status": "TBD",
+          "notes": "**4-year vesting schedule** started April 2021, meaning most vesting should be complete or near-complete by 2025.\n\n**Vesting Contracts:**\n- Factory: 0x7B910cc3D4B42FEFF056218bD56d7700E4ea7dD5\n- Escrow: 0xaE678D2A911400a55e06f4A1F0C0B363F3eE2e42\n\n[UNVERIFIED] Current vesting status and remaining unlock amounts.",
+          "evidence": [
+            {
+              "urls": [
+                {
+                  "name": "Contract Addresses (Vesting)",
+                  "url": "https://github.com/stakewise/contracts/blob/main/networks/mainnet.md",
+                  "type": "github"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "offchain",
+      "name": "Offchain Dependencies",
+      "tags": ["Reference"],
+      "about": "Economically material assets and obligations often sit offchain—outside the custody and direct enforcement of a token—while still determining which interfaces and domains most users reach, where fees are charged or captured, who can commercialize or restrict the software, and who can sign contracts or move offchain funds.",
+      "summary": "Brand, domains, and IP are controlled by **StakeWise Labs OÜ** (Estonia), not a DAO-controlled entity. V3-core uses **BUSL-1.1 license** with change date of Jan 1, 2026 (or earlier via ENS override at v3-license-date.stakewise.eth).",
+      "criteria": [
+        {
+          "id": "offchain__trademark",
+          "name": "Trademark",
+          "about": "Are core trademarks and brand assets owned or controlled by a tokenholder-controlled legal entity?",
+          "status": "⚠️",
+          "notes": "No public trademark registration for \"StakeWise\" was found in USPTO or EUIPO databases. The StakeWise brand is **presumed to be controlled by StakeWise Labs OÜ**, not a DAO-controlled entity.\n\n[UNVERIFIED] Direct trademark registry search could not be completed.",
+          "evidence": []
+        },
+        {
+          "id": "offchain__distribution",
+          "name": "Distribution",
+          "about": "Are primary domains and distribution assets owned or controlled by a tokenholder-controlled legal entity?",
+          "status": "⚠️",
+          "notes": "Primary domains and interfaces are controlled by **StakeWise Labs OÜ**:\n- stakewise.io\n- app.stakewise.io\n- stakewiselabs.ee\n\nOnly vote.stakewise.io (Snapshot) is DAO-controlled.\n\n**Company Registration:** STAKEWISE LABS OÜ, Registration 16108892 (Estonia), Sector: Programming. Associated Persons: Dmitri Tšumak, Kirill Kutakov.",
+          "evidence": [
+            {
+              "urls": [
+                {
+                  "name": "StakeWise Labs OÜ Registration",
+                  "url": "https://www.inforegister.ee/en/16108892-STAKEWISE-LABS-OU/",
+                  "type": "docs"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "offchain__licensing",
+          "name": "Licensing",
+          "about": "Is core protocol software/IP (and any associated licensing rights, where applicable) owned or controlled by a tokenholder-controlled legal entity?",
+          "status": "⚠️",
+          "notes": "**v3-core:** Business Source License 1.1 (BUSL-1.1), Licensor: StakeWise Labs. **Change Date:** The earlier of January 1, 2026 OR a date specified at `v3-license-date.stakewise.eth` (converts to MIT).\n\n**contracts (legacy):** AGPL-3.0, Owner: StakeWise Labs.\n\n**Important:** The ENS-based override mechanism means StakeWise Labs can accelerate the license change at any time. Until the Change Date, commercial use requires Labs permission. Core protocol IP is owned by StakeWise Labs OÜ, **not a DAO-controlled entity**.",
+          "evidence": [
+            {
+              "urls": [
+                {
+                  "name": "V3-Core LICENSE.md",
+                  "url": "https://github.com/stakewise/v3-core/blob/main/LICENSE.md",
+                  "type": "github"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
   ]
 }
