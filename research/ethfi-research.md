@@ -11,12 +11,14 @@
 
 ## Executive Summary
 
-ETHFI is a governance token for the ether.fi liquid staking protocol. The token implements ERC20Votes for on-chain voting capability, but **governance is currently in a transitional phase** with votes occurring off-chain via Snapshot, executed by a team-controlled multisig. While protocol contracts are protected by a 72-hour timelock, the proposer role is held by a 3-of-5 multisig controlled by team/foundation members rather than tokenholders.
+ETHFI is a governance token for the ether.fi liquid staking protocol. The token implements ERC20Votes for on-chain voting capability, but **governance is currently in a transitional phase** with votes occurring off-chain via Snapshot, executed by a team-controlled multisig.
+
+**Critical Finding:** While protocol contracts are nominally "owned" by a Timelock, **contract upgrades bypass the timelock entirely**. The `_authorizeUpgrade()` function checks `roleRegistry.onlyProtocolUpgrader(msg.sender)`, which requires `msg.sender == roleRegistry.owner()` — the 3-of-5 multisig directly. The multisig can upgrade contracts instantly without any delay.
 
 **Key Findings:**
 - **Supply:** Fixed at 1B with ~998.5M currently circulating (some burned). No mint function exists.
-- **Governance:** Off-chain Snapshot voting → multisig execution → timelock. Not on-chain binding.
-- **Upgrade Authority:** 3-of-5 multisig controls RoleRegistry (protocol upgrade authority)
+- **Governance:** Off-chain Snapshot voting → multisig execution. Not on-chain binding.
+- **Upgrade Authority:** 3-of-5 multisig can upgrade contracts **immediately** (no timelock protection)
 - **Value Accrual:** Active buyback program distributing to sETHFI stakers, but Foundation-discretionary
 - **Token Rights:** No censorship, no pause, no blacklist in ETHFI token contract
 
@@ -41,8 +43,8 @@ graph LR
 ```
 
 **Evidence:**
-- Governance roadmap states "Phase 1" includes "offchain voting on Snapshot" with "delegate elections"
-  - Source: [Governance Roadmap](https://etherfi.gitbook.io/gov/governance-roadmap)
+- Agora governance page states Phase 1 includes: "launching offchain voting on Snapshot, delegate elections, our security council, and discourse groups"
+  - Source: [Agora Governance Info](https://vote.ether.fi/info)
 - Agora platform (vote.ether.fi) is a delegate directory, not binding on-chain voting
 - 4-day voting window with 1M ETHFI quorum required
   - Source: [Governance Forum](https://governance.ether.fi/)
@@ -76,7 +78,7 @@ Safe.getOwners() = [
   0x566e58ac0f2c4bcaf6de63760c56cc3f825c48f5,
   0x71b67ac997056c9935f8aa98f3344432ea2ec15c,
   0x5dfb8bc4830ccf60d469d546aec36531c97b96b5,
-  0xfa238cb37e58556b23ea45643ffe4da382162a5,
+  0x0fa238cb37e58556b23ea45643ffe4da382162a53,
   0x46cba1e9b1e5db32da28428f2fb85587bcb785e7
 ]
 ```
@@ -105,27 +107,26 @@ function onlyProtocolUpgrader(address account) public view {
 
 ### 1.3 Protocol Upgrade Authority
 
-**Status:** ⚠️ PARTIAL
+**Status:** ❌ MULTISIG-CONTROLLED (NO TIMELOCK PROTECTION)
 
-**Finding:** Core protocol contracts use UUPS proxy pattern and are owned by the EtherFiTimelock. However, the timelock's proposer is the 3-of-5 multisig, not tokenholders.
+**Critical Finding:** While protocol contracts have `owner()` set to EtherFiTimelock, **contract upgrades bypass the timelock entirely**. Upgrades are authorized via `RoleRegistry.onlyProtocolUpgrader()` which checks if `msg.sender == roleRegistry.owner()` — the 3-of-5 multisig directly.
 
-**Ownership Chain:**
+**Upgrade Authorization Path:**
 ```mermaid
 graph TD
-    A[Protocol Contracts] -->|owner| B[EtherFiTimelock]
-    B -->|PROPOSER_ROLE| C[3-of-5 Multisig]
-    C -->|controls| D[RoleRegistry]
-    D -->|grants| E[Upgrade Authority]
+    A[Protocol Contract Upgrade] -->|_authorizeUpgrade| B[roleRegistry.onlyProtocolUpgrader]
+    B -->|requires| C["owner() == msg.sender"]
+    C -->|owner is| D[3-of-5 Multisig<br/>0x2aCA...8AdC]
+    D -->|INSTANT| E[Contract Upgraded]
 ```
 
-**Verified Contract Ownership (all return Timelock 0x9f26d4C958fD811A1F59B01B86Be7dFFc9d20761):**
-| Contract | Address | Owner |
-|----------|---------|-------|
-| LiquidityPool | 0x308861A430be4cce5502d0A12724771Fc6DaF216 | Timelock ✓ |
-| eETH | 0x35fA164735182de50811E8e2E824cFb9B6118ac2 | Timelock ✓ |
-| weETH | 0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee | Timelock ✓ |
-| EtherFiAdmin | 0x0EF8fa4760Db8f5Cd4d993f3e3416f30f942D705 | Timelock ✓ |
-| Treasury | 0x6329004E903B7F420245E7aF3f355186f2432466 | Timelock ✓ |
+**Code Evidence (RoleRegistry.sol line 76-78):**
+```solidity
+function onlyProtocolUpgrader(address account) public view {
+    if (owner() != account) revert OnlyProtocolUpgrader();
+}
+```
+- Source: [RoleRegistry.sol:76-78](https://github.com/etherfi-protocol/smart-contracts/blob/master/src/RoleRegistry.sol#L76-L78)
 
 **Upgrade Path (LiquidityPool.sol line 529-531):**
 ```solidity
@@ -135,11 +136,33 @@ function _authorizeUpgrade(address newImplementation) internal override {
 ```
 - Source: [LiquidityPool.sol:529-531](https://github.com/etherfi-protocol/smart-contracts/blob/master/src/LiquidityPool.sol#L529-L531)
 
-**Timelock Parameters:**
-- Min Delay: 72 hours (259,200 seconds)
-- Timelock: [`0x9f26d4C958fD811A1F59B01B86Be7dFFc9d20761`](https://etherscan.io/address/0x9f26d4C958fD811A1F59B01B86Be7dFFc9d20761)
+**On-chain Verification:**
+```
+RoleRegistry.owner() = 0x2aCA71020De61bb532008049e1Bd41E451AE8AdC (3-of-5 Multisig)
+```
 
-**Improvement from Prisma Assessment:** The February 2024 Prisma Risk report noted absence of timelock. This has been addressed - timelock is now deployed with 72-hour delay.
+**Implication:** The 3-of-5 multisig can upgrade all UUPS proxy contracts (LiquidityPool, eETH, weETH, EtherFiAdmin, etc.) **immediately** without any timelock delay. This is a significant centralization risk.
+
+**Contract Ownership vs Upgrade Authority:**
+| Contract | owner() | Upgrade Authority |
+|----------|---------|-------------------|
+| LiquidityPool | Timelock | **Multisig (direct)** |
+| eETH | Timelock | **Multisig (direct)** |
+| weETH | Timelock | **Multisig (direct)** |
+| EtherFiAdmin | Timelock | **Multisig (direct)** |
+| RoleRegistry | Multisig | **Multisig (direct)** |
+
+Note: `owner()` controls non-upgrade admin functions. Upgrades are controlled separately via `roleRegistry.onlyProtocolUpgrader()`.
+
+**Timelock Existence:**
+- A timelock contract exists at `0x9f26d4C958fD811A1F59B01B86Be7dFFc9d20761` with 72-hour delay
+- The timelock is the `owner()` of protocol contracts for non-upgrade functions
+- **However, upgrades do NOT go through the timelock**
+
+**Timelock PROPOSER_ROLE:** [UNVERIFIED]
+- Aragon was unable to verify which address holds PROPOSER_ROLE on the Timelock via on-chain queries
+- `hasRole(PROPOSER_ROLE, multisig)` returned `false` for both known multisigs
+- The Timelock's role assignments may be found via event logs or deployment transaction analysis
 
 ---
 
@@ -283,7 +306,7 @@ function pause(...) external {
 
 **Fee Configuration (LiquidityPool.sol):**
 - feeRecipient set by LIQUIDITY_POOL_ADMIN_ROLE
-- Source: [LiquidityPool.sol:434-438](https://github.com/etherfi-protocol/smart-contracts/blob/master/src/LiquidityPool.sol#L434-L438)
+- Source: [LiquidityPool.sol:434-439](https://github.com/etherfi-protocol/smart-contracts/blob/master/src/LiquidityPool.sol#L434-L439)
 
 **Buyback Parameters:**
 - Percentage allocation: Documentation states 100% of withdrawal fees
@@ -462,9 +485,9 @@ graph TB
 |-----------|------------|---------------------|
 | ETHFI Supply | Immutable | ✅ Cannot be changed |
 | ETHFI Transfers | Permissionless | ✅ No restrictions |
-| Protocol Upgrades | 3-of-5 Multisig → Timelock | ❌ Multisig controlled |
+| Protocol Upgrades | 3-of-5 Multisig (INSTANT, no timelock) | ❌ Multisig controlled |
 | Role Assignments | 3-of-5 Multisig | ❌ Multisig controlled |
-| Treasury | Timelock ← Multisig | ❌ Multisig controlled |
+| Treasury | Timelock ← [PROPOSER UNVERIFIED] | ❌ Multisig controlled |
 | Pause Functions | PROTOCOL_PAUSER role | ⚠️ Role assigned by multisig |
 | Buybacks | Foundation discretionary | ❌ Not on-chain enforced |
 | Trademarks | Ether.Fi SEZC | ❌ Company controlled |
@@ -483,7 +506,7 @@ graph TB
 
 4. **Legal Entity Disconnect:** Ether.Fi SEZC (Cayman company) owns trademarks and operates platform. No documented legal obligation to tokenholders.
 
-5. **Upgrade Authority:** 3-of-5 multisig threshold (60%) lower than industry standard for critical DeFi protocols.
+5. **Upgrade Authority:** 3-of-5 multisig can upgrade contracts **immediately** with no timelock delay. This is a significant centralization risk.
 
 ---
 
@@ -508,7 +531,8 @@ ETHFI token provides:
 
 ETHFI token lacks:
 - ❌ Binding on-chain governance
-- ❌ Tokenholder control over protocol upgrades
+- ❌ Tokenholder control over protocol upgrades (multisig can upgrade instantly)
+- ❌ Timelock protection for contract upgrades
 - ❌ Programmatic (non-discretionary) value distribution
 - ❌ Tokenholder-controlled legal entity
 
