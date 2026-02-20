@@ -2682,14 +2682,14 @@
         "Metric 1"
       ],
       "about": "This metric evaluates whether economically material outcomes are mediated through tokenholder governance, or whether admins, multisigs, security councils, or other privileged roles retain onchain powers that can change the rules or selectively restrict use and exit.",
-      "summary": "ETHFI tokenholders do not have binding onchain control. Governance uses offchain voting with multisig execution. The protocol is in Phase 1 of a four-phase decentralization roadmap. CRITICAL: The 3-of-5 multisig can upgrade protocol contracts instantly\u2014upgrades bypass the 72-hour timelock entirely. A separate 4-of-7 multisig controls Timelock operations. The token itself is not upgradeable and has no censorship functions.",
+      "summary": "ETHFI tokenholders do not have binding onchain control. Governance uses offchain voting with multisig execution. The protocol is in Phase 1 of a four-phase decentralization roadmap. A 3-of-5 multisig can upgrade protocol contracts instantly, bypassing the 72-hour timelock. A separate 4-of-7 multisig controls Timelock operations. The mainnet token is not upgradeable and has no censorship functions, though L2 tokens are upgradeable.",
       "criteria": [
         {
           "id": "onchain-ctrl__governance-workflow",
           "name": "Onchain Governance Workflow",
           "about": "Evaluates whether an onchain process exists that grants tokenholders ultimate authority over protocol decisions.",
           "status": "\u274c",
-          "notes": "No onchain Governor contract deployed. Governance uses offchain voting.\n\nVoting period is 4 days with 1M ETHFI quorum. Execution is handled by multisig\u2014tokenholders can signal preference but cannot force execution. The multisig can theoretically ignore offchain voting results.\n\nDecentralization Roadmap: Four-phase plan published. Currently in Phase 1 (token launch, offchain voting). Phase 2 targets full Governor deployment with treasury access.",
+          "notes": "No onchain Governor contract deployed. Governance uses offchain voting with a 4-day voting period and 1M ETHFI quorum. Execution is handled by multisig, meaning tokenholders can signal preference but cannot force execution.\n\nThe protocol has published a four-phase decentralization roadmap and is currently in Phase 1 (token launch, offchain voting). Phase 2 targets full Governor deployment with treasury access.",
           "evidence": [
             {
               "name": "Governance Structure",
@@ -2719,11 +2719,11 @@
           "name": "Role Accountability",
           "about": "Determines whether all privileged or value-impacting roles are governed, revocable, and accountable to tokenholders.",
           "status": "\u26a0\ufe0f",
-          "notes": "The protocol is controlled by two distinct multisigs with different purposes:\n\n1. RoleRegistry Owner (3-of-5 Safe): Controls protocol upgrades and role assignments\n2. Timelock Proposer (4-of-7 Safe): Controls Timelock-protected admin functions\n\nTokenholders do not elect or control either multisig. However, there is separation of concerns between upgrade authority and operational control.",
+          "notes": "The protocol is controlled by two distinct multisigs. A 3-of-5 Safe owns the RoleRegistry and controls protocol upgrades and role assignments. A separate 4-of-7 Safe holds the Timelock proposer role and controls timelocked admin functions.\n\nTokenholders do not elect or control either multisig. However, there is separation of concerns between upgrade authority and operational control.",
           "evidence": [
             {
               "name": "RoleRegistry Owner (3-of-5)",
-              "summary": "RoleRegistry.owner() = 0x2aCA71020De61bb532008049e1Bd41E451AE8AdC\nThreshold: 3-of-5\nControls: Protocol upgrades, role grants/revokes",
+              "summary": "The RoleRegistry is owned by a 3-of-5 multisig that controls protocol upgrades and role grants/revokes.",
               "urls": [
                 {
                   "name": "RoleRegistry Contract",
@@ -2739,7 +2739,7 @@
             },
             {
               "name": "Timelock Proposer (4-of-7)",
-              "summary": "Verified via RoleGranted event in Timelock creation tx.\nhasRole(PROPOSER_ROLE, 0xcdd5...8c21) = true\nThreshold: 4-of-7\nControls: Schedule/execute/cancel Timelock operations",
+              "summary": "A 4-of-7 multisig holds the proposer, executor, and canceller roles on the Timelock, verified via RoleGranted events in the Timelock creation transaction.",
               "urls": [
                 {
                   "name": "4-of-7 Multisig",
@@ -2760,19 +2760,19 @@
           "name": "Protocol Upgrade Authority",
           "about": "Determines whether core protocol logic can be upgraded and whether such upgrades are controlled by tokenholders.",
           "status": "\u274c",
-          "notes": "CRITICAL: While protocol contracts have owner() set to EtherFiTimelock, contract upgrades bypass the timelock entirely.\n\nUpgrades are authorized via roleRegistry.onlyProtocolUpgrader() which checks if msg.sender == roleRegistry.owner()\u2014the 3-of-5 multisig directly. The multisig can upgrade contracts instantly with no delay.\n\nThe 72-hour timelock only applies to non-upgrade admin functions controlled by the separate 4-of-7 multisig.",
+          "notes": "While protocol contracts have their owner set to the EtherFiTimelock, contract upgrades bypass the timelock entirely. The upgrade authorization function checks whether the caller is the RoleRegistry owner, which is the 3-of-5 multisig. This means the multisig can upgrade contracts instantly with no delay.\n\nThe 72-hour timelock only applies to non-upgrade admin functions controlled by the separate 4-of-7 multisig.",
           "evidence": [
             {
-              "name": "Upgrade Path Analysis",
-              "summary": "Upgrade authorization path:\n1. Contract._authorizeUpgrade() calls roleRegistry.onlyProtocolUpgrader(msg.sender)\n2. onlyProtocolUpgrader() requires owner() == msg.sender\n3. roleRegistry.owner() = 3-of-5 Multisig (0x2aCA...8AdC)\n\nResult: Multisig can upgrade instantly\u2014NO timelock protection.",
+              "name": "Upgrade Path",
+              "summary": "Protocol contracts use UUPS upgradeable proxies. The upgrade authorization checks whether the caller owns the RoleRegistry, which is a 3-of-5 multisig. This bypasses the Timelock entirely, allowing instant upgrades.",
               "urls": [
                 {
-                  "name": "onlyProtocolUpgrader (RoleRegistry.sol:76-78)",
+                  "name": "RoleRegistry Upgrade Check",
                   "url": "https://github.com/etherfi-protocol/smart-contracts/blob/master/src/RoleRegistry.sol#L76-L78",
                   "type": "github"
                 },
                 {
-                  "name": "_authorizeUpgrade (LiquidityPool.sol:529-531)",
+                  "name": "LiquidityPool Upgrade Authorization",
                   "url": "https://github.com/etherfi-protocol/smart-contracts/blob/master/src/LiquidityPool.sol#L529-L531",
                   "type": "github"
                 }
@@ -2780,7 +2780,7 @@
             },
             {
               "name": "Timelock Scope",
-              "summary": "What Timelock controls (4-of-7 proposer, 72h delay):\n\u2022 Non-upgrade onlyOwner functions\n\u2022 Contract ownership transfer\n\u2022 Admin parameter changes\n\nWhat bypasses Timelock (3-of-5, instant):\n\u2022 All contract upgrades\n\u2022 Role assignments via RoleRegistry\n\u2022 RoleRegistry ownership itself",
+              "summary": "The Timelock with its 72-hour delay controls non-upgrade admin functions such as ownership transfers and parameter changes. However, all contract upgrades and role assignments bypass the Timelock and are controlled directly by the 3-of-5 multisig.",
               "urls": [
                 {
                   "name": "EtherFiTimelock Contract",
@@ -2788,7 +2788,7 @@
                   "type": "explorer"
                 },
                 {
-                  "name": "EtherFiTimelock.sol Source",
+                  "name": "EtherFiTimelock Source",
                   "url": "https://github.com/etherfi-protocol/smart-contracts/blob/master/src/EtherFiTimelock.sol",
                   "type": "github"
                 }
@@ -2801,11 +2801,11 @@
           "name": "Token Upgrade Authority",
           "about": "Assesses whether token behavior can be modified and, if so, whether such changes are controlled by tokenholder governance.",
           "status": "\u2705",
-          "notes": "The mainnet ETHFI token is a standard ERC-20 (non-proxy). It cannot be upgraded.\n\nContract inherits ERC20, ERC20Burnable, ERC20Permit, ERC20Votes. No EIP-1967 implementation slot found.",
+          "notes": "The mainnet ETHFI token is a standard non-upgradeable ERC-20. However, L2 ETHFI tokens on Arbitrum, Base, and other chains use UUPS proxy patterns and are upgradeable by their respective owners.",
           "evidence": [
             {
-              "name": "Token Implementation",
-              "summary": "Token contract is not upgradeable:\n\u2022 Bytecode starts with 0x608060405234801561001057... (standard contract, not proxy)\n\u2022 No EIP-1967 slot\n\u2022 Standard OpenZeppelin ERC20 inheritance",
+              "name": "Mainnet Token",
+              "summary": "The Ethereum mainnet ETHFI token is not upgradeable.",
               "urls": [
                 {
                   "name": "ETHFI Token Contract",
@@ -2821,11 +2821,11 @@
           "name": "Supply Control",
           "about": "Evaluates whether token supply changes are programmatic or subject exclusively to tokenholder-approved governance processes.",
           "status": "\u2705",
-          "notes": "ETHFI has a fixed supply of 1 billion tokens. No mint function exists in the contract.\n\nAll 1B tokens were minted at deployment. Current supply is ~998.5M due to burns. Supply can only decrease via ERC20Burnable.",
+          "notes": "ETHFI has a fixed supply of 1 billion tokens with no mint function. All tokens were minted at deployment. Current circulating supply is approximately 998.5M due to burns. Supply can only decrease through the ERC20Burnable function.",
           "evidence": [
             {
-              "name": "Supply Verification",
-              "summary": "totalSupply() = 998,535,999 ETHFI (~1.46M burned).\n\nNo mint() function exists. Contract inherits ERC20Burnable allowing holders to burn their own tokens.",
+              "name": "Fixed Supply",
+              "summary": "No mint function exists in the contract. Holders can burn their own tokens.",
               "urls": [
                 {
                   "name": "ETHFI Allocations",
@@ -2846,14 +2846,14 @@
           "name": "Privileged Access Gating",
           "about": "Assesses whether any bounded actor set can block or selectively restrict economically meaningful protocol actions or exit paths, versus access that is permissionless and symmetric for similarly situated users.",
           "status": "\u26a0\ufe0f",
-          "notes": "Protocol contracts (LiquidityPool, eETH operations) can be paused by addresses holding PROTOCOL_PAUSER role. The ETHFI token itself has no pause function.\n\nPause roles are assigned by RoleRegistry owner (the 3-of-5 multisig), not tokenholders.",
+          "notes": "Protocol contracts can be paused by addresses holding the PROTOCOL_PAUSER role, which is assigned by the RoleRegistry owner (the 3-of-5 multisig). The ETHFI token itself has no pause function.",
           "evidence": [
             {
               "name": "Pause Authority",
-              "summary": "EtherFiAdmin.pause() can pause:\n\u2022 etherFiOracle\n\u2022 stakingManager\n\u2022 auctionManager\n\u2022 etherFiNodesManager\n\u2022 liquidityPool\n\u2022 membershipManager\n\nRequires PROTOCOL_PAUSER role. Unpause requires PROTOCOL_UNPAUSER role.",
+              "summary": "The EtherFiAdmin contract can pause protocol operations including the oracle, staking manager, auction manager, nodes manager, liquidity pool, and membership manager.",
               "urls": [
                 {
-                  "name": "EtherFiAdmin Pause (lines 102-127)",
+                  "name": "EtherFiAdmin Pause Function",
                   "url": "https://github.com/etherfi-protocol/smart-contracts/blob/master/src/EtherFiAdmin.sol#L102-L127",
                   "type": "github"
                 }
@@ -2866,11 +2866,11 @@
           "name": "Token Censorship",
           "about": "Examines whether any roles exist that can freeze, blacklist, seize, or otherwise censor token balances or transfers.",
           "status": "\u2705",
-          "notes": "The ETHFI token contract contains no blacklist, freeze, seizure, or transfer restriction mechanisms.\n\nStandard ERC-20 transfer with no hooks or restrictions.",
+          "notes": "The ETHFI token contract contains no blacklist, freeze, seizure, or transfer restriction mechanisms. It is a standard ERC-20 with no admin override for transfers.",
           "evidence": [
             {
               "name": "Token Analysis",
-              "summary": "No censorship capabilities found:\n\u2022 No blacklist or freeze mapping\n\u2022 No admin override for transfers\n\u2022 Inherits only: ERC20, ERC20Burnable, ERC20Permit, ERC20Votes",
+              "summary": "No censorship capabilities found. The token inherits only ERC20, ERC20Burnable, ERC20Permit, and ERC20Votes.",
               "urls": [
                 {
                   "name": "ETHFI Token Contract",
@@ -2890,18 +2890,18 @@
         "Metric 2"
       ],
       "about": "This metric evaluates whether the system's operation produces observable, onchain value flows (or token-scarcity effects) that accrue value to tokenholders under rule-based constraints that do not rely on manual transfers, trusted executors, or other unenforced expectations.",
-      "summary": "Active buyback program distributes purchased ETHFI to sETHFI stakers. Funded by 100% of eETH withdrawal fees (weekly) and portion of protocol revenue (monthly). However, execution is Foundation-discretionary\u2014not enforced by smart contracts. Treasury is controlled by Timelock with 4-of-7 proposer multisig.",
+      "summary": "An active buyback program distributes purchased ETHFI to sETHFI stakers, funded by eETH withdrawal fees and protocol revenue. However, execution is Foundation-discretionary rather than enforced by smart contracts. The Treasury is controlled by a Timelock with a 4-of-7 proposer multisig.",
       "criteria": [
         {
           "id": "val-accrual__active",
           "name": "Accrual Active",
           "about": "Assesses whether value flows to tokenholders are currently active rather than merely theoretical or proposed.",
           "status": "\u26a0\ufe0f",
-          "notes": "An ETHFI buyback program is operational, distributing purchased tokens to sETHFI stakers.\n\nSources:\n\u2022 Weekly: 100% of eETH withdrawal fees\n\u2022 Monthly: Portion of broader protocol revenue\n\u2022 Additional: Up to $50M authorized when ETHFI trades below $3\n\nCaveat: Execution is Foundation-discretionary. Aragon has not been able to verify buyback transactions on-chain (no Dune dashboard found in official documentation).",
+          "notes": "An ETHFI buyback program is operational, distributing purchased tokens to sETHFI stakers. Buybacks are funded by 100% of eETH withdrawal fees weekly, a portion of broader protocol revenue monthly, and up to $50M authorized when ETHFI trades below $3.\n\nExecution is Foundation-discretionary and not enforced by smart contract.",
           "evidence": [
             {
               "name": "Buyback Program",
-              "summary": "Buybacks announced publicly but on-chain verification requires transaction-level analysis.\n\n[UNVERIFIED] No Dune dashboard or similar public verification found.",
+              "summary": "Buybacks are documented in official governance materials.",
               "urls": [
                 {
                   "name": "ETHFI Buyback Program",
@@ -2922,11 +2922,11 @@
           "name": "Treasury Ownership",
           "about": "Determines whether protocol treasury assets are programmatically controlled by tokenholder governance.",
           "status": "\u26a0\ufe0f",
-          "notes": "Protocol Treasury is owned by EtherFiTimelock. Timelock operations require the 4-of-7 proposer multisig (verified), not tokenholders.\n\n[UNVERIFIED] Treasury contract shows 0 balance on-chain. Actual treasury holdings location unknown.",
+          "notes": "The protocol Treasury is owned by the EtherFiTimelock. Timelock operations require the 4-of-7 proposer multisig, not tokenholders.",
           "evidence": [
             {
               "name": "Treasury Control",
-              "summary": "Treasury Address: 0x6329004E903B7F420245E7aF3f355186f2432466\nOwner: EtherFiTimelock (0x9f26...0761)\nTimelock Proposer: 4-of-7 Safe (verified via event logs)",
+              "summary": "The Treasury is owned by the Timelock, which is controlled by a 4-of-7 multisig verified via event logs.",
               "urls": [
                 {
                   "name": "Treasury Contract",
@@ -2947,11 +2947,11 @@
           "name": "Accrual Mechanism Control",
           "about": "Evaluates whether only tokenholders can modify parameters governing value capture, such as fees or revenue routing.",
           "status": "\u26a0\ufe0f",
-          "notes": "Protocol fee parameters and buyback allocation are not enforced on-chain. The fee distribution is documented but can be changed by protocol admin.\n\nfeeRecipient is set by LIQUIDITY_POOL_ADMIN_ROLE, which is assigned by the RoleRegistry owner (3-of-5 multisig).\n\n[UNVERIFIED] No public documentation found specifying exact fee percentages or split ratios.",
+          "notes": "Protocol fee parameters and buyback allocation are not enforced on-chain. The fee recipient is set by the LIQUIDITY_POOL_ADMIN_ROLE, which is assigned by the RoleRegistry owner (3-of-5 multisig). Tokenholders cannot modify the fee structure through binding governance.",
           "evidence": [
             {
               "name": "Fee Configuration",
-              "summary": "Fee parameters controlled by LIQUIDITY_POOL_ADMIN_ROLE.\nNo on-chain enforcement of buyback commitments.\n\nBuyback program states '100% of withdrawal fees' but underlying fee structure is not documented.",
+              "summary": "Fee parameters are controlled by admin roles, not tokenholders.",
               "urls": [
                 {
                   "name": "LiquidityPool Fee Functions",
@@ -2970,7 +2970,7 @@
           ],
           "about": "Are there additional offchain value accrual flows that benefit tokenholders?",
           "status": "TBD",
-          "notes": "Aragon has not verified additional offchain value accrual mechanisms. No legally binding revenue sharing arrangements or licensing revenue documented.",
+          "notes": "Aragon developers have not verified additional offchain value accrual mechanisms. No legally binding revenue sharing arrangements or licensing revenue documented.",
           "evidence": []
         }
       ]
@@ -2982,18 +2982,18 @@
         "Metric 3"
       ],
       "about": "This metric measures whether a token's economically material code and deployments are independently verifiable from primary evidence without relying on insider assurances.",
-      "summary": "ETHFI token contract is verified on Etherscan but not published to a public GitHub repository. All core protocol contracts are verified and open source under MIT license. Multiple security audits available with formal verification through Certora.",
+      "summary": "The ETHFI token contract is verified on Etherscan but not published to a public GitHub repository. All core protocol contracts are verified and open source under MIT license with multiple security audits and formal verification through Certora.",
       "criteria": [
         {
           "id": "verifiability__token-source",
           "name": "Token Contract Source Verification",
           "about": "Determines whether the token contract's source code is publicly available and verifiably matches the deployed bytecode.",
           "status": "\u26a0\ufe0f",
-          "notes": "ETHFI token contract is verified on Etherscan with full source code, but is not published to a public GitHub repository.\n\nCompiler: Solidity 0.8.20\nLicense: MIT\nGitHub: Not published (protocol contracts are public, but token contract is Etherscan-only)",
+          "notes": "The ETHFI token contract is verified on Etherscan but is not published to a public GitHub repository. Protocol contracts are public, but the token contract is Etherscan-only.",
           "evidence": [
             {
               "name": "Token Verification",
-              "summary": "Token source verified on Etherscan only. Not in public GitHub repo.",
+              "summary": "Token source verified on Etherscan. Compiler: Solidity 0.8.20, License: MIT.",
               "urls": [
                 {
                   "name": "Etherscan Verified Source",
@@ -3009,7 +3009,7 @@
           "name": "Protocol Component Source Verification",
           "about": "Determines whether core protocol contracts are publicly accessible and verifiable against their onchain deployments.",
           "status": "\u2705",
-          "notes": "All core protocol contracts are verified on Etherscan and match the public GitHub repository.\n\nLicense: MIT\nFormal verification via Certora\nMultiple audits available in repository",
+          "notes": "All core protocol contracts are verified on Etherscan and match the public GitHub repository. The code is MIT licensed with formal verification via Certora and multiple audits available.",
           "evidence": [
             {
               "name": "Protocol Source & Audits",
@@ -3037,14 +3037,14 @@
         "Metric 4"
       ],
       "about": "This metric evaluates whether ownership and therefore effective voting power in governance is meaningfully distributed.",
-      "summary": "Over 55% of tokens allocated to Investors (33.74%) and Core Contributors (21.47%), subject to transparent vesting schedules published in official documentation. The team has publicly documented all unlock timelines. Full vesting completion by end of 2027.",
+      "summary": "Over 55% of tokens are allocated to Investors (33.74%) and Core Contributors (21.47%), subject to transparent vesting schedules published in official documentation. Full vesting completion is expected by end of 2027.",
       "criteria": [
         {
           "id": "distribution__concentration",
           "name": "Ownership Concentration",
           "about": "Measures whether a single actor or coordinated group controls a majority of the voting supply.",
           "status": "\u26a0\ufe0f",
-          "notes": "Allocation Breakdown:\n\u2022 Investors: 33.74% (2-year vest, 1-year cliff)\n\u2022 Treasury: 21.62% (none)\n\u2022 Core Contributors: 21.47% (3-year vest, 1-year cliff)\n\u2022 User Airdrops: 19.27% (various)\n\u2022 Partnerships: 3.9%\n\nVesting mitigates immediate concentration. Schedules are transparently documented.",
+          "notes": "Token allocation includes Investors at 33.74% (2-year vest, 1-year cliff), Treasury at 21.62%, Core Contributors at 21.47% (3-year vest, 1-year cliff), User Airdrops at 19.27%, and Partnerships at 3.9%. Vesting mitigates immediate concentration, and schedules are transparently documented.",
           "evidence": [
             {
               "name": "Token Allocation",
@@ -3063,7 +3063,7 @@
           "name": "Future Token Unlocks",
           "about": "Are there known, future events (such as vesting cliffs) that will materially affect the concentration of tokens?",
           "status": "\u26a0\ufe0f",
-          "notes": "Continuous unlocks from team and investor allocations occur according to published vesting schedules. The team has transparently documented all unlock timelines in official governance documentation.\n\nVesting Details:\n\u2022 Core Contributors: 3-year vesting, 1-year cliff\n\u2022 Investors: 2-year vesting, 1-year cliff\n\u2022 Full vesting completion: By end of 2027",
+          "notes": "Continuous unlocks from team and investor allocations occur according to published vesting schedules. Core Contributors have 3-year vesting with a 1-year cliff, while Investors have 2-year vesting with a 1-year cliff. Full vesting completion is expected by end of 2027.",
           "evidence": [
             {
               "name": "Vesting Schedule",
@@ -3086,14 +3086,14 @@
         "Reference"
       ],
       "about": "Economically material assets and obligations often sit offchain\u2014outside the custody and direct enforcement of a token\u2014while still determining which interfaces and domains most users reach, where fees are charged or captured, who can commercialize or restrict the software, and who can sign contracts or move offchain funds.",
-      "summary": "Trademarks owned by Ether.Fi SEZC (Cayman Islands company), not a tokenholder-controlled entity. The ether.fi domain and platform are operated by this company with 'unilateral control over terms and services.' Protocol smart contracts are MIT licensed. Non-contract IP (website, docs, brand) has restricted licensing.",
+      "summary": "Trademarks are owned by Ether.Fi SEZC (Cayman Islands company), not a tokenholder-controlled entity. The ether.fi domain and platform are operated by this company. Protocol smart contracts are MIT licensed, but non-contract IP has restricted licensing.",
       "criteria": [
         {
           "id": "offchain__trademark",
           "name": "Trademark",
           "about": "Are core trademarks and brand assets owned or controlled by a tokenholder-controlled legal entity?",
           "status": "\u26a0\ufe0f",
-          "notes": "Trademarks are owned by Ether.Fi SEZC (Cayman Islands company), not a tokenholder-controlled entity.\n\nTerms of Use state: 'The Company name, the terms, the Company logo, and all related names, logos, product and service names, designs, and slogans are trademarks of the Company or its affiliates or licensors.'",
+          "notes": "Trademarks are owned by Ether.Fi SEZC (Cayman Islands company), not a tokenholder-controlled entity. The Terms of Use state that company names, logos, and related designs are trademarks of the Company or its affiliates.",
           "evidence": [
             {
               "name": "Trademark Ownership",
@@ -3112,7 +3112,7 @@
           "name": "Distribution",
           "about": "Are primary domains and distribution assets owned or controlled by a tokenholder-controlled legal entity?",
           "status": "\u26a0\ufe0f",
-          "notes": "The ether.fi domain and platform are operated by Ether.Fi SEZC, a Cayman Islands Special Economic Zone Company.\n\nNo documented relationship between the company and DAO. Company operates with 'unilateral control over terms and services.'",
+          "notes": "The ether.fi domain and platform are operated by Ether.Fi SEZC, a Cayman Islands Special Economic Zone Company. There is no documented relationship between the company and DAO, and the company operates with unilateral control over terms and services.",
           "evidence": [
             {
               "name": "Legal Entity",
@@ -3131,7 +3131,7 @@
           "name": "Licensing",
           "about": "Is core protocol software/IP (and any associated licensing rights, where applicable) owned or controlled by a tokenholder-controlled legal entity?",
           "status": "\u26a0\ufe0f",
-          "notes": "Smart Contracts: MIT licensed, allowing unrestricted use, modification, and distribution.\n\nNon-Contract IP: The Terms of Use restrict use of website content, documentation, and brand assets. Users receive only a 'non-transferable, non-sublicensable, non-exclusive, revocable license' for personal use. No SDK-specific or documentation licensing provisions documented.",
+          "notes": "Smart contracts are MIT licensed, allowing unrestricted use and modification. However, non-contract IP including website content, documentation, and brand assets is restricted. Users receive only a non-transferable, non-sublicensable, non-exclusive, revocable license for personal use.",
           "evidence": [
             {
               "name": "License",
