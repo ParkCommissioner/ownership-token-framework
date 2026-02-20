@@ -2682,7 +2682,7 @@
         "Metric 1"
       ],
       "about": "This metric evaluates whether economically material outcomes are mediated through tokenholder governance, or whether admins, multisigs, security councils, or other privileged roles retain onchain powers that can change the rules or selectively restrict use and exit.",
-      "summary": "ETHFI tokenholders do not have binding onchain control. Governance uses offchain voting with multisig execution.\n\nThe protocol is in Phase 0 of a four-phase decentralization roadmap. A 3-of-5 multisig can upgrade protocol contracts instantly, bypassing the 72-hour timelock. A separate 4-of-7 multisig controls Timelock operations.\n\nThe mainnet token is not upgradeable, but L2 tokens are upgradeable and their proxy owners have not been verified.",
+      "summary": "ETHFI tokenholders do not have binding onchain control. Governance uses offchain voting with multisig execution.\n\nThe protocol is in Phase 0 of a four-phase decentralization roadmap. A 4-of-7 multisig controls the Timelock, which owns the RoleRegistry and authorizes protocol upgrades with a 72-hour delay.\n\nThe mainnet token is not upgradeable, but L2 tokens are upgradeable and their proxy owners have not been verified.",
       "criteria": [
         {
           "id": "onchain-ctrl__governance-workflow",
@@ -2719,20 +2719,20 @@
           "name": "Role Accountability",
           "about": "Determines whether all privileged or value-impacting roles are governed, revocable, and accountable to tokenholders.",
           "status": "\u26a0\ufe0f",
-          "notes": "The protocol is controlled by two distinct multisigs. A 3-of-5 Safe owns the RoleRegistry and controls protocol upgrades and role assignments. A separate 4-of-7 Safe holds the Timelock proposer role and controls timelocked admin functions.\n\nTokenholders do not elect or control either multisig. However, there is separation of concerns between upgrade authority and operational control.",
+          "notes": "The protocol is controlled through a Timelock with a 4-of-7 proposer multisig. The RoleRegistry that manages protocol roles is owned by the Timelock.\n\nTokenholders do not elect or control the multisig signers.",
           "evidence": [
             {
-              "name": "RoleRegistry Owner (3-of-5)",
-              "summary": "The RoleRegistry is owned by a 3-of-5 multisig that controls protocol upgrades and role grants/revokes.",
+              "name": "RoleRegistry Owner (Timelock)",
+              "summary": "The RoleRegistry is owned by the Timelock. Role grants, revokes, and upgrade authorizations require a 72-hour Timelock operation.",
               "urls": [
                 {
                   "name": "RoleRegistry Contract",
-                  "url": "https://etherscan.io/address/0x1d3Af47C1607A2EF33033693A9989D1d1013BB50",
+                  "url": "https://etherscan.io/address/0x62247D29B4B9BECf4BB73E0c722cf6445cfC7cE9",
                   "type": "explorer"
                 },
                 {
-                  "name": "3-of-5 Multisig",
-                  "url": "https://etherscan.io/address/0x2aCA71020De61bb532008049e1Bd41E451AE8AdC",
+                  "name": "EtherFiTimelock",
+                  "url": "https://etherscan.io/address/0x9f26d4C958fD811A1F59B01B86Be7dFFc9d20761",
                   "type": "explorer"
                 }
               ]
@@ -2759,12 +2759,12 @@
           "id": "onchain-ctrl__protocol-upgrade",
           "name": "Protocol Upgrade Authority",
           "about": "Determines whether core protocol logic can be upgraded and whether such upgrades are controlled by tokenholders.",
-          "status": "\u274c",
-          "notes": "Contract upgrades bypass the timelock. The upgrade authorization function checks whether the caller is the RoleRegistry owner, which is the 3-of-5 multisig. This means the multisig can upgrade contracts instantly with no delay.\n\nThe 72-hour timelock only applies to non-upgrade admin functions controlled by the separate 4-of-7 multisig.",
+          "status": "\u26a0\ufe0f",
+          "notes": "Protocol contract upgrades are protected by the 72-hour Timelock. The RoleRegistry that authorizes upgrades is owned by the Timelock, meaning upgrades require a scheduled Timelock operation proposed by the 4-of-7 multisig.",
           "evidence": [
             {
               "name": "Upgrade Path",
-              "summary": "Protocol contracts use UUPS upgradeable proxies. The upgrade authorization checks whether the caller owns the RoleRegistry, which is a 3-of-5 multisig, allowing instant upgrades.",
+              "summary": "Protocol contracts use UUPS proxies. The upgrade authorization checks whether the caller owns the RoleRegistry. Since RoleRegistry owner is the Timelock, upgrades require a 72-hour delayed Timelock operation.",
               "urls": [
                 {
                   "name": "RoleRegistry Upgrade Check",
@@ -2779,18 +2779,18 @@
               ]
             },
             {
-              "name": "Timelock Scope",
-              "summary": "The Timelock with its 72-hour delay controls non-upgrade admin functions such as ownership transfers and parameter changes.",
+              "name": "RoleRegistry Owner",
+              "summary": "The RoleRegistry at 0x62247D29B4B9BECf4BB73E0c722cf6445cfC7cE9 is owned by the Timelock at 0x9f26d4C958fD811A1F59B01B86Be7dFFc9d20761.",
               "urls": [
+                {
+                  "name": "RoleRegistry Contract",
+                  "url": "https://etherscan.io/address/0x62247D29B4B9BECf4BB73E0c722cf6445cfC7cE9",
+                  "type": "explorer"
+                },
                 {
                   "name": "EtherFiTimelock Contract",
                   "url": "https://etherscan.io/address/0x9f26d4C958fD811A1F59B01B86Be7dFFc9d20761",
                   "type": "explorer"
-                },
-                {
-                  "name": "EtherFiTimelock Source",
-                  "url": "https://github.com/etherfi-protocol/smart-contracts/blob/master/src/EtherFiTimelock.sol",
-                  "type": "github"
                 }
               ]
             }
@@ -2846,7 +2846,7 @@
           "name": "Privileged Access Gating",
           "about": "Assesses whether any bounded actor set can block or selectively restrict economically meaningful protocol actions or exit paths, versus access that is permissionless and symmetric for similarly situated users.",
           "status": "\u26a0\ufe0f",
-          "notes": "Protocol contracts can be paused by addresses holding the PROTOCOL_PAUSER role, which is assigned by the RoleRegistry owner (the 3-of-5 multisig). The ETHFI token itself has no pause function.",
+          "notes": "Protocol contracts can be paused by addresses holding the PROTOCOL_PAUSER role, which is assigned via the RoleRegistry (owned by Timelock). The ETHFI token itself has no pause function.",
           "evidence": [
             {
               "name": "Pause Authority",
@@ -2947,7 +2947,7 @@
           "name": "Accrual Mechanism Control",
           "about": "Evaluates whether only tokenholders can modify parameters governing value capture, such as fees or revenue routing.",
           "status": "\u26a0\ufe0f",
-          "notes": "Protocol fee parameters and buyback allocation are not enforced on-chain. The fee recipient is set by the LIQUIDITY_POOL_ADMIN_ROLE, which is assigned by the RoleRegistry owner (3-of-5 multisig). Tokenholders cannot modify the fee structure through binding governance.",
+          "notes": "Protocol fee parameters and buyback allocation are not enforced on-chain. The fee recipient is set by the LIQUIDITY_POOL_ADMIN_ROLE, which is assigned via the RoleRegistry (owned by Timelock). Tokenholders cannot modify the fee structure through binding governance.",
           "evidence": [
             {
               "name": "Fee Configuration",
