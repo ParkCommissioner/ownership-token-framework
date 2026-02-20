@@ -2682,18 +2682,18 @@
         "Metric 1"
       ],
       "about": "This metric evaluates whether economically material outcomes are mediated through tokenholder governance, or whether admins, multisigs, security councils, or other privileged roles retain onchain powers that can change the rules or selectively restrict use and exit.",
-      "summary": "ETHFI tokenholders do not have binding onchain control. Governance uses offchain voting with multisig execution. The protocol is in Phase 1 of a four-phase decentralization roadmap. A 3-of-5 multisig can upgrade protocol contracts instantly, bypassing the 72-hour timelock. A separate 4-of-7 multisig controls Timelock operations. The mainnet token is not upgradeable and has no censorship functions, though L2 tokens are upgradeable.",
+      "summary": "ETHFI tokenholders do not have binding onchain control. Governance uses offchain voting with multisig execution.\n\nThe protocol is in Phase 0 of a four-phase decentralization roadmap. A 3-of-5 multisig can upgrade protocol contracts instantly, bypassing the 72-hour timelock. A separate 4-of-7 multisig controls Timelock operations.\n\nThe mainnet token is not upgradeable, but L2 tokens are upgradeable and their proxy owners have not been verified.",
       "criteria": [
         {
           "id": "onchain-ctrl__governance-workflow",
           "name": "Onchain Governance Workflow",
           "about": "Evaluates whether an onchain process exists that grants tokenholders ultimate authority over protocol decisions.",
           "status": "\u274c",
-          "notes": "No onchain Governor contract deployed. Governance uses offchain voting with a 4-day voting period and 1M ETHFI quorum. Execution is handled by multisig, meaning tokenholders can signal preference but cannot force execution.\n\nThe protocol has published a four-phase decentralization roadmap and is currently in Phase 1 (token launch, offchain voting). Phase 2 targets full Governor deployment with treasury access.",
+          "notes": "No onchain Governor contract deployed. Governance uses offchain voting with a 4-day voting period and 1M ETHFI quorum. Execution is handled by multisig, meaning tokenholders can signal preference but cannot force execution.\n\nThe protocol has published a four-phase decentralization roadmap (0-indexed) and is currently in Phase 0 (token launch, offchain voting). Phase 1 targets full Governor deployment with treasury access.",
           "evidence": [
             {
               "name": "Governance Structure",
-              "summary": "Governance platform states Phase 1 includes 'launching offchain voting, delegate elections, our security council, and discourse groups.'",
+              "summary": "Governance platform states Phase 0 includes 'launching offchain voting, delegate elections, our security council, and discourse groups.'",
               "urls": [
                 {
                   "name": "Governance Info",
@@ -2760,11 +2760,11 @@
           "name": "Protocol Upgrade Authority",
           "about": "Determines whether core protocol logic can be upgraded and whether such upgrades are controlled by tokenholders.",
           "status": "\u274c",
-          "notes": "While protocol contracts have their owner set to the EtherFiTimelock, contract upgrades bypass the timelock entirely. The upgrade authorization function checks whether the caller is the RoleRegistry owner, which is the 3-of-5 multisig. This means the multisig can upgrade contracts instantly with no delay.\n\nThe 72-hour timelock only applies to non-upgrade admin functions controlled by the separate 4-of-7 multisig.",
+          "notes": "Contract upgrades bypass the timelock. The upgrade authorization function checks whether the caller is the RoleRegistry owner, which is the 3-of-5 multisig. This means the multisig can upgrade contracts instantly with no delay.\n\nThe 72-hour timelock only applies to non-upgrade admin functions controlled by the separate 4-of-7 multisig.",
           "evidence": [
             {
               "name": "Upgrade Path",
-              "summary": "Protocol contracts use UUPS upgradeable proxies. The upgrade authorization checks whether the caller owns the RoleRegistry, which is a 3-of-5 multisig. This bypasses the Timelock entirely, allowing instant upgrades.",
+              "summary": "Protocol contracts use UUPS upgradeable proxies. The upgrade authorization checks whether the caller owns the RoleRegistry, which is a 3-of-5 multisig, allowing instant upgrades.",
               "urls": [
                 {
                   "name": "RoleRegistry Upgrade Check",
@@ -2780,7 +2780,7 @@
             },
             {
               "name": "Timelock Scope",
-              "summary": "The Timelock with its 72-hour delay controls non-upgrade admin functions such as ownership transfers and parameter changes. However, all contract upgrades and role assignments bypass the Timelock and are controlled directly by the 3-of-5 multisig.",
+              "summary": "The Timelock with its 72-hour delay controls non-upgrade admin functions such as ownership transfers and parameter changes.",
               "urls": [
                 {
                   "name": "EtherFiTimelock Contract",
@@ -2800,12 +2800,12 @@
           "id": "onchain-ctrl__token-upgrade",
           "name": "Token Upgrade Authority",
           "about": "Assesses whether token behavior can be modified and, if so, whether such changes are controlled by tokenholder governance.",
-          "status": "\u2705",
-          "notes": "The mainnet ETHFI token is a standard non-upgradeable ERC-20. However, L2 ETHFI tokens on Arbitrum, Base, and other chains use UUPS proxy patterns and are upgradeable by their respective owners.",
+          "status": "TBD",
+          "notes": "The mainnet ETHFI token is a standard non-upgradeable ERC-20. However, L2 ETHFI tokens on Arbitrum, Base, and other chains use UUPS proxy patterns and are upgradeable. The owners of the L2 proxy contracts have not been verified.",
           "evidence": [
             {
               "name": "Mainnet Token",
-              "summary": "The Ethereum mainnet ETHFI token is not upgradeable.",
+              "summary": "The Ethereum mainnet ETHFI token is not upgradeable. L2 tokens are upgradeable but proxy owners are unverified.",
               "urls": [
                 {
                   "name": "ETHFI Token Contract",
@@ -2821,7 +2821,7 @@
           "name": "Supply Control",
           "about": "Evaluates whether token supply changes are programmatic or subject exclusively to tokenholder-approved governance processes.",
           "status": "\u2705",
-          "notes": "ETHFI has a fixed supply of 1 billion tokens with no mint function. All tokens were minted at deployment. Current circulating supply is approximately 998.5M due to burns. Supply can only decrease through the ERC20Burnable function.",
+          "notes": "ETHFI has a fixed supply of 1 billion tokens with no mint function. All tokens were minted at deployment. Supply can only decrease through the ERC20Burnable function.",
           "evidence": [
             {
               "name": "Fixed Supply",
@@ -2865,12 +2865,12 @@
           "id": "onchain-ctrl__censorship",
           "name": "Token Censorship",
           "about": "Examines whether any roles exist that can freeze, blacklist, seize, or otherwise censor token balances or transfers.",
-          "status": "\u2705",
-          "notes": "The ETHFI token contract contains no blacklist, freeze, seizure, or transfer restriction mechanisms. It is a standard ERC-20 with no admin override for transfers.",
+          "status": "\u26a0\ufe0f",
+          "notes": "The mainnet ETHFI token contains no blacklist, freeze, or transfer restriction mechanisms. However, L2 ETHFI tokens are upgradeable, which means the L2 proxy owners could potentially introduce censorship functions through an upgrade. The L1 token has no censorship risk.",
           "evidence": [
             {
               "name": "Token Analysis",
-              "summary": "No censorship capabilities found. The token inherits only ERC20, ERC20Burnable, ERC20Permit, and ERC20Votes.",
+              "summary": "L1 token has no censorship capabilities. L2 tokens are upgradeable, creating a potential censorship vector on those chains.",
               "urls": [
                 {
                   "name": "ETHFI Token Contract",
@@ -2890,14 +2890,14 @@
         "Metric 2"
       ],
       "about": "This metric evaluates whether the system's operation produces observable, onchain value flows (or token-scarcity effects) that accrue value to tokenholders under rule-based constraints that do not rely on manual transfers, trusted executors, or other unenforced expectations.",
-      "summary": "An active buyback program distributes purchased ETHFI to sETHFI stakers, funded by eETH withdrawal fees and protocol revenue. However, execution is Foundation-discretionary rather than enforced by smart contracts. The Treasury is controlled by a Timelock with a 4-of-7 proposer multisig.",
+      "summary": "An active buyback program distributes purchased ETHFI to sETHFI stakers, funded by eETH withdrawal fees and protocol revenue. Execution is Foundation-discretionary rather than enforced by smart contracts. The Treasury is controlled by a Timelock with a 4-of-7 proposer multisig.",
       "criteria": [
         {
           "id": "val-accrual__active",
           "name": "Accrual Active",
           "about": "Assesses whether value flows to tokenholders are currently active rather than merely theoretical or proposed.",
-          "status": "\u26a0\ufe0f",
-          "notes": "An ETHFI buyback program is operational, distributing purchased tokens to sETHFI stakers. Buybacks are funded by 100% of eETH withdrawal fees weekly, a portion of broader protocol revenue monthly, and up to $50M authorized when ETHFI trades below $3.\n\nExecution is Foundation-discretionary and not enforced by smart contract.",
+          "status": "\u2705",
+          "notes": "An ETHFI buyback program is operational, distributing purchased tokens to sETHFI stakers. Buybacks are funded by 100% of eETH withdrawal fees weekly, a portion of broader protocol revenue monthly, and up to $50M authorized when ETHFI trades below $3.",
           "evidence": [
             {
               "name": "Buyback Program",
