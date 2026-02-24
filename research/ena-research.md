@@ -46,8 +46,8 @@ ENA governance is **advisory, not binding**. All protocol changes are executed b
 | Wallet | Address | Threshold | Role |
 |--------|---------|-----------|------|
 | **Dev Multisig** | [`0x3b0aaf6e6fcd4a7ceef8c92c32dfea9e64dc1862`](https://etherscan.io/address/0x3b0aaf6e6fcd4a7ceef8c92c32dfea9e64dc1862) | 5-of-11 | Owner of all core contracts |
-| **Hot Swap** | [`0x4423198f26764a8ce9ac8f1683c476854c885d9d`](https://etherscan.io/address/0x4423198f26764a8ce9ac8f1683c476854c885d9d) | 4-of-? | Revenue → USDe conversion |
-| **sUSDe Payout** | [`0x71e4f98e8f20c88112489de3dded4489802a3a87`](https://etherscan.io/address/0x71e4f98e8f20c88112489de3dded4489802a3a87) | 3-of-? | Staker rewards distribution |
+| **Hot Swap** | [`0x4423198f26764a8ce9ac8f1683c476854c885d9d`](https://etherscan.io/address/0x4423198f26764a8ce9ac8f1683c476854c885d9d) | 4-of-9 | Revenue → USDe conversion |
+| **sUSDe Payout** | [`0x71e4f98e8f20c88112489de3dded4489802a3a87`](https://etherscan.io/address/0x71e4f98e8f20c88112489de3dded4489802a3a87) | 3-of-11 | Staker rewards distribution |
 | **Reserve Fund** | [`0x2b5ab59163a6e93b4486f6055d33ca4a115dd4d5`](https://etherscan.io/address/0x2b5ab59163a6e93b4486f6055d33ca4a115dd4d5) | 4-of-10 | Emergency reserves |
 
 ---
@@ -124,7 +124,7 @@ EthenaMinting V2
 0x18d32b1ab042b5e9a3430e77fde8b4783a019234
 0xb93c042c688f1cf038bab03c4f832f2630bb7d8f
 0x66892c66711b2640360c3123e6c23c0cfa50550f
-0xe3f95f2e1adec092337fb5d93c1fe87558658b1
+0xe3f95f2e1adec092337fb5d93c1fe87558658b11
 0x99682f56f4cccf61bd7e449924f2f62d395e1e45
 0x980742edea6b0df3566c19ff4945c57e95449a13
 0x690d1e0fac0599874b849ee88aea27f7b348e1f2
@@ -232,7 +232,7 @@ Constraints:
 **Status:** ⚠️
 **Finding:** Gatekeepers can disable USDe minting/redemption globally.
 
-**GATEKEEPER_ROLE powers (EthenaMinting.sol lines 229-285):**
+**GATEKEEPER_ROLE powers (EthenaMinting.sol lines 278, 339-346):**
 - `disableMintRedeem()` - Sets max mint/redeem to 0
 - `removeMinterRole()` - Revokes minter authorization
 - `removeRedeemerRole()` - Revokes redeemer authorization
