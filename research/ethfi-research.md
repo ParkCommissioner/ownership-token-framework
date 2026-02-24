@@ -37,10 +37,10 @@ ETHFI is a governance token for the ether.fi liquid staking protocol. The token 
 | eETH | [`0x35fA164735182de50811E8e2E824cFb9B6118ac2`](https://etherscan.io/address/0x35fA164735182de50811E8e2E824cFb9B6118ac2) | Rebasing Token | Yes (UUPS) |
 | weETH | [`0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee`](https://etherscan.io/address/0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee) | Wrapped Token | Yes (UUPS) |
 | EtherFiAdmin | [`0x0EF8fa4760Db8f5Cd4d993f3e3416f30f942D705`](https://etherscan.io/address/0x0EF8fa4760Db8f5Cd4d993f3e3416f30f942D705) | Admin | Yes (UUPS) |
-| Treasury | [`0x0c83EAe1FE72c390A02E426572854931EefF93BA`](https://etherscan.io/address/0x0c83EAe1FE72c390A02E426572854931EefF93BA) | Protocol Treasury | [VERIFY] |
-| Upgrade Timelock | [`0x9f26d4C958fD811A1F59B01B86Be7dFFc9d20761`](https://etherscan.io/address/0x9f26d4C958fD811A1F59B01B86Be7dFFc9d20761) | TimelockController | No |
-| Operating Timelock | [`0xcD425f44758a08BaAB3C4908f3e3dE5776e45d7a`](https://etherscan.io/address/0xcD425f44758a08BaAB3C4908f3e3dE5776e45d7a) | TimelockController | No |
-| sETHFI | [`0x86B5780b606940Eb59A062aA85a07959518c0161`](https://etherscan.io/address/0x86B5780b606940Eb59A062aA85a07959518c0161) | Staking | [VERIFY] |
+| Treasury | [`0x0c83EAe1FE72c390A02E426572854931EefF93BA`](https://etherscan.io/address/0x0c83EAe1FE72c390A02E426572854931EefF93BA) | Protocol Treasury | [UNVERIFIED] |
+| Upgrade Timelock | [`0x9f26d4C958fD811A1F59B01B86Be7dFFc9d20761`](https://etherscan.io/address/0x9f26d4C958fD811A1F59B01B86Be7dFFc9d20761) | TimelockController (72h) | No |
+| Operating Timelock | [`0xcD425f44758a08BaAB3C4908f3e3dE5776e45d7a`](https://etherscan.io/address/0xcD425f44758a08BaAB3C4908f3e3dE5776e45d7a) | TimelockController (8h) | No |
+| sETHFI | [`0x86B5780b606940Eb59A062aA85a07959518c0161`](https://etherscan.io/address/0x86B5780b606940Eb59A062aA85a07959518c0161) | Staking | [UNVERIFIED] |
 
 ### L2 Token Contracts
 
@@ -61,6 +61,8 @@ ETHFI is a governance token for the ether.fi liquid staking protocol. The token 
 | Upgrade Timelock | PROPOSER_ROLE | `0xcdd57D11476c22d265722F68390b036f3DA48c21` | 4-of-7 Multisig | `hasRole(PROPOSER_ROLE, addr) = true` | Team-controlled |
 | Upgrade Timelock | EXECUTOR_ROLE | `0xcdd57D11476c22d265722F68390b036f3DA48c21` | 4-of-7 Multisig | `hasRole(EXECUTOR_ROLE, addr) = true` | Team-controlled |
 | Upgrade Timelock | CANCELLER_ROLE | `0xcdd57D11476c22d265722F68390b036f3DA48c21` | 4-of-7 Multisig | `hasRole(CANCELLER_ROLE, addr) = true` | Team-controlled |
+| Operating Timelock | PROPOSER_ROLE | `0x2aCA71020De61bb532008049e1Bd41E451AE8AdC` | 3-of-5 Multisig | `hasRole(PROPOSER_ROLE, addr) = true` | Team-controlled |
+| Operating Timelock | EXECUTOR_ROLE | `0x2aCA71020De61bb532008049e1Bd41E451AE8AdC` | 3-of-5 Multisig | `hasRole(EXECUTOR_ROLE, addr) = true` | Team-controlled |
 | Arbitrum ETHFI | owner | `0x0c6ca434756eedf928a55ebeaf0019364b279732` | 3-of-6 Multisig | `eth_call owner()` | Team-controlled |
 | Base ETHFI | owner | `0x7a00657a45420044bc526b90ad667affaee0a868` | 3-of-6 Multisig | `eth_call owner()` | Team-controlled |
 
@@ -179,6 +181,28 @@ Timelock.hasRole(PROPOSER_ROLE, 0xcdd57D11476c22d265722F68390b036f3DA48c21) = tr
 1. 4-of-7 multisig proposal
 2. 72-hour timelock delay
 3. Execution by the same multisig
+
+### Two-Timelock System
+
+The protocol uses two separate timelocks for different purposes:
+
+| Timelock | Address | Min Delay | Proposer | Purpose |
+|----------|---------|-----------|----------|---------|
+| Upgrade Timelock | `0x9f26d4C958fD811A1F59B01B86Be7dFFc9d20761` | **72 hours** | 4-of-7 Upgrade Admin | Protocol upgrades, RoleRegistry ownership |
+| Operating Timelock | `0xcD425f44758a08BaAB3C4908f3e3dE5776e45d7a` | **8 hours** | 3-of-5 Operating Admin | Day-to-day operations |
+
+**On-chain Verification:**
+```
+Upgrade Timelock getMinDelay() = 0x3f480 = 259200 seconds = 72 hours
+Operating Timelock getMinDelay() = 0x7080 = 28800 seconds = 8 hours
+
+Operating Timelock hasRole(PROPOSER_ROLE, 0x2aCA71020De61bb532008049e1Bd41E451AE8AdC) = true
+Operating Timelock hasRole(EXECUTOR_ROLE, 0x2aCA71020De61bb532008049e1Bd41E451AE8AdC) = true
+```
+
+**Key Distinction:**
+- **Upgrade Timelock (72h):** Controls RoleRegistry ownership and therefore all protocol upgrades. Changes to protocol code require 72 hours notice.
+- **Operating Timelock (8h):** Used for operational changes that don't affect upgrade authority. Provides 8 hours notice.
 
 ---
 
@@ -388,7 +412,7 @@ function pauseContract() external {
 **Treasury Contracts:**
 | Contract | Address | Owner |
 |----------|---------|-------|
-| Treasury (from Deployed.s.sol) | `0x0c83EAe1FE72c390A02E426572854931EefF93BA` | [VERIFY] |
+| Treasury (from Deployed.s.sol) | `0x0c83EAe1FE72c390A02E426572854931EefF93BA` | [UNVERIFIED - owner() reverts] |
 | Old Treasury Reference | `0x6329004E903B7F420245E7aF3f355186f2432466` | Timelock |
 
 ---
@@ -566,7 +590,11 @@ function setFeeRecipient(address _feeRecipient) external {
 
 5. **L2 Upgrade Risk:** Arbitrum and Base ETHFI tokens can be upgraded **instantly** by 3-of-6 multisigs with no timelock delay. This is a significant centralization risk for L2 users.
 
-6. **Two-Timelock System:** The protocol uses separate Upgrade Timelock (72h) and Operating Timelock with different admin multisigs. The Operating Timelock parameters should be verified.
+6. **Two-Timelock System:** The protocol uses Upgrade Timelock (72h) and Operating Timelock (8h) with different admin multisigs. Both timelocks verified.
+
+7. **Unverifiable Contracts:** Aragon has not been able to verify the access control mechanism for:
+   - **sETHFI** (`0x86B5780b606940Eb59A062aA85a07959518c0161`): `owner()` returns `0x0`, not a standard proxy, storage slot 0 is empty. The contract may use a non-standard access control pattern.
+   - **Treasury** (`0x0c83EAe1FE72c390A02E426572854931EefF93BA`): `owner()` reverts, not a standard proxy. Storage slot 0 contains address `0x41675c099f32341bf84bfc5382af534df5c7461a` (a contract), but its role is unclear.
 
 ---
 
@@ -608,14 +636,15 @@ ETHFI token lacks:
 | ETHFI Token | `0xFe0c30065B384F05761f15d0CC899D4F9F9Cc0eB` | Immutable | 2026-02-24 |
 | RoleRegistry | `0x62247D29B4B9BECf4BB73E0c722cf6445cfC7cE9` | Upgrade Timelock | 2026-02-24 |
 | Upgrade Timelock | `0x9f26d4C958fD811A1F59B01B86Be7dFFc9d20761` | - | 2026-02-24 |
-| Operating Timelock | `0xcD425f44758a08BaAB3C4908f3e3dE5776e45d7a` | - | [VERIFY] |
+| Operating Timelock | `0xcD425f44758a08BaAB3C4908f3e3dE5776e45d7a` | 8h delay, 3-of-5 proposer | 2026-02-24 |
+| Treasury | `0x0c83EAe1FE72c390A02E426572854931EefF93BA` | [UNVERIFIED - owner() reverts] | - |
 | Upgrade Admin (4-of-7) | `0xcdd57D11476c22d265722F68390b036f3DA48c21` | Team | 2026-02-24 |
 | Operating Admin (3-of-5) | `0x2aCA71020De61bb532008049e1Bd41E451AE8AdC` | Team | 2026-02-24 |
 | LiquidityPool | `0x308861A430be4cce5502d0A12724771Fc6DaF216` | Upgrade Timelock | 2026-02-24 |
 | eETH | `0x35fA164735182de50811E8e2E824cFb9B6118ac2` | Upgrade Timelock | 2026-02-24 |
 | weETH | `0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee` | Upgrade Timelock | 2026-02-24 |
 | EtherFiAdmin | `0x0EF8fa4760Db8f5Cd4d993f3e3416f30f942D705` | Upgrade Timelock | 2026-02-24 |
-| sETHFI | `0x86B5780b606940Eb59A062aA85a07959518c0161` | [VERIFY] | - |
+| sETHFI | `0x86B5780b606940Eb59A062aA85a07959518c0161` | [UNVERIFIED - owner() returns 0x0] | - |
 | Buyback Wallet (1-of-5) | `0x2f5301a3D59388c509C65f8698f521377D41Fd0F` | Foundation | 2026-02-24 |
 | Arbitrum ETHFI | `0x7189fb5B6504bbfF6a852B13B7B82a3c118fDc27` | 3-of-6 Multisig | 2026-02-24 |
 | Base ETHFI | `0x6C240DDA6b5c336DF09A4D011139beAAa1eA2Aa2` | 3-of-6 Multisig | 2026-02-24 |
