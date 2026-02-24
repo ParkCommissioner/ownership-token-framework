@@ -5,6 +5,7 @@
 **Token:** HYPE (Hyperliquid)
 **Network:** Hyperliquid L1 (with bridges to Ethereum/Arbitrum)
 **Date:** 2026-02-24
+**Plan Version:** 2.0 (Revised per reviewer feedback)
 
 ---
 
@@ -19,9 +20,98 @@ This research plan maps each criterion in the Aragon Ownership Token Framework t
 
 ---
 
-## Part 1: Resource Inventory
+## Part 1: L1 Investigation Methods
 
-### 1.1 Official Documentation (Confirmed Accessible)
+### 1.1 Hyperliquid Info API
+
+The primary method for querying Hyperliquid L1 state is the Info API endpoint.
+
+**Base URLs:**
+- Mainnet: `https://api.hyperliquid.xyz/info`
+- Testnet: `https://api.hyperliquid-testnet.xyz/info`
+
+**Request Format:**
+```bash
+curl -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"type": "<query_type>", ...params}' \
+  https://api.hyperliquid.xyz/info
+```
+
+### 1.2 Validator and Staking Queries
+
+| Query Type | Request | Returns |
+|------------|---------|---------|
+| `validatorSummaries` | `{"type": "validatorSummaries"}` | All validators with addresses, names, stakes, commission rates |
+| `delegations` | `{"type": "delegations", "user": "0x..."}` | User's delegations: validator address, amount, lock expiration |
+| `delegatorSummary` | `{"type": "delegatorSummary", "user": "0x..."}` | Delegated/undelegated amounts, pending withdrawals |
+| `delegatorHistory` | `{"type": "delegatorHistory", "user": "0x..."}` | Staking transaction history with timestamps |
+| `delegatorRewards` | `{"type": "delegatorRewards", "user": "0x..."}` | Reward distribution history |
+
+**Example: Get all validators**
+```bash
+curl -X POST -H "Content-Type: application/json" \
+  -d '{"type": "validatorSummaries"}' \
+  https://api.hyperliquid.xyz/info
+```
+
+### 1.3 Token and Spot Asset Queries
+
+| Query Type | Request | Returns |
+|------------|---------|---------|
+| `spotMeta` | `{"type": "spotMeta"}` | All tokens: name, decimals, tokenId, canonical status |
+| `spotMetaAndAssetCtxs` | `{"type": "spotMetaAndAssetCtxs"}` | Token metadata + prices + volume |
+| `tokenDetails` | `{"type": "tokenDetails", "tokenId": "0x..."}` | Max/total/circulating supply, deployer, genesis |
+| `spotClearinghouseState` | `{"type": "spotClearinghouseState", "user": "0x..."}` | User's token balances |
+
+**Example: Get HYPE token details**
+```bash
+curl -X POST -H "Content-Type: application/json" \
+  -d '{"type": "tokenDetails", "tokenId": "HYPE_TOKEN_ID"}' \
+  https://api.hyperliquid.xyz/info
+```
+
+### 1.4 User Account and Fee Queries
+
+| Query Type | Request | Returns |
+|------------|---------|---------|
+| `userFees` | `{"type": "userFees", "user": "0x..."}` | Fee schedule, tier rates, discounts |
+| `userRole` | `{"type": "userRole", "user": "0x..."}` | Account type (user/agent/vault/subAccount) |
+| `vaultDetails` | `{"type": "vaultDetails", "vaultAddress": "0x..."}` | Vault metadata, performance, followers |
+
+### 1.5 Explorer APIs
+
+**HypurrScan API** (Community explorer)
+- Endpoint: `https://hypurrscan.io/api/` (investigate for availability)
+- Use for: Transaction history, address activity, governance events
+
+**HyperScan (Blockscout)** for HyperEVM
+- Endpoint: `https://www.hyperscan.com/api/`
+- Standard Blockscout API for EVM contract queries
+
+### 1.6 Python SDK Methods
+
+```python
+from hyperliquid.info import Info
+
+info = Info(base_url="https://api.hyperliquid.xyz")
+
+# Validator queries
+validators = info.request({"type": "validatorSummaries"})
+
+# Staking queries for a user
+delegations = info.request({"type": "delegations", "user": "0x..."})
+summary = info.request({"type": "delegatorSummary", "user": "0x..."})
+
+# Token info
+tokens = info.request({"type": "spotMeta"})
+```
+
+---
+
+## Part 2: Resource Inventory
+
+### 2.1 Official Documentation (Confirmed Accessible)
 
 | Resource | URL | Content |
 |----------|-----|---------|
@@ -31,10 +121,12 @@ This research plan maps each criterion in the Aragon Ownership Token Framework t
 | L1 Overview | https://hyperliquid.gitbook.io/hyperliquid-docs/technical-overview/hyperliquid-l1 | Chain architecture |
 | HyperEVM Documentation | https://hyperliquid.gitbook.io/hyperliquid-docs/hyperevm | EVM execution layer |
 | API Documentation | https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api | Developer API |
+| Info Endpoint | https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint | Query reference |
+| Spot API | https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint/spot | Spot token queries |
 | Bridge2 Documentation | https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/bridge2 | Bridge mechanics |
-| Brand Kit | https://hyperliquid.gitbook.io/hyperliquid-docs/brand-kit | Official brand assets |
+| Wrapped HYPE | https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/hyperevm/wrapped-hype | WHYPE contract |
 
-### 1.2 GitHub Repositories (Confirmed Accessible)
+### 2.2 GitHub Repositories (Confirmed Accessible)
 
 | Repository | URL | License | Status |
 |------------|-----|---------|--------|
@@ -42,12 +134,11 @@ This research plan maps each criterion in the Aragon Ownership Token Framework t
 | hyperliquid-python-sdk | https://github.com/hyperliquid-dex/hyperliquid-python-sdk | MIT | Open source |
 | hyperliquid-rust-sdk | https://github.com/hyperliquid-dex/hyperliquid-rust-sdk | MIT | Open source |
 | node | https://github.com/hyperliquid-dex/node | Apache-2.0 | Node setup (not core code) |
-| hyper-evm-lib | https://github.com/hyperliquid-dev/hyper-evm-lib | TBD | HyperEVM dev library |
 | contracts | https://github.com/hyperliquid-dex/contracts | TBD | Smart contracts |
 
 **Critical Gap:** The core L1 node code is NOT open source. The `node` repo contains setup instructions, not the actual consensus/execution code.
 
-### 1.3 Block Explorers and Dashboards
+### 2.3 Block Explorers and Dashboards
 
 | Resource | URL | Purpose |
 |----------|-----|---------|
@@ -57,22 +148,36 @@ This research plan maps each criterion in the Aragon Ownership Token Framework t
 | HypurrScan | https://hypurrscan.io/ | Community L1 explorer |
 | Owlscan | https://owlscan.org | L1 explorer with staking data |
 | HyperScan (Blockscout) | https://www.hyperscan.com/ | HyperEVM explorer |
-| HyperEVMScan | https://hyperevmscan.io/ | Alternative EVM explorer |
 | DefiLlama | https://defillama.com/protocol/hyperliquid | TVL and protocol stats |
 | DefiLlama Unlocks | https://defillama.com/unlocks/hyperliquid | Token unlock schedule |
 
-### 1.4 Token Contracts and Addresses
+### 2.4 Privileged Addresses (Known)
 
-| Asset | Address | Network |
-|-------|---------|---------|
-| HYPE on HyperCore | Native token | Hyperliquid L1 |
-| HYPE System Contract (HyperEVM) | 0x2222222222222222222222222222222222222222 | HyperEVM |
-| HYPE on Ethereum | 0xA477BE503f3D608f8688f3Cd66b56Af0F2Cf0509 | Ethereum |
-| Assistance Fund | 0xfefefefefefefefefefefefefefefefefefefefe | Hyperliquid L1 |
-| CoreWriter | 0x3333333333333333333333333333333333333333 | HyperEVM |
-| Bridge2 (Arbitrum) | 0x2df1c51e09aecf9cacb7bc98cb1742757f163df7 | Arbitrum One |
+| Role | Address | Network | Source |
+|------|---------|---------|--------|
+| HYPE Native Token | Native asset | Hyperliquid L1 | Protocol |
+| WHYPE Contract | 0x5555555555555555555555555555555555555555 | HyperEVM | Docs |
+| CoreWriter | 0x3333333333333333333333333333333333333333 | HyperEVM | Docs |
+| Assistance Fund | 0xfefefefefefefefefefefefefefefefefefefefe | Hyperliquid L1 | Docs |
+| Bridge2 (Arbitrum) | 0x2df1c51e09aecf9cacb7bc98cb1742757f163df7 | Arbitrum One | Docs |
+| Broadcaster 1 | 0x1e9b90ab34427807dc25c7266beb188e86af7ed6 | L1 | RE Analysis |
+| Broadcaster 2 | 0x2d9d6ae54b069fd372401b71dc4843d85babe3ea | L1 | RE Analysis |
+| Broadcaster 3 | 0x67e451964e0421f6e7d07be784f35c530667c2b3 | L1 | RE Analysis |
+| Broadcaster 4 | 0x76d335fbd515969ed5facf98611ca6e3ba87ff01 | L1 | RE Analysis |
+| Broadcaster 5 | 0x90eaf322d6e39adbdca7b632ec2436719a99fcd0 | L1 | RE Analysis |
+| Broadcaster 6 | 0x940e4f78cfb16e07e1e2ef0994e186bde7e6478c | L1 | RE Analysis |
+| Broadcaster 7 | 0xf70a9d9a56fe5c75815a9eae6a8593bc59cb6a06 | L1 | RE Analysis |
+| Broadcaster 8 | 0xffbb4dfc9455f0df2e973d7a371d8ad994264aa6 | L1 | RE Analysis |
 
-### 1.5 Legal and Corporate
+### 2.5 Third-Party Analysis Sources (Verified Accessible)
+
+| Resource | URL | Status |
+|----------|-----|--------|
+| Reverse Engineering Analysis | https://blog.can.ac/2025/12/20/reverse-engineering-hyperliquid/ | Verified accessible |
+| ASXN Buybacks | https://data.asxn.xyz/dashboard/hl-buybacks | Verify accessibility |
+| Tokenomist | https://tokenomist.ai/hyperliquid | Verified accessible |
+
+### 2.6 Legal and Corporate
 
 | Resource | URL | Purpose |
 |----------|-----|---------|
@@ -80,17 +185,129 @@ This research plan maps each criterion in the Aragon Ownership Token Framework t
 | Terms of Service | https://app.hyperliquid.xyz/terms | Legal terms |
 | USPTO Trademark | https://uspto.report/TM/99599981 | HYPERLIQUID trademark |
 
-### 1.6 Analytics and Data Sources
+---
 
-| Resource | URL | Purpose |
-|----------|-----|---------|
-| Tokenomist | https://tokenomist.ai/hyperliquid | Tokenomics analysis |
-| DropsTab Vesting | https://dropstab.com/coins/hyperliquid/vesting | Vesting visualization |
-| ASXN Buybacks | https://data.asxn.xyz/dashboard/hl-buybacks | Buyback tracking |
+## Part 3: Specific Functions to Investigate
+
+### 3.1 Governance Action Types (VoteGlobalAction Variants)
+
+Per reverse engineering analysis, 89 governance action variants exist. Key ones to investigate:
+
+| Action | Code | Description | Risk Level |
+|--------|------|-------------|------------|
+| `FreezeChain` | 0x20 | Halts chain permanently at specified height | Critical |
+| `QuarantineUser` | 0x1A | Freezes user account permanently | Critical |
+| `ModifyBroadcaster` | 0x26 | Changes broadcaster whitelist | Critical |
+| `SetOracle` | variant 2 | Arbitrary price manipulation | Critical |
+| `AllowedBridgeValidators` | TBD | Replace bridge validator set | Critical |
+| `invalidateWithdrawals` | case 7 | Cancel pending withdrawals | Critical |
+| `SetBole` | 0x50 | Configure lending protocol | High |
+| `OverrideMaxSignedDistancesFromOracle` | TBD | Override oracle constraints | High |
+| `TestnetSetYesterdayUserVlm` | 0x57 | Retroactive volume manipulation | Medium |
+
+### 3.2 CoreWriter Capabilities (Alleged)
+
+Per reverse engineering analysis, CoreWriter allegedly can:
+- Mint tokens arbitrarily
+- Transfer user funds without signatures
+- Crash validators
+- Execute arbitrary state modifications
+
+**Investigation approach:**
+1. Review official CoreWriter documentation
+2. Compare claims against official docs
+3. Check if CoreWriter is called by governance or operates independently
+4. Document any safeguards or constraints
+
+### 3.3 WHYPE Contract Functions
+
+The WHYPE contract is documented as immutable with WETH-equivalent code:
+
+| Function | Purpose | Admin? |
+|----------|---------|--------|
+| `deposit()` | Wrap native HYPE | No |
+| `withdraw(uint)` | Unwrap WHYPE | No |
+| `fallback()` | Auto-deposit | No |
+| `transfer()` | ERC20 transfer | No |
+| `approve()` | ERC20 approve | No |
+
+**Expected result:** No admin functions (immutable contract)
+
+### 3.4 Bridge Contract Functions
+
+Bridge2 on Arbitrum (0x2df1c51e09aecf9cacb7bc98cb1742757f163df7):
+- Investigate for upgrade functions
+- Check owner/admin roles
+- Document withdrawal mechanisms
+- Check for pause/freeze functions
 
 ---
 
-## Part 2: Criteria-by-Criteria Research Plan
+## Part 4: Ownership Chain Investigation
+
+### 4.1 Ownership Chain Template
+
+For each privileged function, document:
+```
+Function → Direct Controller → Controller's Controller → ... → Ultimate Authority
+```
+
+### 4.2 Key Ownership Chains to Trace
+
+**Chain 1: Protocol Upgrades**
+```
+L1 Code → ? → ?
+HyperEVM Contracts → ? → ?
+```
+Investigation: How are L1 upgrades deployed? Who authorizes them?
+
+**Chain 2: Token Supply**
+```
+HYPE Minting → Staking Rewards → Emission Schedule (programmatic?)
+HYPE Minting → ? → If any other minting path exists
+```
+Investigation: Is all minting programmatic or can governance mint?
+
+**Chain 3: Emergency Powers**
+```
+FreezeChain → VoteGlobalAction → Validator Consensus (>2/3 stake)
+QuarantineUser → VoteGlobalAction → Validator Consensus (>2/3 stake)
+invalidateWithdrawals → VoteGlobalAction → Validator Consensus (>2/3 stake)
+```
+Investigation: Confirm this chain. Are there bypasses?
+
+**Chain 4: Fee Parameters**
+```
+Trading Fees → ? → Fee Router → HLP / Assistance Fund
+Fee Rates → ? → Governance?
+```
+Investigation: Who controls fee parameters?
+
+**Chain 5: Broadcaster Control**
+```
+Transaction Submission → Broadcaster Whitelist → ModifyBroadcaster → Validator Consensus
+```
+Investigation: Can broadcasters censor transactions? What's the governance path?
+
+**Chain 6: Bridge Control**
+```
+Bridge Withdrawals → Bridge Validators → AllowedBridgeValidators → Validator Consensus
+```
+Investigation: Can bridge validators block withdrawals? What constraints exist?
+
+### 4.3 Ownership Chain Documentation Format
+
+For each chain, document:
+1. **Function:** What action is being controlled
+2. **Direct controller:** The immediate entity that can execute
+3. **Control path:** Full chain to ultimate authority
+4. **Evidence:** API queries, documentation, or onchain data proving the chain
+5. **Bypasses:** Any alternative paths that skip the chain
+6. **Constraints:** Timelocks, quorums, or other limitations
+
+---
+
+## Part 5: Criteria-by-Criteria Research Plan
 
 ### Metric 1: Onchain Control
 
@@ -98,32 +315,37 @@ This research plan maps each criterion in the Aragon Ownership Token Framework t
 
 **Question:** Does an onchain process exist that grants tokenholders ultimate authority over protocol decisions?
 
-**Investigation Approach:**
-1. Document the governance mechanism — validator voting via HyperBFT consensus
-2. Identify what decisions are subject to validator votes (HIPs, parameter changes, validator jailing)
-3. Determine the relationship between HYPE staking and voting power
-4. Compare to traditional tokenholder governance (direct voting vs. delegated stake)
+**Investigation Steps:**
+1. Query `validatorSummaries` to enumerate all validators
+2. Query validator governance documentation
+3. Document the HyperBFT consensus mechanism
+4. Identify all decisions subject to validator voting (HIPs, parameters, jailing)
+5. Trace: HYPE stake → delegation → validator vote → execution
 
-**Sources:**
-- Staking documentation: https://hyperliquid.gitbook.io/hyperliquid-docs/hypercore/staking
-- HIP-3 documentation: https://phantom.com/learn/crypto-101/hyperliquid-hip-3
-- Validator performance dashboard: https://app.hyperliquid.xyz/staking/validatorPerformance
-- Recent governance votes (USDH ticker vote, Assistance Fund burn vote)
+**API Queries:**
+```bash
+# Get all validators
+curl -X POST -H "Content-Type: application/json" \
+  -d '{"type": "validatorSummaries"}' \
+  https://api.hyperliquid.xyz/info
+
+# Check staking for Foundation/team addresses
+curl -X POST -H "Content-Type: application/json" \
+  -d '{"type": "delegations", "user": "<FOUNDATION_ADDRESS>"}' \
+  https://api.hyperliquid.xyz/info
+```
+
+**Completeness Criteria:**
+- [ ] All validators enumerated with stakes
+- [ ] Governance mechanism documented (how votes work)
+- [ ] At least 3 example governance decisions documented
+- [ ] Relationship between stake and vote weight confirmed
+- [ ] Any bypass paths identified
 
 **Evidence Required:**
-- Documentation of the validator voting process
-- Evidence of past governance votes and their execution
-- Clear chain from HYPE stake → validator delegation → vote weight → execution
-
-**Gaps/Risks:**
-- **Critical:** Governance is validator-based, not direct tokenholder voting. Stakers delegate to validators who vote on their behalf, creating a layer of indirection.
-- Need to determine if validators can vote against staker interests without recourse
-- Unclear if any actions bypass validator voting entirely
-
-**Sufficiency Standard:**
-- ✅ if validators vote onchain and stakers can redelegate to change voting outcomes
-- ⚠️ if validator voting exists but stakers have limited control over validator votes
-- ❌ if protocol decisions are made by team/foundation without validator input
+- Validator list with stake distribution
+- Documentation of governance voting process
+- Historical governance votes with execution evidence
 
 ---
 
@@ -131,31 +353,32 @@ This research plan maps each criterion in the Aragon Ownership Token Framework t
 
 **Question:** Are all privileged or value-impacting roles governed, revocable, and accountable to tokenholders?
 
-**Investigation Approach:**
-1. Identify all privileged roles in the system (Foundation, team, validators, broadcasters)
-2. Determine how each role is appointed and can be removed
-3. Document the "8 broadcasters" claim and CoreWriter permissions
-4. Investigate validator jailing mechanism and who controls it
+**Investigation Steps:**
+1. Enumerate all 8 broadcaster addresses (from 2.4)
+2. Query for any additional privileged addresses
+3. Document CoreWriter permissions
+4. Document validator jailing mechanism
+5. For each role: document appointment, revocation, and constraints
 
-**Sources:**
-- Staking documentation (validator jailing): https://hyperliquid.gitbook.io/hyperliquid-docs/hypercore/staking
-- CoreWriter documentation: HyperEVM docs
-- Reverse engineering analysis: https://blog.can.ac/2025/12/20/reverse-engineering-hyperliquid/
+**Privileged Roles to Investigate:**
 
-**Evidence Required:**
-- List of all privileged addresses/roles with their permissions
-- Documentation of how each role can be revoked
-- Evidence that validators can jail peers through consensus
+| Role | Known Addresses | Permissions | Revocable? |
+|------|-----------------|-------------|------------|
+| Broadcasters | 8 addresses (see 2.4) | Transaction submission | Via ModifyBroadcaster |
+| CoreWriter | 0x333...333 | See 3.2 | Unknown |
+| Oracle Updater | Unknown | Price feeds | Unknown |
+| Liquidators | Unknown (whitelist) | Execute liquidations | Unknown |
+| Bridge Validators | Unknown | Bridge operations | Via AllowedBridgeValidators |
+| Emergency Admin | Unknown | FreezeChain, QuarantineUser | Unknown |
 
-**Gaps/Risks:**
-- **Critical:** The "CoreWriter godmode" claim needs investigation — can it mint tokens or move funds?
-- "8 broadcaster addresses" claim — are all transactions routed through trusted parties?
-- Foundation's role and whether it can act outside validator consensus
-
-**Sufficiency Standard:**
-- ✅ if all roles are validator-elected/revocable with documented permissions
-- ⚠️ if some roles (Foundation, broadcasters) have non-revocable powers but are constrained
-- ❌ if privileged parties can act unilaterally without validator approval
+**Completeness Criteria:**
+- [ ] All 8 broadcaster addresses verified
+- [ ] CoreWriter permissions documented
+- [ ] Oracle updater address identified
+- [ ] Liquidator whitelist investigated
+- [ ] Bridge validator set identified
+- [ ] For each role: appointment mechanism documented
+- [ ] For each role: revocation mechanism documented
 
 ---
 
@@ -163,31 +386,24 @@ This research plan maps each criterion in the Aragon Ownership Token Framework t
 
 **Question:** Can core protocol logic be upgraded and is it controlled by tokenholders?
 
-**Investigation Approach:**
-1. Document how HyperCore (L1) is upgraded
-2. Document how HyperEVM contracts are upgraded
-3. Determine who controls upgrade keys and timelock (if any)
-4. Compare to other L1s (Ethereum, Solana) for context
+**Investigation Steps:**
+1. Document L1 upgrade mechanism (validator software updates)
+2. Check HyperEVM contracts for proxy patterns
+3. Query WHYPE contract to confirm immutability
+4. Investigate bridge contract upgradeability
 
-**Sources:**
-- Node repository: https://github.com/hyperliquid-dex/node
-- L1 documentation: https://hyperliquid.gitbook.io/hyperliquid-docs/technical-overview/hyperliquid-l1
-- Validator documentation
+**Ownership Chain:**
+```
+L1 Code Upgrade → Validator software update → Voluntary validator adoption?
+HyperEVM Contract Upgrade → Proxy pattern? → Admin? → ?
+```
 
-**Evidence Required:**
-- Documentation of the upgrade process for the L1
-- Evidence of past upgrades and how they were approved
-- Any timelock or delay mechanisms
-
-**Gaps/Risks:**
-- **Critical:** L1 node code is closed source — cannot verify upgrade mechanisms from code
-- Unclear if L1 upgrades require validator consensus or are pushed by team
-- HyperEVM upgrades may differ from HyperCore upgrades
-
-**Sufficiency Standard:**
-- ✅ if upgrades require validator supermajority and have documented process
-- ⚠️ if upgrade process exists but is not fully transparent
-- ❌ if team can push upgrades without validator approval
+**Completeness Criteria:**
+- [ ] L1 upgrade mechanism documented
+- [ ] HyperEVM contract upgradeability checked
+- [ ] WHYPE confirmed immutable
+- [ ] Bridge contract upgradeability documented
+- [ ] Full upgrade authority chain documented
 
 ---
 
@@ -195,31 +411,19 @@ This research plan maps each criterion in the Aragon Ownership Token Framework t
 
 **Question:** Can token behavior be modified and is it controlled by tokenholder governance?
 
-**Investigation Approach:**
-1. Examine HYPE token implementation on HyperCore (native token)
-2. Examine HYPE token contract on Ethereum (0xA477BE503f3D608f8688f3Cd66b56Af0F2Cf0509)
-3. Determine if the native token has admin functions
-4. Check for proxy patterns or upgrade paths
+**Investigation Steps:**
+1. Confirm native HYPE is part of L1 protocol (not a contract)
+2. Verify WHYPE is immutable
+3. Check for any proxy patterns on token-related contracts
 
-**Sources:**
-- Ethereum HYPE contract: https://etherscan.io/address/0xa477be503f3d608f8688f3cd66b56af0f2cf0509
-- System contract documentation: HyperEVM docs
-- Bridge documentation
+**Key Finding:**
+- Native HYPE: Part of L1 protocol, changes require L1 upgrade
+- WHYPE: Immutable (per official docs, same code as WETH)
 
-**Evidence Required:**
-- HYPE token contract source code (Ethereum version)
-- Documentation of native HYPE token behavior
-- Evidence of any admin/upgrade functions
-
-**Gaps/Risks:**
-- **Critical:** Native HYPE on L1 cannot be verified from source code (closed source L1)
-- Bridged HYPE on Ethereum may have different properties than native HYPE
-- Need to verify the bridge's upgrade authority
-
-**Sufficiency Standard:**
-- ✅ if token is immutable or upgrades require validator consensus
-- ⚠️ if token is upgradeable but controlled by governance
-- ❌ if token can be upgraded by team/admin without governance
+**Completeness Criteria:**
+- [ ] Native HYPE modification path documented
+- [ ] WHYPE immutability verified via Blockscout
+- [ ] Any other HYPE representations checked
 
 ---
 
@@ -227,33 +431,31 @@ This research plan maps each criterion in the Aragon Ownership Token Framework t
 
 **Question:** Are token supply changes programmatic or subject to tokenholder governance?
 
-**Investigation Approach:**
-1. Document the total supply and emission schedule
-2. Identify all minting mechanisms (staking rewards, future emissions)
-3. Determine who controls the emission parameters
-4. Investigate the Assistance Fund burn mechanism
+**Investigation Steps:**
+1. Document total supply cap (1 billion)
+2. Query emission schedule from staking docs
+3. Verify emission formula: `rate ∝ 1/√(total_staked)`
+4. Document Assistance Fund burn mechanism
+5. Check if governance can change emission parameters
 
-**Sources:**
-- Tokenomist: https://tokenomist.ai/hyperliquid
-- DefiLlama unlocks: https://defillama.com/unlocks/hyperliquid
-- Staking documentation (rewards formula)
-- Assistance Fund documentation
+**API Queries:**
+```bash
+# Get HYPE token details
+curl -X POST -H "Content-Type: application/json" \
+  -d '{"type": "tokenDetails", "tokenId": "HYPE"}' \
+  https://api.hyperliquid.xyz/info
 
-**Evidence Required:**
-- Total supply cap documentation (1 billion HYPE)
-- Emission schedule and formula
-- Evidence of burn mechanism execution
-- Documentation of who can change emission parameters
+# Check Assistance Fund activity
+# (investigate explorer for burn transactions)
+```
 
-**Gaps/Risks:**
-- Emission schedule is documented but need to verify it's enforced programmatically
-- The Assistance Fund burn mechanism needs verification — is it automatic or manual?
-- Team allocations and vesting need verification
-
-**Sufficiency Standard:**
-- ✅ if supply is capped and emissions are programmatic
-- ⚠️ if governance can change supply parameters
-- ❌ if team can mint tokens outside documented schedule
+**Completeness Criteria:**
+- [ ] Total supply cap documented with evidence
+- [ ] Current circulating supply documented
+- [ ] Emission schedule formula documented
+- [ ] All minting paths identified
+- [ ] Burn mechanism verified
+- [ ] Governance control over supply parameters documented
 
 ---
 
@@ -261,32 +463,29 @@ This research plan maps each criterion in the Aragon Ownership Token Framework t
 
 **Question:** Can any bounded actor set block or restrict economically meaningful protocol actions or exit paths?
 
-**Investigation Approach:**
-1. Document the 7-day unstaking queue — can it be extended or blocked?
-2. Investigate the "scheduled freeze" mechanism
-3. Determine if validators can halt trading or block withdrawals
-4. Review the JellyJelly incident response
+**Investigation Steps:**
+1. Document 7-day unstaking queue
+2. Investigate FreezeChain function
+3. Investigate QuarantineUser function
+4. Document invalidateWithdrawals function
+5. Review JellyJelly incident response
+6. Document broadcaster transaction censorship potential
 
-**Sources:**
-- Staking documentation (unstaking queue)
-- Reverse engineering analysis: https://blog.can.ac/2025/12/20/reverse-engineering-hyperliquid/
-- JellyJelly incident post-mortems
-- Terms of service
+**Key Functions to Investigate:**
 
-**Evidence Required:**
-- Documentation of all possible freeze/halt mechanisms
-- Evidence of past uses of emergency powers
-- Documentation of who controls emergency functions
+| Function | Can block exits? | Evidence |
+|----------|------------------|----------|
+| FreezeChain (0x20) | Yes (entire chain) | RE analysis |
+| QuarantineUser (0x1A) | Yes (specific user) | RE analysis |
+| invalidateWithdrawals (case 7) | Yes (pending withdrawals) | RE analysis |
+| 7-day unstaking queue | Time delay, not block | Official docs |
 
-**Gaps/Risks:**
-- **Critical:** The JellyJelly incident showed validators can freeze withdrawals and force-settle positions
-- "QuarantineUser" and "FreezeChain" functions allegedly leave no ledger entries
-- Need to understand the full scope of emergency powers
-
-**Sufficiency Standard:**
-- ✅ if no privileged parties can block user exit
-- ⚠️ if emergency powers exist but are constrained and transparent
-- ❌ if arbitrary freeze/block powers exist without governance approval
+**Completeness Criteria:**
+- [ ] All exit paths enumerated (unstaking, bridge, trading)
+- [ ] All blocking mechanisms identified
+- [ ] Authorization for each blocking mechanism documented
+- [ ] JellyJelly incident analyzed as precedent
+- [ ] Unstaking queue confirmed as only standard delay
 
 ---
 
@@ -294,31 +493,18 @@ This research plan maps each criterion in the Aragon Ownership Token Framework t
 
 **Question:** Can any roles freeze, blacklist, seize, or censor token balances or transfers?
 
-**Investigation Approach:**
-1. Check HYPE token contract for blacklist/freeze functions
-2. Investigate reports of address flagging based on third-party tools
-3. Review Terms of Service for censorship clauses
-4. Compare native HYPE vs. bridged HYPE censorship capabilities
+**Investigation Steps:**
+1. Query WHYPE contract for blacklist/freeze functions
+2. Investigate QuarantineUser effect on token balances
+3. Review user reports of address flagging
+4. Compare native HYPE vs WHYPE censorship capabilities
 
-**Sources:**
-- Ethereum HYPE contract source
-- User reports of flagged addresses
-- Terms of service: https://app.hyperliquid.xyz/terms
-
-**Evidence Required:**
-- HYPE token contract analysis (Ethereum)
-- Documentation of any blacklist mechanisms on L1
-- Evidence of addresses being blocked or assets frozen
-
-**Gaps/Risks:**
-- **Critical:** User reports indicate addresses can be flagged based on third-party risk tools
-- Need to distinguish between exchange-level restrictions and token-level restrictions
-- Cannot verify L1 token implementation without source code
-
-**Sufficiency Standard:**
-- ✅ if no freeze/blacklist functions exist in token contract
-- ⚠️ if exchange can restrict accounts but token transfers are unrestricted
-- ❌ if token-level censorship is possible
+**Completeness Criteria:**
+- [ ] WHYPE contract analyzed for censorship functions
+- [ ] QuarantineUser effect on tokens documented
+- [ ] Native HYPE transfer restrictions documented
+- [ ] User flagging mechanism documented
+- [ ] Distinction between exchange-level and token-level restrictions clarified
 
 ---
 
@@ -328,32 +514,34 @@ This research plan maps each criterion in the Aragon Ownership Token Framework t
 
 **Question:** Are value flows to tokenholders currently active rather than theoretical?
 
-**Investigation Approach:**
-1. Document the Assistance Fund buyback mechanism
-2. Verify buyback activity through onchain data
-3. Document staking rewards and their current rates
-4. Calculate total value accrued to HYPE holders over time
+**Investigation Steps:**
+1. Query Assistance Fund balance and transaction history
+2. Calculate historical buyback volumes
+3. Document burn verification
+4. Query current staking APY
 
-**Sources:**
-- ASXN Buybacks dashboard: https://data.asxn.xyz/dashboard/hl-buybacks
-- Assistance Fund address activity
-- Staking APY data from explorers
-- DefiLlama revenue data: https://defillama.com/protocol/hyperliquid
+**API Queries:**
+```bash
+# Get staking rewards for sample address
+curl -X POST -H "Content-Type: application/json" \
+  -d '{"type": "delegatorRewards", "user": "0x..."}' \
+  https://api.hyperliquid.xyz/info
+```
 
-**Evidence Required:**
-- Historical buyback volumes and burn amounts
-- Current staking APY
-- Revenue breakdown (trading fees, HIP-1 auctions, spot fees)
+**Value Accrual Mechanisms:**
 
-**Gaps/Risks:**
-- Need to verify buybacks are actually burned vs. accumulated
-- Staking rewards come from emissions, not protocol revenue (dilutive)
-- Fee distribution percentages are not precisely documented
+| Mechanism | Type | Status | Verification |
+|-----------|------|--------|--------------|
+| Assistance Fund buyback | Non-dilutive | Active | Check ASXN dashboard |
+| HYPE burn | Non-dilutive | Active | Verify burn transactions |
+| Staking rewards | Dilutive (emissions) | Active | Query API |
 
-**Sufficiency Standard:**
-- ✅ if measurable, ongoing value flows to HYPE holders exist
-- ⚠️ if value accrual is active but primarily through dilutive emissions
-- ❌ if value accrual is theoretical or not yet active
+**Completeness Criteria:**
+- [ ] Buyback activity verified with transaction data
+- [ ] Burn mechanism verified with burn transactions
+- [ ] Current staking APY documented
+- [ ] Total value accrued historically calculated
+- [ ] Dilutive vs non-dilutive clearly distinguished
 
 ---
 
@@ -361,30 +549,24 @@ This research plan maps each criterion in the Aragon Ownership Token Framework t
 
 **Question:** Are protocol treasury assets programmatically controlled by tokenholder governance?
 
-**Investigation Approach:**
-1. Identify all treasury addresses (Assistance Fund, Foundation, etc.)
+**Investigation Steps:**
+1. Identify all treasury addresses
 2. Document governance over each treasury
-3. Determine if treasuries can be accessed without governance approval
+3. Query Assistance Fund mechanism (programmatic vs manual)
 
-**Sources:**
-- Assistance Fund address: 0xfefefefefefefefefefefefefefefefefefefefe
-- Hyper Foundation communications
-- Governance proposals related to treasury
+**Treasury Addresses to Investigate:**
 
-**Evidence Required:**
-- List of all treasury addresses with balances
-- Documentation of governance control over each
-- Evidence of past treasury actions and their governance process
+| Treasury | Address | Control |
+|----------|---------|---------|
+| Assistance Fund | 0xfefe...fefe | Investigate |
+| Foundation holdings | Unknown | Investigate |
+| Team vesting | Unknown | Vesting contracts |
 
-**Gaps/Risks:**
-- Hyper Foundation holds significant tokens — unclear governance relationship
-- Assistance Fund may be automated (programmatic) rather than governance-controlled
-- Team allocations are in vesting, not treasury per se
-
-**Sufficiency Standard:**
-- ✅ if all treasuries require validator governance approval
-- ⚠️ if some treasuries are automated/programmatic
-- ❌ if Foundation/team can access treasury without governance
+**Completeness Criteria:**
+- [ ] All treasury addresses identified
+- [ ] Assistance Fund control mechanism documented
+- [ ] Foundation holdings documented
+- [ ] For each treasury: governance control verified
 
 ---
 
@@ -392,30 +574,16 @@ This research plan maps each criterion in the Aragon Ownership Token Framework t
 
 **Question:** Can tokenholders modify parameters governing value capture?
 
-**Investigation Approach:**
-1. Document all fee parameters and their governance
-2. Determine if fee split (HLP vs. Assistance Fund) can be changed
-3. Investigate HIP-3 deployer fee controls
+**Investigation Steps:**
+1. Document fee split parameters (HLP vs Assistance Fund)
+2. Check if fee parameters are governance-controlled
+3. Document HIP-3 deployer fee controls
 
-**Sources:**
-- Fees documentation: https://hyperliquid.gitbook.io/hyperliquid-docs/trading/fees
-- HIP-3 documentation
-- Governance proposals
-
-**Evidence Required:**
-- Documentation of which fee parameters are governance-controlled
-- Evidence of past fee parameter changes
-- Deployer fee configuration options
-
-**Gaps/Risks:**
-- Fee structure may be hardcoded rather than governance-controlled
-- Unclear if validators can change the 97% AF / 3% HLP split
-- Deployer fees are individually set, not governance-controlled
-
-**Sufficiency Standard:**
-- ✅ if fee parameters are validator-governance controlled
-- ⚠️ if some parameters are hardcoded but key ones are changeable
-- ❌ if fee structure cannot be changed by governance
+**Completeness Criteria:**
+- [ ] Fee split percentages documented
+- [ ] Governance control over fee parameters documented
+- [ ] Deployer fee mechanism documented
+- [ ] Any hardcoded vs configurable parameters distinguished
 
 ---
 
@@ -423,28 +591,15 @@ This research plan maps each criterion in the Aragon Ownership Token Framework t
 
 **Question:** Are there additional offchain value accrual flows that benefit tokenholders?
 
-**Investigation Approach:**
-1. Investigate any legal entity ownership structures
-2. Review Hyper Foundation's relationship to token holders
-3. Document any IP or brand licensing arrangements
+**Investigation Steps:**
+1. Review Hyper Foundation structure
+2. Check for any revenue sharing arrangements
+3. Document IP ownership
 
-**Sources:**
-- Hyper Foundation website
-- Legal documentation
-- Corporate filings
-
-**Evidence Required:**
-- Documentation of any offchain value flows
-- Legal entity structure and token holder relationship
-
-**Gaps/Risks:**
-- Hyper Foundation appears independent from token holder governance
-- No evidence of offchain revenue sharing arrangements
-
-**Sufficiency Standard:**
-- ✅ if documented offchain value flows exist with tokenholder control
-- TBD if no offchain value accrual has been verified
-- ❌ if offchain value is captured by entities outside tokenholder control
+**Completeness Criteria:**
+- [ ] Foundation relationship to tokenholders documented
+- [ ] Any offchain revenue streams identified
+- [ ] IP ownership documented
 
 ---
 
@@ -454,30 +609,23 @@ This research plan maps each criterion in the Aragon Ownership Token Framework t
 
 **Question:** Is the token contract source publicly available and verifiable?
 
-**Investigation Approach:**
-1. Verify HYPE contract on Ethereum (Etherscan)
-2. Document native HYPE on L1 — what can be verified?
-3. Check HyperEVM system contract verification
+**Investigation Steps:**
+1. Check WHYPE on HyperScan (Blockscout)
+2. Verify WHYPE matches WETH source
+3. Document native HYPE verification limitations
 
-**Sources:**
-- Etherscan: https://etherscan.io/address/0xa477be503f3d608f8688f3cd66b56af0f2cf0509
-- HyperScan (Blockscout): https://www.hyperscan.com/
-- GitHub contracts repo
+**Verification Status:**
 
-**Evidence Required:**
-- Verified source code on Etherscan (Ethereum HYPE)
-- Documentation of native HYPE implementation
-- System contract verification on HyperEVM
+| Token | Network | Verified? | Source |
+|-------|---------|-----------|--------|
+| Native HYPE | L1 | Cannot verify (L1 closed) | - |
+| WHYPE | HyperEVM | Check Blockscout | WETH clone |
+| Bridged HYPE | Ethereum | Check Etherscan | Unknown |
 
-**Gaps/Risks:**
-- **Critical:** Native HYPE on L1 cannot be source-verified — L1 is closed source
-- Bridged HYPE properties may differ from native HYPE
-- System contracts on HyperEVM may or may not be verified
-
-**Sufficiency Standard:**
-- ✅ if all HYPE implementations are source-verified
-- ⚠️ if Ethereum HYPE is verified but native HYPE cannot be verified
-- ❌ if no HYPE implementation is verifiable
+**Completeness Criteria:**
+- [ ] WHYPE verification status confirmed
+- [ ] Bridged HYPE verification status confirmed
+- [ ] Native HYPE verification limitations documented
 
 ---
 
@@ -485,30 +633,26 @@ This research plan maps each criterion in the Aragon Ownership Token Framework t
 
 **Question:** Are core protocol contracts publicly accessible and verifiable?
 
-**Investigation Approach:**
-1. Inventory all Hyperliquid code repositories
-2. Determine what is open source vs. closed source
-3. Verify deployed contracts against source where possible
+**Investigation Steps:**
+1. Inventory all public repositories
+2. Document what is open source vs closed source
+3. Verify HyperEVM contracts where possible
 
-**Sources:**
-- GitHub organization: https://github.com/hyperliquid-dex
-- HyperEVM contract verification on HyperScan
-- Node documentation
+**Open Source Status:**
 
-**Evidence Required:**
-- List of all public repositories and their scope
-- Evidence of which core components are open source
-- Verification of deployed contracts against source
+| Component | Status | Repository |
+|-----------|--------|------------|
+| L1 node code | Closed source | - |
+| Python SDK | Open source (MIT) | hyperliquid-dex/hyperliquid-python-sdk |
+| Rust SDK | Open source (MIT) | hyperliquid-dex/hyperliquid-rust-sdk |
+| Node setup | Open source (Apache-2.0) | hyperliquid-dex/node |
+| WHYPE contract | Open source (WETH clone) | - |
 
-**Gaps/Risks:**
-- **Critical:** Core L1 node code is NOT open source
-- SDKs and periphery are open source but not the core
-- "Will be open sourced when stable" — timeline unknown
-
-**Sufficiency Standard:**
-- ✅ if core protocol contracts are verified and open source
-- ⚠️ if periphery is open source but core is closed
-- ❌ if core protocol cannot be verified from source
+**Completeness Criteria:**
+- [ ] All repositories inventoried
+- [ ] Each component's open source status documented
+- [ ] HyperEVM contract verification checked
+- [ ] L1 closed source limitation clearly documented
 
 ---
 
@@ -518,33 +662,26 @@ This research plan maps each criterion in the Aragon Ownership Token Framework t
 
 **Question:** Does a single actor or coordinated group control a majority of voting supply?
 
-**Investigation Approach:**
-1. Analyze top HYPE holders and their affiliations
-2. Calculate Foundation + team + investor concentration
-3. Analyze validator stake concentration
-4. Determine effective voting power distribution
+**Investigation Steps:**
+1. Query top HYPE holders via explorer
+2. Calculate team + Foundation concentration
+3. Query validator stake distribution
+4. Identify any coordinated voting blocs
 
-**Sources:**
-- Block explorers (top holders)
-- Tokenomist distribution data
-- Validator staking dashboard
-- Team/Foundation disclosures
+**API Queries:**
+```bash
+# Get validator summaries to see stake distribution
+curl -X POST -H "Content-Type: application/json" \
+  -d '{"type": "validatorSummaries"}' \
+  https://api.hyperliquid.xyz/info
+```
 
-**Evidence Required:**
-- Top 10 HYPE holder addresses with identification where possible
-- Team + Foundation total holdings
-- Validator stake distribution (top validators' share)
-
-**Gaps/Risks:**
-- Team holds ~23.8% of total supply
-- Foundation holdings are separate and significant
-- Validator concentration may differ from token holder concentration
-- Cannot verify if large holders are independent or coordinated
-
-**Sufficiency Standard:**
-- ✅ if no single entity controls >50% of voting power
-- ⚠️ if concentration exists but is documented
-- ❌ if team/Foundation can unilaterally control governance
+**Completeness Criteria:**
+- [ ] Top 10 HYPE holders identified
+- [ ] Team holdings calculated (~23.8% documented)
+- [ ] Foundation holdings calculated
+- [ ] Validator stake concentration calculated
+- [ ] Any >10% holders flagged
 
 ---
 
@@ -552,30 +689,16 @@ This research plan maps each criterion in the Aragon Ownership Token Framework t
 
 **Question:** Are there known future events that will materially affect concentration?
 
-**Investigation Approach:**
-1. Document the full vesting schedule
-2. Identify major unlock events
-3. Calculate impact on circulating supply
+**Investigation Steps:**
+1. Document full vesting schedule from DefiLlama/Tokenomist
+2. Calculate monthly unlock amounts
+3. Document burn rate vs emission rate
 
-**Sources:**
-- DefiLlama unlocks: https://defillama.com/unlocks/hyperliquid
-- Tokenomist: https://tokenomist.ai/hyperliquid
-- DropsTab: https://dropstab.com/coins/hyperliquid/vesting
-
-**Evidence Required:**
-- Full vesting schedule with dates and amounts
-- Monthly unlock schedule (1.2M HYPE/month to team)
-- Community emissions schedule
-
-**Gaps/Risks:**
-- Team unlocks are ongoing (~1.2M HYPE/month through 2028)
-- Community emissions add to supply
-- Burns from Assistance Fund partially offset inflation
-
-**Sufficiency Standard:**
-- ✅ if unlock schedule is transparent and documented
-- ⚠️ if significant unlocks exist but are predictable
-- ❌ if unlock schedule is unclear or hidden
+**Completeness Criteria:**
+- [ ] Full vesting schedule documented
+- [ ] Major unlock events identified
+- [ ] Monthly unlock rate calculated
+- [ ] Net inflation/deflation estimated
 
 ---
 
@@ -585,29 +708,15 @@ This research plan maps each criterion in the Aragon Ownership Token Framework t
 
 **Question:** Are core trademarks owned by a tokenholder-controlled entity?
 
-**Investigation Approach:**
-1. Search USPTO for HYPERLIQUID trademarks
-2. Identify the registrant entity
-3. Determine relationship to token holders
+**Investigation Steps:**
+1. Search USPTO for HYPERLIQUID trademark
+2. Identify registrant entity
+3. Document relationship to tokenholders
 
-**Sources:**
-- USPTO: https://uspto.report/TM/99599981
-- Hyper Foundation corporate filings
-
-**Evidence Required:**
-- Trademark registration details
-- Registrant entity information
-- Governance relationship documentation
-
-**Gaps/Risks:**
-- Trademark is held by Hyper Foundation
-- Foundation governance relationship to HYPE holders is unclear
-- No evidence Foundation is tokenholder-controlled
-
-**Sufficiency Standard:**
-- ✅ if trademark is held by tokenholder-governed entity
-- ⚠️ if trademark is held by Foundation without clear tokenholder control
-- ❌ if trademark is held by unrelated party
+**Completeness Criteria:**
+- [ ] All relevant trademarks identified
+- [ ] Registrant entity documented
+- [ ] Governance relationship to tokenholders assessed
 
 ---
 
@@ -615,30 +724,15 @@ This research plan maps each criterion in the Aragon Ownership Token Framework t
 
 **Question:** Are primary domains and distribution assets controlled by a tokenholder-controlled entity?
 
-**Investigation Approach:**
-1. Identify who controls hyperliquid.xyz domain
-2. Review Terms of Service for contracting party
-3. Identify hosting and infrastructure controllers
+**Investigation Steps:**
+1. Check domain registration for hyperliquid.xyz
+2. Review Terms of Service contracting party
+3. Document infrastructure control
 
-**Sources:**
-- Terms of Service: https://app.hyperliquid.xyz/terms
-- Domain WHOIS records
-- Foundation documentation
-
-**Evidence Required:**
-- Domain registration details
-- Terms of Service contracting party
-- Infrastructure control documentation
-
-**Gaps/Risks:**
-- Terms likely identify Hyper Foundation or team as contracting party
-- Domain control is typically with team/Foundation
-- No evidence of tokenholder control over distribution
-
-**Sufficiency Standard:**
-- ✅ if domains/distribution controlled by tokenholder entity
-- ⚠️ if controlled by Foundation without clear tokenholder governance
-- ❌ if controlled by unrelated entity
+**Completeness Criteria:**
+- [ ] Domain ownership documented
+- [ ] ToS contracting party documented
+- [ ] Infrastructure control assessed
 
 ---
 
@@ -646,149 +740,153 @@ This research plan maps each criterion in the Aragon Ownership Token Framework t
 
 **Question:** Is core protocol software/IP controlled by a tokenholder-controlled entity?
 
-**Investigation Approach:**
-1. Document licenses of all public repositories
-2. Identify IP ownership for closed-source components
-3. Determine Foundation's role in IP
+**Investigation Steps:**
+1. Document licenses of all public repos
+2. Investigate IP ownership for closed-source components
+3. Document Foundation's role in IP
 
-**Sources:**
-- GitHub repository licenses
-- Foundation documentation
-- Corporate filings
-
-**Evidence Required:**
-- License for each repository
-- IP ownership documentation
-- Foundation governance structure
-
-**Gaps/Risks:**
-- **Critical:** Core L1 is closed source — IP ownership unclear
-- SDKs use MIT license (permissive)
-- No evidence of tokenholder control over core IP
-
-**Sufficiency Standard:**
-- ✅ if IP is owned by tokenholder-governed entity or fully open source
-- ⚠️ if some IP is open source but core is proprietary
-- ❌ if core IP is proprietary with no tokenholder governance
+**Completeness Criteria:**
+- [ ] All repository licenses documented
+- [ ] Closed-source IP ownership investigated
+- [ ] Foundation IP control assessed
 
 ---
 
-## Part 3: Key Investigation Priorities
+## Part 6: Evidence Standards
 
-### Critical Issues Requiring Deep Investigation
+### 6.1 Evidence Categories
 
-1. **Validator Governance vs. Tokenholder Governance**
-   - Is delegated stake sufficient for "tokenholder control"?
-   - Can validators act against staker interests?
-   - What decisions require validator votes vs. team discretion?
+| Category | Purpose | Example |
+|----------|---------|---------|
+| Core | Proves the criterion assessment | Contract code showing no mint function |
+| Context | Provides background but not proof | Current staking APY |
+| Reference | Links to related information | Official documentation |
 
-2. **Emergency Powers and Censorship**
-   - Full scope of freeze/quarantine functions
-   - Who authorizes emergency actions?
-   - JellyJelly incident: precedent or exception?
+### 6.2 Evidence Format (per metrics.json)
 
-3. **Closed Source L1**
-   - What can be verified without source code?
-   - Are there alternative verification methods?
-   - Timeline for open sourcing
+```json
+{
+  "evidence": [
+    {
+      "name": "Evidence Item Name",
+      "summary": "Brief explanation of what this proves",
+      "urls": [
+        {
+          "name": "Link description",
+          "url": "https://...",
+          "type": "explorer|github|docs"
+        }
+      ]
+    }
+  ]
+}
+```
 
-4. **Value Accrual Mechanics**
-   - Exact fee distribution percentages
-   - Buyback vs. burn mechanics verification
-   - Staking rewards: emissions vs. revenue
+### 6.3 Evidence Sufficiency by Criterion
 
-5. **Foundation Governance**
-   - Relationship between Hyper Foundation and HYPE holders
-   - Foundation's control over key assets
-   - Can token holders influence Foundation decisions?
-
-### Areas Where Evidence May Not Exist
-
-1. **L1 Source Code** — Cannot verify core protocol without open sourcing
-2. **Foundation Governance** — May not have formal tokenholder control mechanisms
-3. **Emergency Function Documentation** — May be intentionally undocumented
-4. **Fee Split Parameters** — May not be publicly configurable
-
----
-
-## Part 4: Evidence Standards
-
-### What Constitutes Sufficient Evidence
-
-For each criterion, evidence should be:
-
-1. **Primary Source** — Documentation, code, or onchain data (not third-party analysis)
-2. **Verifiable** — Can be independently confirmed
-3. **Current** — Reflects current state (not historical or planned)
-4. **Complete** — Covers all relevant aspects of the criterion
-
-### Evidence Types by Category
-
-| Category | Preferred Evidence | Acceptable Evidence | Insufficient Evidence |
-|----------|-------------------|---------------------|----------------------|
-| Governance | Onchain vote records, contract code | Official documentation | Third-party analysis, team statements |
-| Supply | Contract code, explorer data | Official documentation | Tokenomics blog posts |
-| Fees | Contract code, onchain flows | Official documentation | Marketing materials |
-| Ownership | Contract verification, registry filings | Official statements | Speculation |
-| Legal | Official filings, contracts | Foundation statements | Third-party analysis |
+| Criterion | Sufficient Evidence | Insufficient Evidence |
+|-----------|---------------------|----------------------|
+| Governance Workflow | Onchain vote execution trace | Team announcement of governance |
+| Role Accountability | Contract code showing role permissions | Documentation without addresses |
+| Token Censorship | Contract verified with no freeze functions | Whitepaper claims |
+| Accrual Active | Transaction history showing burns | Announcement of burn mechanism |
+| Token Verification | Verified source on explorer | GitHub code without deployment link |
 
 ---
 
-## Part 5: Research Execution Checklist
+## Part 7: Key Risks and Gaps
+
+### 7.1 Critical Investigation Areas
+
+1. **CoreWriter Godmode Claims**
+   - Claims: Mint tokens, move funds, crash validators
+   - Hyperliquid response: "CoreWriter is documented, no such capabilities"
+   - Action: Verify against official CoreWriter documentation
+
+2. **Emergency Powers Scope**
+   - FreezeChain has no unfreeze (per RE analysis)
+   - QuarantineUser is permanent (per RE analysis)
+   - Action: Document all 89 governance action variants
+
+3. **Broadcaster Censorship**
+   - Only 8 addresses can submit transactions
+   - Action: Investigate if users can run their own broadcasters
+
+4. **Governance Logging Gap**
+   - VoteGlobalAction allegedly leaves no LedgerUpdate
+   - Action: Verify if governance actions are auditable
+
+### 7.2 Areas Where Evidence May Not Exist
+
+1. **L1 Source Code** — Cannot verify without open sourcing
+2. **Full Governance Action List** — May not be publicly documented
+3. **Foundation Governance** — May lack formal tokenholder control
+4. **Oracle Updater Identity** — May not be publicly disclosed
+
+---
+
+## Part 8: Research Execution Checklist
 
 ### Phase 1: Data Collection
-- [ ] Verify all URLs in resource inventory are accessible
-- [ ] Download/archive key documentation
-- [ ] Capture current onchain state (balances, parameters)
-- [ ] Collect validator set and stake distribution
-- [ ] Analyze Ethereum HYPE contract source
+- [ ] Execute all API queries in Part 1
+- [ ] Archive all documentation URLs
+- [ ] Capture current onchain state (balances, validators)
+- [ ] Verify third-party source accessibility (RE analysis, ASXN)
 
-### Phase 2: Onchain Analysis
-- [ ] Map governance execution paths
-- [ ] Identify all privileged addresses and their permissions
-- [ ] Track Assistance Fund activity
-- [ ] Verify buyback and burn transactions
-- [ ] Analyze validator voting history
+### Phase 2: Address Enumeration
+- [ ] Verify all 8 broadcaster addresses
+- [ ] Identify Oracle updater address
+- [ ] Identify liquidator whitelist members
+- [ ] Identify bridge validator addresses
+- [ ] Document all Foundation-controlled addresses
 
-### Phase 3: Documentation Review
-- [ ] Complete framework criteria mapping
-- [ ] Identify gaps where evidence is missing
-- [ ] Document confidence levels for each criterion
-- [ ] Flag items requiring assumptions
+### Phase 3: Function Analysis
+- [ ] Document all 89 governance action variants (if discoverable)
+- [ ] Verify CoreWriter capabilities against official docs
+- [ ] Verify WHYPE immutability
+- [ ] Analyze bridge contract functions
 
-### Phase 4: Synthesis
-- [ ] Draft research report
+### Phase 4: Ownership Chain Documentation
+- [ ] Complete ownership chain for protocol upgrades
+- [ ] Complete ownership chain for token supply
+- [ ] Complete ownership chain for emergency powers
+- [ ] Complete ownership chain for fee parameters
+- [ ] Complete ownership chain for broadcaster control
+
+### Phase 5: Synthesis
 - [ ] Populate metrics.json entries
 - [ ] Populate tokens.json entry
 - [ ] Internal consistency review
+- [ ] Gap documentation
 
 ---
 
-## Appendix: Framework Criteria Summary
+## Appendix: Initial Risk Assessment
 
-| Metric | Criteria | Initial Assessment |
-|--------|----------|-------------------|
-| **Onchain Control** | Governance Workflow | ⚠️ Validator-based, not direct tokenholder |
-| | Role Accountability | ⚠️ CoreWriter/broadcaster concerns |
-| | Protocol Upgrade | Unknown — closed source |
-| | Token Upgrade | Needs investigation |
-| | Supply Control | ✅ Likely programmatic with known schedule |
-| | Access Gating | ⚠️ Emergency powers exist |
-| | Token Censorship | ⚠️ Reports of flagging |
-| **Value Accrual** | Accrual Active | ✅ Buybacks are active |
-| | Treasury Ownership | ⚠️ Foundation relationship unclear |
-| | Mechanism Control | Unknown |
-| | Offchain Accrual | TBD |
-| **Verifiability** | Token Source | ⚠️ Ethereum verified, L1 not |
-| | Protocol Source | ❌ Core L1 is closed source |
-| **Distribution** | Concentration | ⚠️ Team holds ~24% |
-| | Supply Schedule | ✅ Well documented |
-| **Offchain** | Trademark | ⚠️ Foundation-held |
-| | Distribution | ⚠️ Foundation-controlled |
-| | Licensing | ⚠️ Core is proprietary |
+| Metric | Criteria | Assessment | Rationale |
+|--------|----------|------------|-----------|
+| **Onchain Control** | Governance Workflow | ⚠️ | Validator-based, not direct tokenholder |
+| | Role Accountability | ⚠️ | CoreWriter/broadcaster concerns unresolved |
+| | Protocol Upgrade | Unknown | Closed source L1 |
+| | Token Upgrade | ✅ | WHYPE immutable, native is protocol-level |
+| | Supply Control | ✅ | Programmatic schedule documented |
+| | Access Gating | ❌ | FreezeChain, QuarantineUser exist |
+| | Token Censorship | ⚠️ | Reports of flagging |
+| **Value Accrual** | Accrual Active | ✅ | Buybacks verified |
+| | Treasury Ownership | ⚠️ | Foundation relationship unclear |
+| | Mechanism Control | Unknown | Fee governance unclear |
+| | Offchain Accrual | TBD | No evidence yet |
+| **Verifiability** | Token Source | ⚠️ | WHYPE verifiable, native is not |
+| | Protocol Source | ❌ | Core L1 closed source |
+| **Distribution** | Concentration | ⚠️ | Team ~24%, transparent |
+| | Supply Schedule | ✅ | Well documented |
+| **Offchain** | Trademark | ⚠️ | Foundation-held |
+| | Distribution | ⚠️ | Foundation-controlled |
+| | Licensing | ❌ | Core is proprietary |
 
 ---
 
-*Plan Version: 1.0*
+*Plan Version: 2.0*
 *Created: 2026-02-24*
+*Revised: 2026-02-24 (per reviewer feedback)*
 *Author: Planner Agent*
