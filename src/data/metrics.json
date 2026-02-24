@@ -2635,7 +2635,7 @@
           "name": "Onchain Governance Workflow",
           "about": "Evaluates whether an onchain process exists that grants tokenholders ultimate authority over protocol decisions.",
           "status": "⚠️",
-          "notes": "Hyperliquid uses HyperBFT consensus with validator voting. HYPE holders delegate stake to validators, who vote on protocol changes via VoteGlobalAction. Changes require >2/3 of validator power to pass. However, the Hyper Foundation controls 55.68% of stake through 5 validators, giving it effective unilateral control over all governance decisions.",
+          "notes": "Hyperliquid uses HyperBFT (a Byzantine fault-tolerant consensus mechanism) with validator voting. HYPE holders delegate stake to validators, who vote on protocol changes via VoteGlobalAction (the L1's governance action type).\n\nChanges require >2/3 of validator power to pass.\n\nHowever, the Hyper Foundation controls 55.68% of stake through 5 validators, giving it effective unilateral control over all governance decisions.",
           "evidence": [
             {
               "name": "Foundation Validator Control",
@@ -2650,7 +2650,7 @@
             },
             {
               "name": "Foundation Validator Addresses",
-              "summary": "Hyper Foundation validators:\n\n**Hyper Foundation 1**: 0x5ac99df645f3414876c816caa18b2d234024b487\n**Hyper Foundation 2**: 0xa82fe73bbd768bc15d1ef2f6142a21ff8bd762ad\n**Hyper Foundation 3**: 0x80f0cd23da5bf3a0101110cfd0f89c8a69a1384d\n**Hyper Foundation 4**: 0xdf35aee8ef5658686142acd1e5ab5dbcdf8c51e8\n**Hyper Foundation 5**: 0x66be52ec79f829cc88e5778a255e2cb9492798fd",
+              "summary": "The Hyper Foundation operates 5 validators named Hyper Foundation 1 through 5. Their addresses can be viewed on the Hyperliquid staking page. Together they control over half of all staked HYPE.",
               "urls": [
                 {
                   "name": "Hyperliquid Staking",
@@ -2666,11 +2666,11 @@
           "name": "Role Accountability",
           "about": "Determines whether all privileged or value-impacting roles are governed, revocable, and accountable to tokenholders.",
           "status": "❌",
-          "notes": "Critical emergency powers exist that are not accountable to tokenholders. Validators can execute FreezeChain (permanent chain halt with no unfreeze mechanism), QuarantineUser (permanent account freeze), and invalidateWithdrawals (cancel pending bridge withdrawals). Since the Foundation controls majority stake, these powers are effectively Foundation-controlled with no tokenholder override.",
+          "notes": "Critical emergency powers exist that are not accountable to tokenholders.\n\n**FreezeChain**: Permanent chain halt with no unfreeze mechanism.\n**QuarantineUser**: Permanent account freeze.\n**invalidateWithdrawals**: Cancel pending bridge withdrawals.\n\nSince the Foundation controls majority stake, these powers are effectively Foundation-controlled with no tokenholder override.",
           "evidence": [
             {
               "name": "Emergency Powers Documentation",
-              "summary": "Reverse engineering analysis documents 89 VoteGlobalAction variants. Critical emergency powers include:\n\n**FreezeChain** (0x20): Halts chain permanently at specified height. No unfreeze mechanism exists.\n**QuarantineUser** (0x1A): Freezes user account permanently. No undo mechanism.\n**ModifyBroadcaster** (0x26): Changes broadcaster whitelist.\n**invalidateWithdrawals**: Cancel pending bridge withdrawals.",
+              "summary": "Reverse engineering analysis documents 89 VoteGlobalAction variants (governance action types). Critical emergency powers include:\n\n**FreezeChain**: Halts chain permanently at specified height. No unfreeze mechanism exists.\n\n**QuarantineUser**: Freezes user account permanently. No undo mechanism.\n\n**ModifyBroadcaster**: Changes broadcaster whitelist.\n\n**invalidateWithdrawals**: Cancel pending bridge withdrawals.",
               "urls": [
                 {
                   "name": "Reverse Engineering Analysis",
@@ -2721,7 +2721,7 @@
           "evidence": [
             {
               "name": "WHYPE Immutability",
-              "summary": "The WHYPE contract at 0x5555555555555555555555555555555555555555 on HyperEVM is a verified WETH clone with only standard functions: deposit(), withdraw(), transfer(), approve(), transferFrom(). No admin, owner, pause, freeze, or upgrade capabilities exist.",
+              "summary": "The WHYPE contract on HyperEVM is a verified WETH clone with only standard functions: deposit(), withdraw(), transfer(), approve(), transferFrom(). No admin, owner, pause, freeze, or upgrade capabilities exist. See the linked explorer page for the contract address.",
               "urls": [
                 {
                   "name": "WHYPE Contract (HyperScan)",
@@ -2768,7 +2768,7 @@
           "name": "Privileged Access Gating",
           "about": "Assesses whether any bounded actor set can block or selectively restrict economically meaningful protocol actions or exit paths, versus access that is permissionless and symmetric for similarly situated users.",
           "status": "❌",
-          "notes": "Multiple access-gating mechanisms exist. Only 8 undisclosed broadcaster addresses can submit transactions to the L1. Validators can freeze the entire chain via FreezeChain with no unfreeze mechanism. Bridge withdrawals can be invalidated by cold wallet validator quorum.",
+          "notes": "Multiple access-gating mechanisms exist:\n\n**Broadcaster whitelist**: Only 8 undisclosed addresses can submit transactions to the L1. Users cannot run their own broadcasters.\n\n**FreezeChain**: Validators can freeze the entire chain with no unfreeze mechanism.\n\n**Bridge restrictions**: Withdrawals can be invalidated by cold wallet validator quorum.",
           "evidence": [
             {
               "name": "Broadcaster Whitelist",
@@ -2803,7 +2803,7 @@
           "evidence": [
             {
               "name": "QuarantineUser Capability",
-              "summary": "VoteGlobalAction discriminant 0x1A enables permanent account freezing. The reverse engineering analysis documents this as having no undo mechanism. Since the Foundation controls majority stake, it can execute this unilaterally.",
+              "summary": "The QuarantineUser governance action enables permanent account freezing. The reverse engineering analysis documents this as having no undo mechanism. Since the Foundation controls majority stake, it can execute this unilaterally.",
               "urls": [
                 {
                   "name": "Reverse Engineering Analysis",
@@ -2843,7 +2843,7 @@
           "evidence": [
             {
               "name": "Assistance Fund Holdings",
-              "summary": "The Assistance Fund at address 0xfefefefefefefefefefefefefefefefefefefefe holds approximately 41.24M HYPE as of February 2026. Additional holdings include small amounts of USDC, USDE, USDT0, and other tokens.",
+              "summary": "The Assistance Fund holds approximately 41.24M HYPE as of February 2026. Additional holdings include small amounts of USDC, USDE, USDT0, and other tokens. The fund's address and holdings can be queried via the Hyperliquid API.",
               "urls": [
                 {
                   "name": "Assistance Fund Documentation",
@@ -2890,7 +2890,7 @@
           "name": "Accrual Mechanism Control",
           "about": "Evaluates whether tokenholders can modify parameters governing value capture, such as fees or revenue routing.",
           "status": "⚠️",
-          "notes": "Fee parameters and the fee split between HLP and Assistance Fund are controlled by validator governance. Since the Foundation controls majority stake, it effectively controls these parameters. Aragon has not been able to verify the exact mechanism for changing fee parameters due to closed-source L1 code.",
+          "notes": "Fee parameters and the fee split between HLP (Hyperliquid Liquidity Pool) and Assistance Fund are controlled by validator governance.\n\nSince the Foundation controls majority stake, it effectively controls these parameters.\n\nAragon has not been able to verify the exact mechanism for changing fee parameters due to closed-source L1 code.",
           "evidence": [
             {
               "name": "Fee Control",
@@ -2932,7 +2932,7 @@
           "evidence": [
             {
               "name": "WHYPE Verified",
-              "summary": "The WHYPE contract at 0x5555555555555555555555555555555555555555 is verified on HyperScan. It is a standard WETH clone (GPL licensed) with deposit(), withdraw(), transfer(), approve(), and transferFrom() functions. No admin capabilities.",
+              "summary": "The WHYPE contract is verified on HyperScan. It is a standard WETH clone (GPL licensed) with deposit(), withdraw(), transfer(), approve(), and transferFrom() functions. No admin capabilities. See the linked explorer page for the contract address.",
               "urls": [
                 {
                   "name": "WHYPE Contract (HyperScan)",
@@ -3024,7 +3024,7 @@
           "evidence": [
             {
               "name": "Foundation Stake Concentration",
-              "summary": "Foundation validators hold 55.68% of stake:\n\nHyper Foundation 1: 55.05M HYPE\nHyper Foundation 2: 57.87M HYPE\nHyper Foundation 3: 56.45M HYPE\nHyper Foundation 4: 54.78M HYPE\nHyper Foundation 5: 17.51M HYPE\n\nTotal: 241.66M of 433.99M staked.",
+              "summary": "Foundation validators hold 55.68% of stake across 5 validators (Hyper Foundation 1-5).\n\nIndividual stakes range from ~17.5M to ~57.9M HYPE each.\n\nTotal Foundation stake: 241.66M of 433.99M staked.\n\nSee the linked staking page for current validator addresses and stake amounts.",
               "urls": [
                 {
                   "name": "Hyperliquid Staking",
