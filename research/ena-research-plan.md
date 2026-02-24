@@ -1,9 +1,13 @@
 # ENA Token Research Plan
 ## Aragon Ownership Token Framework Analysis
 
-**Version:** 1.0
+**Version:** 1.1
 **Date:** 2026-02-24
 **Status:** Ready for Execution
+
+**Revision History:**
+- v1.1 (2026-02-24): Added explicit audit URLs, holder distribution methodology, legal entity verification limitations
+- v1.0 (2026-02-24): Initial research plan
 
 ---
 
@@ -94,18 +98,33 @@ The critical distinction: This analysis is about the **ENA token**, not the Ethe
 
 | Auditor | Date | Report |
 |---------|------|--------|
-| Quantstamp | Oct 2023 | Available via docs |
-| Quantstamp | Oct 2024 | https://github.com/code-423n4/2024-11-ethena-labs/blob/main/audits/Ethena_final_report_Quantstamp.pdf |
-| Cyfrin | Oct 2024 | Available via docs |
-| Pashov | Oct 2024 | Available via docs |
+| Quantstamp | Oct 2023 | [Ethena Final Report (PDF)](https://596495599-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2FsBsPyff5ft3inFy9jyjt%2Fuploads%2F17Ucep7IYMBZ6mAHGLyw%2FEthena%20Final%20Report%20(1).pdf?alt=media&token=51a6a101-516e-4984-8360-14daf860a961) |
+| Quantstamp | Oct 2024 | [UStb Audit (GitHub)](https://github.com/code-423n4/2024-11-ethena-labs/blob/main/audits/Ethena_final_report_Quantstamp.pdf) |
+| Cyfrin | Oct 2024 | [Ethena x Cyfrin - USTB (PDF)](https://596495599-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2FsBsPyff5ft3inFy9jyjt%2Fuploads%2Fd7jvu5NZ9eh8thYYRBmP%2FEthena%20x%20Cyfrin%20-%20USTB.pdf?alt=media&token=9d693945-8baf-4373-bb4c-12cdee038db2) |
+| Pashov | Oct 2024 | [Ethena x Pashov - USTB (PDF)](https://596495599-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2FsBsPyff5ft3inFy9jyjt%2Fuploads%2Fvjn1dqCWVE3YWhLFTFFU%2FEthena%20x%20Pashov%20-%20USTB.pdf?alt=media&token=b0e93bf7-e95d-44df-8c25-270e21ec2582) |
 
-### Legal / Corporate - SPECULATIVE (requires verification)
+### Legal / Corporate - DOCUMENTATION-BASED (see limitations below)
 
-| Entity | Jurisdiction | Role |
-|--------|--------------|------|
-| Ethena Labs | Portugal | Protocol development |
-| Ethena Foundation | Cayman Islands | Protocol operations, smart contracts |
-| Ethena OpCo Ltd | Unknown | Operations |
+| Entity | Jurisdiction | Role | Source |
+|--------|--------------|------|--------|
+| Ethena Labs | Portugal | Protocol development | SEC memo, Crunchbase |
+| Ethena Foundation | Cayman Islands | Protocol operations, smart contracts | Terms of Service, SEC memo |
+| Ethena OpCo Ltd | Unknown | Operations | Referenced in documentation |
+
+**Verification Approach & Limitations:**
+
+Corporate entity verification faces inherent limitations for this analysis:
+
+1. **Cayman Islands Registry (CIMA):** The Cayman Islands Monetary Authority maintains a registry, but company searches typically require paid subscriptions or in-person access. Agent cannot independently verify Ethena Foundation's registration status.
+
+2. **Portugal Commercial Registry:** Portuguese company information is available through RACIUS or Portal da Justiça, but may require Portuguese language navigation and/or payment. Agent cannot reliably access.
+
+3. **Fallback Approach:** This analysis will rely on:
+   - Official documentation claims (Terms of Service, SEC meeting memos)
+   - Third-party databases (Crunchbase, PitchBook, Bloomberg)
+   - Cross-referencing multiple sources for consistency
+
+4. **Explicit Limitation:** Legal entity structure **cannot be independently verified by agent** from primary registry sources. All corporate entity claims are based on documentation and third-party sources. This is noted as a limitation in Offchain Dependencies findings.
 
 ---
 
@@ -470,6 +489,37 @@ This is an emergency power that could block all USDe minting/redemption.
 
 **Anticipated Finding:** Initial allocation: Core Contributors 30%, Investors 25%, Foundation 15% = 70% to insiders. Current circulating ~8.2B of 15B total supply. **Need to verify if insider tokens are locked or able to vote.**
 
+**Methodology Note — Holder Distribution Analysis:**
+
+This analysis is inherently **point-in-time** and will be documented as "as of [research date]". The following methodology applies:
+
+1. **Data Sources:**
+   - Primary: Etherscan token holders page for ENA (`0x57e114B691Db790C35207b2e685D4A43181e6061`)
+   - Secondary: Arkham Intelligence / Nansen labeling if accessible; otherwise manual contract labeling
+   - Cross-reference: Snapshot voting power data at `ethenagovernance.eth`
+
+2. **Address Classification:**
+   - **Exchanges/Custodians:** CEX deposit addresses (Binance, Coinbase, etc.) — exclude from voting supply
+   - **Staking Contracts:** sENA, rsENA contract addresses — count if they represent voting power
+   - **Team/Investor Wallets:** Match against known vesting contracts or labeled addresses
+   - **Foundation:** Match against documented Foundation addresses
+   - **Unknown Large Holders:** Flag addresses with >1% holdings that cannot be attributed
+
+3. **Effective Voting Supply Calculation:**
+   - Total Supply minus: Exchange custody, locked vesting contracts (if non-voting), burned tokens
+   - Include: Circulating tokens, staked tokens (if they vote), unlocked insider tokens
+
+4. **Concentration Metrics:**
+   - Top 10 holders % of total supply
+   - Top 10 holders % of effective voting supply
+   - Insider bloc (Contributors + Investors + Foundation) % of voting supply
+   - Herfindahl-Hirschman Index (HHI) if granular data permits
+
+5. **Limitations:**
+   - Point-in-time snapshot; distribution changes with trading/vesting
+   - Some addresses may be mislabeled or unlabeled
+   - Cannot verify beneficial ownership behind custodial addresses
+
 ---
 
 #### 4.2 Future Token Unlocks
@@ -508,21 +558,28 @@ Material unlocks are ongoing. Core Contributors + Investors = 55% subject to ves
 **Question:** Are core trademarks owned or controlled by a tokenholder-controlled legal entity?
 
 **Investigation Approach:**
-1. Search USPTO/WIPO for Ethena, ENA, USDe trademarks
-2. Identify registrant/owner
-3. Determine relationship between trademark holder and ENA governance
+1. Search USPTO for Ethena, ENA, USDe trademarks (TSDR database)
+2. Search WIPO Global Brand Database for international filings
+3. Identify registrant/owner entity
+4. Cross-reference owner against known Ethena entities
+5. Determine relationship between trademark holder and ENA governance
 
 **Sources:**
-- USPTO database
-- WIPO database
-- Corporate registry searches
+- USPTO TSDR: https://tsdr.uspto.gov/ (search "Ethena", "USDe")
+- WIPO Global Brand Database: https://branddb.wipo.int/
+- Documentation claims about IP ownership
+
+**Methodology Notes:**
+- USPTO/WIPO searches are publicly accessible but may be blocked by CAPTCHA
+- If CAPTCHA blocks access, fallback to documentation claims with explicit limitation noted
+- Trademark searches provide registrant name but not necessarily beneficial ownership
 
 **Evidence Sufficiency:**
 - ✅ If: Trademarks held by DAO-controlled entity with ENA governance authority
 - ⚠️ If: Trademarks held by Foundation that is partially ENA-controlled
 - ❌ If: Trademarks held by Ethena Labs or unrelated entity
 
-**Anticipated Finding:** Trademarks likely held by Ethena Labs (Portugal) or Ethena Foundation (Cayman Islands). **Neither is tokenholder-controlled.**
+**Anticipated Finding:** Trademarks likely held by Ethena Labs (Portugal) or Ethena Foundation (Cayman Islands). **Neither is tokenholder-controlled.** If trademark search fails due to access issues, this will be noted as a limitation.
 
 ---
 
