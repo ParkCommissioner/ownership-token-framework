@@ -49,7 +49,7 @@ HYPE is the native token of Hyperliquid, a purpose-built L1 blockchain for perpe
 
 The Bridge2 contract on Arbitrum is the primary bridge for USDC deposits/withdrawals. Key characteristics from source code review:
 
-**Source:** [hyperliquid-dex/contracts/Bridge2.sol](https://github.com/hyperliquid-dex/contracts/blob/main/Bridge2.sol)
+**Source:** [hyperliquid-dex/contracts/Bridge2.sol](https://github.com/hyperliquid-dex/contracts/blob/master/Bridge2.sol)
 
 **Governance Model:**
 - No `owner()` function - entirely validator-controlled
@@ -65,7 +65,7 @@ The Bridge2 contract on Arbitrum is the primary bridge for USDC deposits/withdra
 
 **Key Functions:**
 ```solidity
-// Bridge2.sol:676-693
+// Bridge2.sol:676-693 (simplified for illustration)
 function invalidateWithdrawals(
   bytes32[] memory messages,
   uint64 nonce,
@@ -104,7 +104,7 @@ function invalidateWithdrawals(
 | 10 | Kinetiq x Hyperion | 11,895,890.51 | 2.74% | Yes |
 
 **Totals:**
-- Total validators: 30 (24 active, 5 jailed, 1 inactive)
+- Total validators: 30 (24 active, 6 inactive including 5 jailed)
 - Total stake: 433,992,948.43 HYPE
 - Foundation stake: 241,656,919.94 HYPE
 - **Foundation control: 55.68% of total stake**
@@ -131,6 +131,8 @@ Hyperliquid uses **HyperBFT consensus** with validator voting for governance. Un
 Per reverse engineering analysis ([blog.can.ac/2025/12/20/reverse-engineering-hyperliquid/](https://blog.can.ac/2025/12/20/reverse-engineering-hyperliquid/)):
 
 **VoteGlobalAction Variants (89 total):**
+
+*Note: The reverse engineering analysis uses both hex discriminant codes (e.g., 0x20) and switch case numbers (e.g., case 7) depending on the code path.*
 
 | Code | Action | Risk Level | Description |
 |------|--------|------------|-------------|
@@ -388,9 +390,9 @@ This means governance actions like `FreezeChain`, `QuarantineUser`, and `ModifyB
 
 | Asset | Owner | Status |
 |-------|-------|--------|
-| HYPERLIQUID | [UNVERIFIED] | USPTO filing exists |
+| HYPERLIQUID | [UNVERIFIED] | USPTO filing exists (Serial No. 99599981) |
 
-**Source:** https://uspto.report/TM/99599981
+**Source:** [UNVERIFIED] - USPTO filing exists but source inaccessible via automated query (Cloudflare protection). Manual verification required via https://tsdr.uspto.gov using Serial No. 99599981.
 
 ### 7.2 Domain and Distribution
 
@@ -493,7 +495,111 @@ HYPE holders have economic exposure to Hyperliquid's success, but they do not ha
 
 ---
 
-## Appendix: API Queries Used
+## Appendix A: Role Matrix Verification Proofs
+
+### A.1 Foundation Validator Stake Verification
+
+**Query:**
+```bash
+curl -s -X POST -H "Content-Type: application/json" \
+  -d '{"type": "validatorSummaries"}' \
+  https://api.hyperliquid.xyz/info
+```
+
+**Result (2026-02-24, summarized):**
+```
+Total validators: 30
+Active: 24
+Jailed: 5
+Inactive (not jailed): 1
+
+Foundation Validators:
+- Hyper Foundation 1: 0x5ac99df645f3414876c816caa18b2d234024b487 - 55,047,582.22 HYPE
+- Hyper Foundation 2: 0xa82fe73bbd768bc15d1ef2f6142a21ff8bd762ad - 57,870,352.60 HYPE
+- Hyper Foundation 3: 0x80f0cd23da5bf3a0101110cfd0f89c8a69a1384d - 56,452,593.58 HYPE
+- Hyper Foundation 4: 0xdf35aee8ef5658686142acd1e5ab5dbcdf8c51e8 - 54,775,629.44 HYPE
+- Hyper Foundation 5: 0x66be52ec79f829cc88e5778a255e2cb9492798fd - 17,510,762.10 HYPE
+
+Foundation total: 241,656,919.94 HYPE
+Total stake: 433,992,948.43 HYPE
+Foundation %: 55.68%
+```
+
+### A.2 Bridge2 No-Owner Verification
+
+**Query (JSON-RPC eth_call for owner() selector 0x8da5cb5b):**
+```bash
+curl -s -X POST -H "Content-Type: application/json" \
+  --data '{"jsonrpc":"2.0","method":"eth_call","params":[{"to":"0x2df1c51e09aecf9cacb7bc98cb1742757f163df7","data":"0x8da5cb5b"},"latest"],"id":1}' \
+  https://arb1.arbitrum.io/rpc
+```
+
+**Result:**
+```json
+{"jsonrpc":"2.0","id":1,"error":{"code":3,"message":"execution reverted","data":"0x"}}
+```
+
+**Interpretation:** The `owner()` function call reverts, confirming no owner() function exists in the Bridge2 contract.
+
+### A.3 Bridge2 No-Proxy Verification
+
+**Query (EIP-1967 implementation slot):**
+```bash
+curl -s -X POST -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","method":"eth_getStorageAt","params":["0x2df1c51e09aecf9cacb7bc98cb1742757f163df7","0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc","latest"],"id":1}' \
+  https://arb1.arbitrum.io/rpc
+```
+
+**Result:**
+```json
+{"jsonrpc":"2.0","id":1,"result":"0x0000000000000000000000000000000000000000000000000000000000000000"}
+```
+
+**Interpretation:** The EIP-1967 implementation slot is empty (zero), confirming Bridge2 is not a proxy contract.
+
+### A.4 Assistance Fund Balance Verification
+
+**Query:**
+```bash
+curl -s -X POST -H "Content-Type: application/json" \
+  -d '{"type": "spotClearinghouseState", "user": "0xfefefefefefefefefefefefefefefefefefefefe"}' \
+  https://api.hyperliquid.xyz/info
+```
+
+**Result (2026-02-24, key balances):**
+```json
+{
+  "balances": [
+    {"coin": "HYPE", "token": 150, "total": "41244979.0925551206"},
+    {"coin": "USDC", "token": 0, "total": "512.151321"},
+    {"coin": "USDE", "token": 235, "total": "18389.83168537"},
+    {"coin": "USDT0", "token": 268, "total": "7220.36316391"}
+  ]
+}
+```
+
+**Interpretation:** Assistance Fund holds ~41.24M HYPE, confirming active buyback accumulation.
+
+### A.5 WHYPE Contract Immutability Verification
+
+**Contract Address:** `0x5555555555555555555555555555555555555555` on HyperEVM
+
+**Verification Method:** HyperScan (Blockscout) contract verification
+
+**Verified Functions (from bytecode analysis):**
+- `deposit()` - public payable
+- `withdraw(uint)` - public
+- `transfer(address,uint)` - public returns bool
+- `approve(address,uint)` - public returns bool
+- `transferFrom(address,address,uint)` - public returns bool
+
+**Admin Functions Found:** None
+
+**Interpretation:** The WHYPE contract contains only standard WETH functions with no admin, owner, pause, freeze, or upgrade capabilities.
+
+---
+
+## Appendix B: API Queries Used
 
 ### Validator Summary
 ```bash
@@ -516,6 +622,20 @@ curl -X POST -H "Content-Type: application/json" \
   https://api.hyperliquid.xyz/info
 ```
 
+### Bridge2 Owner Check (Arbitrum JSON-RPC)
+```bash
+curl -s -X POST -H "Content-Type: application/json" \
+  --data '{"jsonrpc":"2.0","method":"eth_call","params":[{"to":"0x2df1c51e09aecf9cacb7bc98cb1742757f163df7","data":"0x8da5cb5b"},"latest"],"id":1}' \
+  https://arb1.arbitrum.io/rpc
+```
+
+### Bridge2 Proxy Check (EIP-1967 Implementation Slot)
+```bash
+curl -s -X POST -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","method":"eth_getStorageAt","params":["0x2df1c51e09aecf9cacb7bc98cb1742757f163df7","0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc","latest"],"id":1}' \
+  https://arb1.arbitrum.io/rpc
+```
+
 ---
 
 ## References
@@ -523,7 +643,7 @@ curl -X POST -H "Content-Type: application/json" \
 ### Primary Sources
 1. Hyperliquid Documentation: https://hyperliquid.gitbook.io/hyperliquid-docs
 2. Hyperliquid GitHub: https://github.com/hyperliquid-dex
-3. Bridge2 Contract Source: https://github.com/hyperliquid-dex/contracts/blob/main/Bridge2.sol
+3. Bridge2 Contract Source: https://github.com/hyperliquid-dex/contracts/blob/master/Bridge2.sol
 4. WHYPE Verification: https://www.hyperscan.com/address/0x5555555555555555555555555555555555555555
 
 ### Analysis Sources
