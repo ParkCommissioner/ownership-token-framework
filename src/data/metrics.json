@@ -2916,7 +2916,7 @@
           "evidence": [
             {
               "name": "Foundation Wallet",
-              "summary": "Foundation wallet 0x2650e83effab4ca0fad4fbf91f70d17faeb24535 is an EOA (no contract code). Control is unknown but presumed Foundation-operated, not ZRO governance.",
+              "summary": "The Foundation wallet is an EOA (no contract code). Control is unknown but presumed Foundation-operated, not ZRO governance.",
               "urls": [
                 {
                   "name": "Foundation Wallet",
