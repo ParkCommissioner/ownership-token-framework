@@ -2674,6 +2674,485 @@
       ]
     }
   ],
+  "zro": [
+    {
+      "id": "onchain-ctrl",
+      "name": "Onchain Control",
+      "tags": [
+        "Metric 1"
+      ],
+      "about": "This metric evaluates whether economically material outcomes are mediated through tokenholder governance, or whether admins, multisigs, security councils, or other privileged roles retain onchain powers that can change the rules or selectively restrict use and exit.",
+      "summary": "ZRO holders have a single governance power: voting in a bi-annual fee switch referendum. However, the voting contract address cannot be verified from public sources, making the binding nature unverifiable. All protocol contracts (EndpointV2, MessageLibs) are controlled by a 3/5 OneSig multisig with no tokenholder oversight. The ZRO token itself has no censorship mechanisms and fixed supply.",
+      "criteria": [
+        {
+          "id": "onchain-ctrl__governance-workflow",
+          "name": "Onchain Governance Workflow",
+          "about": "Evaluates whether an onchain process exists that grants tokenholders ultimate authority over protocol decisions.",
+          "status": "TBD",
+          "notes": "ZRO holders vote in a bi-annual fee switch referendum determining whether protocol fees are activated. According to LayerZero Foundation documentation, an \"immutable voting contract\" enforces this vote. **Aragon has not been able to verify the fee switch voting contract address from any primary source.** Without the contract address, the binding nature, immutability, and exact parameters cannot be confirmed.",
+          "evidence": [
+            {
+              "name": "Referendum Claims",
+              "summary": "Documentation claims: immutable voting contract, 40.59% quorum (~230M ZRO), >50% approval required. Three referendums have occurred (Dec 2024, Jun 2025, Dec 2025) — all failed to reach quorum.",
+              "urls": [
+                {
+                  "name": "Fee Switch Documentation",
+                  "url": "https://layerzero.foundation/fee-switch",
+                  "type": "docs"
+                }
+              ]
+            },
+            {
+              "name": "Voting Contract Discovery Attempts",
+              "summary": "Aragon developers searched: LayerZero-v2 GitHub (no voting contracts), Foundation wallet deployments (EOA with no code), LayerZeroScan, Snapshot.org (lzfoundation.eth space does not exist). The voting contract address cannot be located from any primary source.",
+              "urls": [
+                {
+                  "name": "LayerZero-v2 Repository",
+                  "url": "https://github.com/LayerZero-Labs/LayerZero-v2",
+                  "type": "github"
+                },
+                {
+                  "name": "Foundation Wallet (EOA)",
+                  "url": "https://etherscan.io/address/0x2650e83effab4ca0fad4fbf91f70d17faeb24535",
+                  "type": "explorer"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "onchain-ctrl__role-accountability",
+          "name": "Role Accountability",
+          "about": "Determines whether all privileged or value-impacting roles are governed, revocable, and accountable to tokenholders.",
+          "status": "⚠️",
+          "notes": "All protocol contracts are controlled by multisigs with **no tokenholder oversight**. EndpointV2 and MessageLibs are owned by a 3/5 OneSig multisig. The ZRO token is owned by a separate 3/5 Gnosis Safe. Two signers overlap between the multisigs. **ZRO holders cannot replace or revoke these signers.**",
+          "evidence": [
+            {
+              "name": "Ownership Topology",
+              "summary": "ZRO Token → 3/5 Gnosis Safe (0xCDa8...4C92) → 5 EOA signers.\n\nEndpointV2, SendUln302, ReceiveUln302 → 3/5 OneSig (0xBe01...d478) → 5 EOA signers.\n\nTwo signers (0x771d...9e77e, 0x73E9...80e1e) appear in both multisigs. Signer identities are unknown.",
+              "urls": [
+                {
+                  "name": "ZRO Token Owner (Gnosis Safe)",
+                  "url": "https://etherscan.io/address/0xCDa8e3ADD00c95E5035617F970096118Ca2F4C92",
+                  "type": "explorer"
+                },
+                {
+                  "name": "EndpointV2 Owner (OneSig)",
+                  "url": "https://etherscan.io/address/0xBe010A7e3686FdF65E93344ab664D065A0B02478",
+                  "type": "explorer"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "onchain-ctrl__protocol-upgrade",
+          "name": "Protocol Upgrade Authority",
+          "about": "Determines whether core protocol logic can be upgraded and whether such upgrades are controlled by tokenholders.",
+          "status": "⚠️",
+          "notes": "Core protocol contracts (EndpointV2, SendUln302, ReceiveUln302) are **not proxies** and cannot be directly upgraded. However, the 3/5 OneSig multisig controls critical owner functions: registering new message libraries, setting default send/receive libraries per chain, and setting the LayerZero token for fee payments. **ZRO holders have no authority over these changes.**",
+          "evidence": [
+            {
+              "name": "EndpointV2 Owner Functions",
+              "summary": "onlyOwner functions: setLzToken(), registerLibrary(), setDefaultSendLibrary(), setDefaultReceiveLibrary(). These control protocol behavior without requiring a contract upgrade.",
+              "urls": [
+                {
+                  "name": "EndpointV2 Source",
+                  "url": "https://github.com/LayerZero-Labs/LayerZero-v2/blob/main/packages/layerzero-v2/evm/protocol/contracts/EndpointV2.sol",
+                  "type": "github"
+                },
+                {
+                  "name": "EndpointV2 Contract",
+                  "url": "https://etherscan.io/address/0x1a44076050125825900e736c501f859c50fE728c#code",
+                  "type": "explorer"
+                }
+              ]
+            },
+            {
+              "name": "No Proxy Pattern",
+              "summary": "EndpointV2 returns 0x0 for implementation(), confirming it is not a proxy. The contract logic is immutable, but owner-controlled parameters are not.",
+              "urls": [
+                {
+                  "name": "EndpointV2 Contract",
+                  "url": "https://etherscan.io/address/0x1a44076050125825900e736c501f859c50fE728c",
+                  "type": "explorer"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "onchain-ctrl__token-upgrade",
+          "name": "Token Upgrade Authority",
+          "about": "Assesses whether token behavior can be modified and, if so, whether such changes are controlled by tokenholder governance.",
+          "status": "✅",
+          "notes": "The ZRO token is **not upgradeable**. It returns 0x0 for implementation(), confirming no proxy pattern. The token is an OFT (Omnichain Fungible Token) with cross-chain bridging built-in, but core token behavior cannot be modified.",
+          "evidence": [
+            {
+              "name": "Token Architecture",
+              "summary": "ZRO is a non-proxy ERC-20 token implementing the OFT standard. No upgrade functions exist. Owner functions (setPeer, setDelegate) control cross-chain bridging configuration, not core token behavior.",
+              "urls": [
+                {
+                  "name": "ZRO Token Contract",
+                  "url": "https://etherscan.io/address/0x6985884c4392d348587b19cb9eaaf157f13271cd#code",
+                  "type": "explorer"
+                },
+                {
+                  "name": "OFT Source",
+                  "url": "https://github.com/LayerZero-Labs/LayerZero-v2/blob/main/packages/layerzero-v2/evm/oapp/contracts/oft/OFT.sol",
+                  "type": "github"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "onchain-ctrl__supply",
+          "name": "Supply Control",
+          "about": "Evaluates whether token supply changes are programmatic or subject exclusively to tokenholder-approved governance processes.",
+          "status": "✅",
+          "notes": "**Fixed 1B max supply.** Current supply is ~949.64M ZRO due to some tokens being burned. The only minting occurs via cross-chain bridging (_credit() on destination when _debit() burns on source). There is **no owner-callable mint() function** for inflationary supply.",
+          "evidence": [
+            {
+              "name": "Supply Mechanics",
+              "summary": "totalSupply() returns ~949.64M. Minting only occurs via cross-chain bridge operations (burn on source, mint on destination). No discretionary minting pathway exists.",
+              "urls": [
+                {
+                  "name": "ZRO Token Contract",
+                  "url": "https://etherscan.io/address/0x6985884c4392d348587b19cb9eaaf157f13271cd#readContract",
+                  "type": "explorer"
+                },
+                {
+                  "name": "OFTCore Source (_credit/_debit)",
+                  "url": "https://github.com/LayerZero-Labs/LayerZero-v2/blob/main/packages/layerzero-v2/evm/oapp/contracts/oft/OFTCore.sol",
+                  "type": "github"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "onchain-ctrl__access-gating",
+          "name": "Privileged Access Gating",
+          "about": "Assesses whether any bounded actor set can block or selectively restrict economically meaningful protocol actions or exit paths, versus access that is permissionless and symmetric for similarly situated users.",
+          "status": "⚠️",
+          "notes": "The 3/5 OneSig multisig can change default DVN and Executor configurations via setDefaultSendLibrary() and setDefaultReceiveLibrary(). While users can choose custom configurations, **defaults affect most users who rely on them**. This represents privileged control over the default messaging path.",
+          "evidence": [
+            {
+              "name": "Default Library Control",
+              "summary": "EndpointV2 owner can set default message libraries per chain. Most applications use defaults. Changing defaults affects all users who haven't explicitly set custom configurations.",
+              "urls": [
+                {
+                  "name": "EndpointV2 Source",
+                  "url": "https://github.com/LayerZero-Labs/LayerZero-v2/blob/main/packages/layerzero-v2/evm/protocol/contracts/EndpointV2.sol",
+                  "type": "github"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "onchain-ctrl__censorship",
+          "name": "Token Censorship",
+          "about": "Examines whether any roles exist that can freeze, blacklist, seize, or otherwise censor token balances or transfers.",
+          "status": "✅",
+          "notes": "The ZRO token has **no censorship mechanisms**. Testing confirmed: no paused() function, no blacklisted() function, no isFrozen() function. Transfers cannot be blocked or restricted by any admin role.",
+          "evidence": [
+            {
+              "name": "No Censorship Functions",
+              "summary": "Aragon developers tested: paused(), blacklisted(address), isFrozen(address) — all reverted, confirming these functions do not exist. Standard ERC-20 transfer() with no admin hooks.",
+              "urls": [
+                {
+                  "name": "ZRO Token Contract",
+                  "url": "https://etherscan.io/address/0x6985884c4392d348587b19cb9eaaf157f13271cd#code",
+                  "type": "explorer"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "val-accrual",
+      "name": "Value Accrual",
+      "tags": [
+        "Metric 2"
+      ],
+      "about": "This metric evaluates whether the system's operation produces observable, onchain value flows (or token-scarcity effects) that accrue value to tokenholders under rule-based constraints that do not rely on manual transfers, trusted executors, or other unenforced expectations.",
+      "summary": "No value currently accrues to ZRO holders. The fee switch has been voted on three times (Dec 2024, Jun 2025, Dec 2025) and failed to reach quorum each time. If activated, fees would be used for buyback-and-burn of ZRO. The fee switch mechanism itself cannot be verified without the voting contract address.",
+      "criteria": [
+        {
+          "id": "val-accrual__active",
+          "name": "Accrual Active",
+          "about": "Assesses whether value flows to tokenholders are currently active rather than merely theoretical or proposed.",
+          "status": "⚠️",
+          "notes": "**No value currently accrues to ZRO holders.** The protocol fee switch is OFF. No fees are collected on cross-chain messages. The fee switch referendum has been held three times and failed to reach the 40.59% quorum each time.",
+          "evidence": [
+            {
+              "name": "Fee Switch Status",
+              "summary": "Three referendums have occurred:\n• Dec 20-27, 2024: Failed quorum\n• Jun 20-27, 2025: Failed quorum\n• Dec 20-27, 2025: Failed quorum\n\nNo protocol fees are collected. No value flows to ZRO holders.",
+              "urls": [
+                {
+                  "name": "Fee Switch Documentation",
+                  "url": "https://layerzero.foundation/fee-switch",
+                  "type": "docs"
+                },
+                {
+                  "name": "Referendum #3 Result",
+                  "url": "https://x.com/LayerZero_Fndn/status/2004741540053430601",
+                  "type": "docs"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "val-accrual__treasury",
+          "name": "Treasury Ownership",
+          "about": "Determines whether protocol treasury assets are programmatically controlled by tokenholder governance.",
+          "status": "⚠️",
+          "notes": "There is **no evidence that ZRO holders control any treasury**. The Foundation wallet (0x2650...4535) is an EOA, not a governance-controlled contract. Token allocation wallets are not under ZRO governance.",
+          "evidence": [
+            {
+              "name": "Foundation Wallet",
+              "summary": "Foundation wallet 0x2650e83effab4ca0fad4fbf91f70d17faeb24535 is an EOA (no contract code). Control is unknown but presumed Foundation-operated, not ZRO governance.",
+              "urls": [
+                {
+                  "name": "Foundation Wallet",
+                  "url": "https://etherscan.io/address/0x2650e83effab4ca0fad4fbf91f70d17faeb24535",
+                  "type": "explorer"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "val-accrual__mechanism",
+          "name": "Accrual Mechanism Control",
+          "about": "Evaluates whether tokenholders can modify parameters governing value capture, such as fees or revenue routing.",
+          "status": "TBD",
+          "notes": "The fee switch referendum is claimed to be controlled by ZRO holders via an immutable voting contract. **Aragon has not been able to verify this claim** without the voting contract address. If verifiable, this would represent tokenholder control over the primary value accrual mechanism.",
+          "evidence": [
+            {
+              "name": "Mechanism Description",
+              "summary": "Per documentation: If fee switch ON, protocol charges fees equal to DVN/Executor costs per message. Fees converted to ZRO and burned (deflationary). The conversion and burn mechanism cannot be verified without contract addresses.",
+              "urls": [
+                {
+                  "name": "Fee Switch Documentation",
+                  "url": "https://layerzero.foundation/fee-switch",
+                  "type": "docs"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "val-accrual__offchain",
+          "name": "Offchain Value Accrual",
+          "tags": [
+            "Reference"
+          ],
+          "about": "Are there additional offchain value accrual flows that benefit tokenholders?",
+          "status": "TBD",
+          "notes": "No binding offchain value accrual mechanisms exist. The Zero network announcement (Feb 2026) positions ZRO as native asset of a future L1, but this is forward-looking and not currently live.",
+          "evidence": []
+        }
+      ]
+    },
+    {
+      "id": "verifiability",
+      "name": "Verifiability",
+      "tags": [
+        "Metric 3"
+      ],
+      "about": "This metric measures whether a token's economically material code and deployments are independently verifiable from primary evidence without relying on insider assurances.",
+      "summary": "The ZRO token and core protocol contracts (EndpointV2, MessageLibs) are verified on Etherscan with matching source code on GitHub. The protocol is open source under LZBL-1.2 license (converts to GPL-2.0 compatible in Dec 2027).",
+      "criteria": [
+        {
+          "id": "verifiability__token-source",
+          "name": "Token Contract Source Verification",
+          "about": "Determines whether the token contract's source code is publicly available and verifiably matches the deployed bytecode.",
+          "status": "✅",
+          "notes": "The ZRO token is **verified on Etherscan** with matching source code in the LayerZero-v2 GitHub repository. The token implements the OFT (Omnichain Fungible Token) standard.",
+          "evidence": [
+            {
+              "urls": [
+                {
+                  "name": "ZRO Token (Etherscan Verified)",
+                  "url": "https://etherscan.io/address/0x6985884c4392d348587b19cb9eaaf157f13271cd#code",
+                  "type": "explorer"
+                },
+                {
+                  "name": "OFT Source (GitHub)",
+                  "url": "https://github.com/LayerZero-Labs/LayerZero-v2/blob/main/packages/layerzero-v2/evm/oapp/contracts/oft/OFT.sol",
+                  "type": "github"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "verifiability__protocol-source",
+          "name": "Protocol Component Source Verification",
+          "about": "Determines whether core protocol contracts are publicly accessible and verifiable against their onchain deployments.",
+          "status": "✅",
+          "notes": "All core protocol contracts are **verified on Etherscan** with matching source code on GitHub: EndpointV2, SendUln302, ReceiveUln302. The LayerZero-v2 repository is public.",
+          "evidence": [
+            {
+              "urls": [
+                {
+                  "name": "EndpointV2 (Etherscan Verified)",
+                  "url": "https://etherscan.io/address/0x1a44076050125825900e736c501f859c50fE728c#code",
+                  "type": "explorer"
+                },
+                {
+                  "name": "SendUln302 (Etherscan Verified)",
+                  "url": "https://etherscan.io/address/0xbB2Ea70C9E858123480642Cf96acbcCE1372dCe1#code",
+                  "type": "explorer"
+                },
+                {
+                  "name": "LayerZero-v2 Repository",
+                  "url": "https://github.com/LayerZero-Labs/LayerZero-v2",
+                  "type": "github"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "distribution",
+      "name": "Token Distribution",
+      "tags": [
+        "Metric 4"
+      ],
+      "about": "This metric evaluates whether ownership and therefore effective voting power in governance is meaningfully distributed.",
+      "summary": "High insider concentration: Strategic Partners (32.2%) + Core Contributors (25.5%) = 57.7% of total supply. Vesting continues through 2027. Current circulating supply is ~202.6M ZRO (~20% of total). Next major unlock: 25.7M ZRO to Core Contributors on March 20, 2026.",
+      "criteria": [
+        {
+          "id": "distribution__concentration",
+          "name": "Ownership Concentration",
+          "about": "Measures whether a single actor or coordinated group controls a majority of the voting supply.",
+          "status": "⚠️",
+          "notes": "**57.7% of total supply allocated to insiders:** Strategic Partners (32.2%, 322M ZRO) and Core Contributors (25.5%, 255M ZRO). These parties have aligned interests and ongoing vesting. Community allocation (38.3%) includes airdrop recipients who may have sold. Current circulating supply is ~20% of total.",
+          "evidence": [
+            {
+              "name": "Token Distribution",
+              "summary": "LayerZero Community: 38.3% (383M)\nStrategic Partners: 32.2% (322M) — 3-year vesting\nCore Contributors: 25.5% (255M) — 3-year vesting\nTokens Repurchased: 4.0% (40M)",
+              "urls": [
+                {
+                  "name": "Token Allocation (Tokenomist)",
+                  "url": "https://tokenomist.ai/layerzero",
+                  "type": "docs"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "distribution__supply-schedule",
+          "name": "Future Token Unlocks",
+          "about": "Are there known, future events (such as vesting cliffs) that will materially affect the concentration of tokens?",
+          "status": "⚠️",
+          "notes": "**Ongoing vesting through 2027.** Strategic Partners and Core Contributors have 3-year vesting schedules: 1-year cliff + 2-year linear vesting. Next scheduled unlock: 25,708,334 ZRO to Core Contributors on March 20, 2026.",
+          "evidence": [
+            {
+              "name": "Vesting Schedule",
+              "summary": "Strategic Partners + Core Contributors: 3-year vesting (1-year cliff, 2-year linear). TGE was June 2024, so cliff ended June 2025. Linear vesting continues through June 2027.",
+              "urls": [
+                {
+                  "name": "Vesting Details (CryptoRank)",
+                  "url": "https://cryptorank.io/price/layerzero/vesting",
+                  "type": "docs"
+                },
+                {
+                  "name": "Token Unlocks (Tokenomist)",
+                  "url": "https://tokenomist.ai/layerzero",
+                  "type": "docs"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "offchain",
+      "name": "Offchain Dependencies",
+      "tags": [
+        "Reference"
+      ],
+      "about": "Economically material assets and obligations often sit offchain—outside the custody and direct enforcement of a token—while still determining which interfaces and domains most users reach, where fees are charged or captured, who can commercialize or restrict the software, and who can sign contracts or move offchain funds.",
+      "summary": "Critical offchain assets are not controlled by ZRO holders. The \"LayerZero\" trademark at USPTO is owned by an unrelated power systems company. Core domains use WHOIS privacy. Protocol code uses LZBL-1.2 license controlled by LayerZero Labs Ltd., which restricts permissioned applications until Dec 2027.",
+      "criteria": [
+        {
+          "id": "offchain__trademark",
+          "name": "Trademark",
+          "about": "Are core trademarks and brand assets owned or controlled by a tokenholder-controlled legal entity?",
+          "status": "TBD",
+          "notes": "**Aragon has not been able to verify LayerZero Labs' trademark ownership.** The USPTO \"LayerZero\" trademark is owned by LayerZero Power Systems, Inc. (an unrelated power systems company). LayerZero Labs' blockchain-related trademark status is unclear.",
+          "evidence": [
+            {
+              "name": "Trademark Complexity",
+              "summary": "USPTO search shows \"LayerZero\" trademark owned by LayerZero Power Systems, Inc. (power electronics, unrelated to blockchain). LayerZero Labs claims IP ownership in Terms of Use but trademark registration status is unverified.",
+              "urls": [
+                {
+                  "name": "LayerZero Labs Documentation",
+                  "url": "https://docs.layerzero.network/v2",
+                  "type": "docs"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "offchain__distribution",
+          "name": "Distribution",
+          "about": "Are primary domains and distribution assets owned or controlled by a tokenholder-controlled legal entity?",
+          "status": "⚠️",
+          "notes": "Primary domains (layerzero.network, layerzero.foundation) use WHOIS privacy protection. No evidence of ZRO holder control. Domains are presumed controlled by LayerZero Labs or Foundation, not tokenholders.",
+          "evidence": [
+            {
+              "urls": [
+                {
+                  "name": "LayerZero Network",
+                  "url": "https://layerzero.network/",
+                  "type": "docs"
+                },
+                {
+                  "name": "LayerZero Foundation",
+                  "url": "https://layerzero.foundation/",
+                  "type": "docs"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "offchain__licensing",
+          "name": "Licensing",
+          "about": "Is core protocol software/IP (and any associated licensing rights, where applicable) owned or controlled by a tokenholder-controlled legal entity?",
+          "status": "⚠️",
+          "notes": "Protocol code uses **LZBL-1.2 (LayerZero Business License 1.2)** controlled by LayerZero Labs Ltd., not ZRO holders. Permissioned applications (regulated, KYC-required) cannot use the protocol without a commercial license. After Dec 14, 2027, the license converts to GPL-2.0 compatible.",
+          "evidence": [
+            {
+              "name": "License Terms",
+              "summary": "LZBL-1.2 Licensor: LayerZero Labs Ltd. (Vancouver, Canada). Restricts permissioned applications. Change Date: Dec 14, 2027 (converts to GPL-2.0). ZRO holders have no authority over licensing terms.",
+              "urls": [
+                {
+                  "name": "LZBL-1.2 License",
+                  "url": "https://github.com/LayerZero-Labs/LayerZero-v2/blob/main/LICENSE-LZBL-1.2",
+                  "type": "github"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "yb": [
     {
       "id": "onchain-ctrl",
