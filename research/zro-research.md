@@ -52,7 +52,7 @@ The **potential** value accrual mechanism:
 
 | Contract | Address | Chain | Upgradeable | Owner |
 |----------|---------|-------|-------------|-------|
-| ZRO Token | `0x6985884c4392d348587b19cb9eaaf157f13271cd` | Ethereum | No | 3/5 OneSig |
+| ZRO Token | `0x6985884c4392d348587b19cb9eaaf157f13271cd` | Ethereum | No | 3/5 Gnosis Safe |
 | EndpointV2 | `0x1a44076050125825900e736c501f859c50fE728c` | Ethereum | No | 3/5 OneSig |
 | SendUln302 | `0xbB2Ea70C9E858123480642Cf96acbcCE1372dCe1` | Ethereum | No | 3/5 OneSig |
 | ReceiveUln302 | `0xc02Ab410f0734EFa3F14628780e6e695156024C2` | Ethereum | No | 3/5 OneSig |
@@ -472,7 +472,7 @@ The announcement changes ZRO's utility thesis significantly IF the network launc
 
 4. **Treasury control** - Who actually controls the Foundation wallet and token allocation wallets?
 
-5. **DVN economics** - Does ZRO play any role in DVN staking/security? CryptoEconomic DVN framework was announced but deployment status unclear.
+5. **DVN economics** - **Verified: ZRO is NOT used.** DVN.sol handles message verification and fees in native currency (ETH) only. No ZRO staking, no token-based incentives exist in the current DVN implementation.
 
 ---
 
