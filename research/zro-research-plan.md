@@ -104,9 +104,24 @@ This research plan maps the Aragon Ownership Token Framework's five metrics (18 
 4. Check historical referendum results (Dec 2024, Jun 2025, Dec 2025 - all "Off")
 5. Determine: What else can ZRO holders vote on besides the fee switch?
 
+**Fee Switch Voting Contract Discovery Strategy:**
+1. Search `LayerZero-v2` repo for voting/referendum contracts: `grep -r "vote\|referendum\|governance" --include="*.sol"`
+2. Check Foundation website (layerzero.foundation/fee-switch) page source for embedded contract addresses
+3. Search Etherscan for contracts deployed by Foundation wallet (`0x2650e83effab4ca0fad4fbf91f70d17faeb24535`) - filter by contract type
+4. Check LayerZeroScan (layerzeroscan.com) governance section for contract references
+5. Search for LayerZero governance announcements on Medium (info.layerzero.foundation) that may reference the contract address
+6. Query the ZRO token contract for any governance-related functions or linked contracts
+7. Check the Stargate governance contracts (since Foundation took over Stargate) for patterns
+
+**If Contract Cannot Be Located:**
+- Document as "governance mechanism unverifiable from primary evidence"
+- Classify criteria 1.1 as "Unknown" per framework methodology
+- Note that claims of "immutable voting contract" cannot be verified without the address
+
 **Sources:**
 - Fee switch page: https://layerzero.foundation/fee-switch
-- Voting contract code (TBD - needs discovery)
+- Foundation Medium: https://info.layerzero.foundation
+- Voting contract code (TBD - needs discovery via steps above)
 - Referendum history on-chain
 
 **Evidence Required:**
@@ -425,17 +440,26 @@ This research plan maps the Aragon Ownership Token Framework's five metrics (18 
 **Question:** Who owns LayerZero/ZRO trademarks?
 
 **Investigation Approach:**
-1. Search USPTO, EUIPO for trademark filings
-2. Identify registrant entity
+1. Search USPTO TESS for "LayerZero" and "ZRO" trademark filings
+2. Search EUIPO for EU trademark registrations
+3. Identify registrant entity and relationship to Foundation
+
+**Fallback Strategies (if primary sources are incomplete):**
+- Search company registry filings (Delaware, Cayman, BVI) for Foundation legal entity
+- Check ToS/Privacy policy pages for named operating entities
+- Search Archive.org snapshots of domain registration pages
+- Review Foundation blog posts for legal entity mentions
 
 **Sources:**
-- USPTO trademark database
-- EUIPO trademark database
+- USPTO TESS: https://tmsearch.uspto.gov
+- EUIPO: https://euipo.europa.eu
+- Delaware Division of Corporations: https://icis.corp.delaware.gov
+- Terms of Service: https://layerzero.foundation/terms
 
 **Evidence Required:**
-- Trademark registration details
+- Trademark registration details with filing dates
 - Registrant entity identification
-- Relationship to Foundation/ZRO governance
+- Relationship to Foundation/ZRO governance (if any)
 
 #### 5.2 Distribution (Domains/Interfaces)
 
@@ -446,12 +470,19 @@ This research plan maps the Aragon Ownership Token Framework's five metrics (18 
 2. Identify who operates Stargate Finance frontend
 3. Analyze terms of service
 
+**Fallback Strategies (if WHOIS is redacted under GDPR):**
+- Archive.org historical WHOIS snapshots
+- ToS/Privacy policy pages often name operating entities
+- DNS records may reveal hosting provider/organization
+- Check domain registrar for public organization info
+
 **Sources:**
-- WHOIS lookups
+- WHOIS lookups (whois.domaintools.com or similar)
 - Terms of service pages
+- Archive.org Wayback Machine
 
 **Evidence Required:**
-- Domain ownership
+- Domain ownership (or documented redaction)
 - Interface operator identification
 - ToS contracting entity
 
@@ -514,6 +545,7 @@ This research plan maps the Aragon Ownership Token Framework's five metrics (18 
    - CryptoEconomic DVN framework announced but deployment status unclear
    - ZRO staking for DVN security: Is it live?
    - Need to distinguish announced vs deployed
+   - **Scoping guidance**: First confirm whether ZRO has any current role in DVN economics. If ZRO staking is not deployed, classify as "not applicable to current value accrual" and do not investigate DVN mechanics in depth. Focus on what ZRO holders actually control today, not theoretical future utility.
 
 4. **Zero Blockchain Implications**
    - Announced Feb 10, 2026 for fall 2026 launch
@@ -543,6 +575,27 @@ For each criteria, sufficient evidence means:
 | **Tokenholder-controlled** | Contract showing ZRO balance → execution path; timelock; quorum requirements |
 | **Discretionary** | Admin/owner functions callable by EOA/multisig without governance |
 | **Unknown** | Explicitly document what couldn't be verified and why |
+
+### Ownership Chain Documentation Requirement
+
+For each economically material contract, document the complete ownership chain using this notation format (matching existing framework entries like AAVE):
+
+**Required Ownership Chains:**
+```
+EndpointV2 → Owner (address) → [multisig/EOA] → Signers → [ZRO governance or NO governance]
+ZRO Token → Owner (address) → [governance path or NO governance]
+SendUln302 → Owner (address) → [governance path or NO governance]
+ReceiveUln302 → Owner (address) → [governance path or NO governance]
+Fee Switch Contract → [binding mechanism] → ZRO holders
+Treasury Wallet → Controller → [governance path or NO governance]
+```
+
+**Example from AAVE entry:**
+```
+Pool → PoolAddressProvider → Executor → PayloadsController → Token Holders
+```
+
+This notation makes discretionary vs tokenholder-controlled classifications explicit and traceable. Each step in the chain must be verified with on-chain evidence (contract reads, Etherscan verification).
 
 ### Source Priority
 
@@ -595,7 +648,11 @@ The research report (`zro-research.md`) will follow the same structure as existi
    - Name/summary
    - URLs (with type: explorer/github/docs)
    - Direct quotes or code snippets where applicable
-3. **Status classification** per criteria (positive/neutral/at-risk)
+3. **Status classification** per criteria using framework indicators:
+   - ✅ = Positive (tokenholder-controlled or immutable with no concerns)
+   - ⚠️ = Neutral/Warning (partial control, caveats, or mixed findings)
+   - ❌ = At-risk (discretionary control, no tokenholder authority)
+   - TBD = Cannot be determined from available evidence
 4. **Notes** explaining the assessment
 
 The JSON entries (`zro-tokens.json`, `zro-metrics.json`) will match the exact schema of existing entries.
