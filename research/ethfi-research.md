@@ -11,13 +11,13 @@
 
 ## Executive Summary
 
-ETHFI is a governance token for the ether.fi liquid staking protocol. The token implements ERC20Votes for on-chain voting capability, but **governance is currently in a transitional phase** with votes occurring off-chain via Snapshot, executed by a team-controlled multisig.
+ETHFI is a governance token for the ether.fi protocol, which has expanded from liquid staking into a broader neobank product suite. The token implements ERC20Votes for on-chain voting capability, but **governance is currently in Phase 0 of a multi-stage decentralisation roadmap** with votes occurring off-chain, executed by a team-controlled multisig.
 
 **Critical Correction:** Previous research incorrectly identified the upgrade authority. After tracing the full ownership chain from the deployed contracts, protocol upgrades are **timelocked with a 72-hour delay**, not instant.
 
 **Key Findings:**
 - **Supply:** Fixed at 1B with ~998.5M currently circulating (some burned). No mint function exists.
-- **Governance:** Off-chain Snapshot voting → multisig execution. Not on-chain binding.
+- **Governance:** Off-chain voting → multisig execution. Not on-chain binding.
 - **Upgrade Authority:** 4-of-7 multisig → 72-hour Timelock → RoleRegistry → Protocol contracts. Upgrades require a 72-hour delay.
 - **Value Accrual:** Active buyback program distributing to sETHFI stakers, but Foundation-discretionary via 1-of-5 wallet.
 - **Token Rights:** No censorship, no pause, no blacklist in ETHFI token contract.
@@ -37,17 +37,17 @@ ETHFI is a governance token for the ether.fi liquid staking protocol. The token 
 | eETH | [`0x35fA164735182de50811E8e2E824cFb9B6118ac2`](https://etherscan.io/address/0x35fA164735182de50811E8e2E824cFb9B6118ac2) | Rebasing Token | Yes (UUPS) |
 | weETH | [`0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee`](https://etherscan.io/address/0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee) | Wrapped Token | Yes (UUPS) |
 | EtherFiAdmin | [`0x0EF8fa4760Db8f5Cd4d993f3e3416f30f942D705`](https://etherscan.io/address/0x0EF8fa4760Db8f5Cd4d993f3e3416f30f942D705) | Admin | Yes (UUPS) |
-| Treasury | [`0x0c83EAe1FE72c390A02E426572854931EefF93BA`](https://etherscan.io/address/0x0c83EAe1FE72c390A02E426572854931EefF93BA) | Protocol Treasury | No (SafeProxy) |
-| Upgrade Timelock | [`0x9f26d4C958fD811A1F59B01B86Be7dFFc9d20761`](https://etherscan.io/address/0x9f26d4C958fD811A1F59B01B86Be7dFFc9d20761) | TimelockController (72h) | No |
-| Operating Timelock | [`0xcD425f44758a08BaAB3C4908f3e3dE5776e45d7a`](https://etherscan.io/address/0xcD425f44758a08BaAB3C4908f3e3dE5776e45d7a) | TimelockController (8h) | No |
+| Treasury | [`0x0c83EAe1FE72c390A02E426572854931EefF93BA`](https://etherscan.io/address/0x0c83EAe1FE72c390A02E426572854931EefF93BA) | Protocol Treasury | [UNVERIFIED] |
+| Upgrade Timelock | [`0x9f26d4C958fD811A1F59B01B86Be7dFFc9d20761`](https://etherscan.io/address/0x9f26d4C958fD811A1F59B01B86Be7dFFc9d20761) ([source](https://github.com/etherfi-protocol/smart-contracts/blob/master/src/EtherFiTimelock.sol)) | TimelockController (72h) | No |
+| Operating Timelock | [`0xcD425f44758a08BaAB3C4908f3e3dE5776e45d7a`](https://etherscan.io/address/0xcD425f44758a08BaAB3C4908f3e3dE5776e45d7a) ([source](https://github.com/etherfi-protocol/smart-contracts/blob/master/src/EtherFiTimelock.sol)) | TimelockController (8h) | No |
 | sETHFI | [`0x86B5780b606940Eb59A062aA85a07959518c0161`](https://etherscan.io/address/0x86B5780b606940Eb59A062aA85a07959518c0161) | Staking | [UNVERIFIED] |
 
 ### L2 Token Contracts
 
 | Network | Address | Type | Owner |
 |---------|---------|------|-------|
-| Arbitrum | [`0x7189fb5B6504bbfF6a852B13B7B82a3c118fDc27`](https://arbiscan.io/address/0x7189fb5B6504bbfF6a852B13B7B82a3c118fDc27) | UUPS Proxy | 3-of-6 Multisig (`0x0c6ca434756eedf928a55ebeaf0019364b279732`) |
-| Base | [`0x6C240DDA6b5c336DF09A4D011139beAAa1eA2Aa2`](https://basescan.org/address/0x6C240DDA6b5c336DF09A4D011139beAAa1eA2Aa2) | UUPS Proxy | 3-of-6 Multisig (`0x7a00657a45420044bc526b90ad667affaee0a868`) |
+| Arbitrum | [`0x7189fb5B6504bbfF6a852B13B7B82a3c118fDc27`](https://arbiscan.io/address/0x7189fb5B6504bbfF6a852B13B7B82a3c118fDc27) | UUPS Proxy | 3-of-6 Multisig ([`0x0c6ca...`](https://arbiscan.io/address/0x0c6ca434756eedf928a55ebeaf0019364b279732)) |
+| Base | [`0x6C240DDA6b5c336DF09A4D011139beAAa1eA2Aa2`](https://basescan.org/address/0x6C240DDA6b5c336DF09A4D011139beAAa1eA2Aa2) | UUPS Proxy | 3-of-6 Multisig ([`0x7a006...`](https://basescan.org/address/0x7a00657a45420044bc526b90ad667affaee0a868)) |
 
 ### Privileged Role Matrix
 
@@ -63,8 +63,8 @@ ETHFI is a governance token for the ether.fi liquid staking protocol. The token 
 | Upgrade Timelock | CANCELLER_ROLE | `0xcdd57D11476c22d265722F68390b036f3DA48c21` | 4-of-7 Multisig | `hasRole(CANCELLER_ROLE, addr) = true` | Team-controlled |
 | Operating Timelock | PROPOSER_ROLE | `0x2aCA71020De61bb532008049e1Bd41E451AE8AdC` | 3-of-5 Multisig | `hasRole(PROPOSER_ROLE, addr) = true` | Team-controlled |
 | Operating Timelock | EXECUTOR_ROLE | `0x2aCA71020De61bb532008049e1Bd41E451AE8AdC` | 3-of-5 Multisig | `hasRole(EXECUTOR_ROLE, addr) = true` | Team-controlled |
-| Arbitrum ETHFI | owner | `0x0c6ca434756eedf928a55ebeaf0019364b279732` | 3-of-6 Multisig | `eth_call owner()` | Team-controlled |
-| Base ETHFI | owner | `0x7a00657a45420044bc526b90ad667affaee0a868` | 3-of-6 Multisig | `eth_call owner()` | Team-controlled |
+| Arbitrum ETHFI | owner | [`0x0c6ca434...`](https://arbiscan.io/address/0x0c6ca434756eedf928a55ebeaf0019364b279732) | 3-of-6 Multisig | `eth_call owner()` | Team-controlled |
+| Base ETHFI | owner | [`0x7a00657a...`](https://basescan.org/address/0x7a00657a45420044bc526b90ad667affaee0a868) | 3-of-6 Multisig | `eth_call owner()` | Team-controlled |
 
 ### Multisig Details
 
@@ -77,13 +77,13 @@ ETHFI is a governance token for the ether.fi liquid staking protocol. The token 
 | Base L2 Admin | [`0x7a00657a45420044bc526b90ad667affaee0a868`](https://basescan.org/address/0x7a00657a45420044bc526b90ad667affaee0a868) | 3-of-6 | Base ETHFI token upgrades |
 
 **Upgrade Admin Signers (4-of-7):**
-1. `0x9506429a421757711806c5caf25ba1830e349b09`
-2. `0x4507cfb4b077d5dbddd520c701e30173d5b59fad`
-3. `0x5c8c76f2e990f194462dc5f8a8c76ba16966ed42`
-4. `0x0fce5cd3fb6f3b3fb7f0f707070a0a7e2442f444`
-5. `0x648aa14e4424e0825a5ce739c8c68610e143fb79`
-6. `0x2f2806e8b288428f23707a69faa60f52bc565c17`
-7. `0x173286fafabea063eeb3726ee5efd4ff414057b9`
+1. [`0x9506429a421757711806c5caf25ba1830e349b09`](https://etherscan.io/address/0x9506429a421757711806c5caf25ba1830e349b09)
+2. [`0x4507cfb4b077d5dbddd520c701e30173d5b59fad`](https://etherscan.io/address/0x4507cfb4b077d5dbddd520c701e30173d5b59fad)
+3. [`0x5c8c76f2e990f194462dc5f8a8c76ba16966ed42`](https://etherscan.io/address/0x5c8c76f2e990f194462dc5f8a8c76ba16966ed42)
+4. [`0x0fce5cd3fb6f3b3fb7f0f707070a0a7e2442f444`](https://etherscan.io/address/0x0fce5cd3fb6f3b3fb7f0f707070a0a7e2442f444)
+5. [`0x648aa14e4424e0825a5ce739c8c68610e143fb79`](https://etherscan.io/address/0x648aa14e4424e0825a5ce739c8c68610e143fb79)
+6. [`0x2f2806e8b288428f23707a69faa60f52bc565c17`](https://etherscan.io/address/0x2f2806e8b288428f23707a69faa60f52bc565c17)
+7. [`0x173286fafabea063eeb3726ee5efd4ff414057b9`](https://etherscan.io/address/0x173286fafabea063eeb3726ee5efd4ff414057b9)
 
 ### Ownership Topology Diagram
 
@@ -97,9 +97,8 @@ graph TB
     end
 
     subgraph "Governance Layer"
-        Snapshot[Snapshot Voting<br/>Off-chain, Non-binding]
+        Offchain[Offchain Voting<br/>Non-binding]
         Forum[Governance Forum<br/>Discussion]
-        Agora[Agora Platform<br/>Delegate Directory]
     end
 
     subgraph "Timelock Layer"
@@ -123,9 +122,8 @@ graph TB
         Admin[EtherFiAdmin]
     end
 
-    ETHFI -->|Delegate| Agora
-    ETHFI -->|Vote| Snapshot
-    Snapshot -->|Signal| Forum
+    ETHFI -->|Vote| Offchain
+    Offchain -->|Signal| Forum
     Forum -->|Propose| UpgradeAdmin
 
     UpgradeAdmin -->|PROPOSER_ROLE| UpgradeTimelock
@@ -204,6 +202,25 @@ Operating Timelock hasRole(EXECUTOR_ROLE, 0x2aCA71020De61bb532008049e1Bd41E451AE
 - **Upgrade Timelock (72h):** Controls RoleRegistry ownership and therefore all protocol upgrades. Changes to protocol code require 72 hours notice.
 - **Operating Timelock (8h):** Used for operational changes that don't affect upgrade authority. Provides 8 hours notice.
 
+### Timelock Scope: What It Controls vs. What Bypasses It
+
+The Upgrade Timelock (`0x9f26d4C958fD811A1F59B01B86Be7dFFc9d20761`) owns the RoleRegistry, which means timelock approval is required for contract upgrades and role management. However, many operational functions use role-based access control that bypasses the timelock entirely.
+
+**What Requires Timelock (72h):**
+- Contract upgrades (LiquidityPool, eETH, weETH, EtherFiAdmin) - via `RoleRegistry.onlyProtocolUpgrader()`
+- RoleRegistry upgrades - via `onlyOwner`
+- Granting or revoking roles - via `RoleRegistry.grantRole()/revokeRole()` (requires owner)
+
+**What Bypasses Timelock (role-based, instant):**
+- Validator operations (create, approve, fund) - `LIQUIDITY_POOL_VALIDATOR_CREATOR_ROLE`, `LIQUIDITY_POOL_VALIDATOR_APPROVER_ROLE`
+- Pool configuration (fee recipient, validator size) - `LIQUIDITY_POOL_ADMIN_ROLE`
+- Emergency pause/unpause - `PROTOCOL_PAUSER`, `PROTOCOL_UNPAUSER`
+- Oracle execution - `ETHERFI_ORACLE_EXECUTOR_TASK_MANAGER_ROLE`
+- Parameter updates - `ETHERFI_ORACLE_EXECUTOR_ADMIN_ROLE`
+- Asset recovery - `EETH_OPERATING_ADMIN_ROLE`, `WEETH_OPERATING_ADMIN_ROLE`
+
+**Implication:** While contract upgrades require 72 hours notice, operational actions like pausing the protocol, changing fee recipients, or executing oracle reports can happen instantly by role holders. Role holders are managed by the Timelock, but once granted, they can act without further timelock approval.
+
 ---
 
 ## 1. On-Chain Control
@@ -217,7 +234,7 @@ Operating Timelock hasRole(EXECUTOR_ROLE, 0x2aCA71020De61bb532008049e1Bd41E451AE
 **Current Flow:**
 ```mermaid
 graph LR
-    A[ETHFI Holders] -->|Vote on Snapshot| B[Off-chain Snapshot]
+    A[ETHFI Holders] -->|Vote| B[Offchain Governance]
     B -->|Forum Discussion| C[Governance Forum]
     C -->|Multisig Decision| D[4-of-7 Upgrade Admin]
     D -->|Schedule| E[Upgrade Timelock]
@@ -225,13 +242,13 @@ graph LR
 ```
 
 **Evidence:**
-- Agora governance page states Phase 1 includes: "launching offchain voting on Snapshot, delegate elections, our security council, and discourse groups"
-  - Source: [Agora Governance Info](https://vote.ether.fi/info)
-- Agora platform (vote.ether.fi) is a delegate directory, not binding on-chain voting
+- Governance roadmap states Phase 0 includes: "launching offchain voting, delegate elections, security council, and discourse groups"
+  - Source: [Governance Roadmap](https://etherfi.gitbook.io/gov/governance-roadmap)
+- Current governance is offchain and advisory, not binding on-chain voting
 - 4-day voting window with 1M ETHFI quorum required
   - Source: [Governance Forum](https://governance.ether.fi/)
 
-**Implication:** ETHFI tokenholders can signal preference but cannot unilaterally force execution. The multisig committee can theoretically ignore Snapshot results.
+**Implication:** ETHFI tokenholders can signal preference but cannot unilaterally force execution. The multisig committee can theoretically ignore offchain voting results.
 
 ---
 
@@ -307,8 +324,8 @@ curl -X POST https://eth-mainnet.public.blastapi.io -d '{"jsonrpc":"2.0","method
 - No EIP-1967 implementation slot found
 
 **L2 Tokens:** ❌ UPGRADEABLE (No Timelock)
-- **Arbitrum ETHFI:** UUPS proxy, owner is 3-of-6 multisig (`0x0c6ca434756eedf928a55ebeaf0019364b279732`) - **NO TIMELOCK**
-- **Base ETHFI:** UUPS proxy, owner is 3-of-6 multisig (`0x7a00657a45420044bc526b90ad667affaee0a868`) - **NO TIMELOCK**
+- **Arbitrum ETHFI:** UUPS proxy, owner is [3-of-6 multisig](https://arbiscan.io/address/0x0c6ca434756eedf928a55ebeaf0019364b279732) - **NO TIMELOCK**
+- **Base ETHFI:** UUPS proxy, owner is [3-of-6 multisig](https://basescan.org/address/0x7a00657a45420044bc526b90ad667affaee0a868) - **NO TIMELOCK**
 
 **Risk:** L2 token contracts can be upgraded instantly by 3-of-6 multisig, potentially introducing censorship or other restrictions.
 
@@ -328,7 +345,7 @@ totalSupply() = 998,535,999 ETHFI (approximately 1.46M burned)
 **Contract Analysis:**
 - Inherits `ERC20Burnable` - allows holders to burn their own tokens
 - No `mint()` function in contract
-- All 1B minted at deployment to: `0x7A6A41F353B3002751d94118aA7f4935dA39bB53`
+- All 1B minted at deployment to: [`0x7A6A41F353B3002751d94118aA7f4935dA39bB53`](https://etherscan.io/address/0x7A6A41F353B3002751d94118aA7f4935dA39bB53)
 
 **Documentation Confirmation:**
 > "ETHFI has a fixed supply of 1B, with no further issuance."
@@ -353,7 +370,7 @@ function pauseContract() external {
 ```
 - Source: [LiquidityPool.sol:448-453](https://github.com/etherfi-protocol/smart-contracts/blob/master/src/LiquidityPool.sol#L448-L453)
 
-**Impact:** While the protocol (staking/unstaking operations) can be paused, ETHFI token transfers remain unaffected. eETH holders could be temporarily blocked from withdrawing to ETH if LiquidityPool is paused.
+**Impact:** While protocol operations can be paused, ETHFI token transfers remain unaffected.
 
 ---
 
@@ -382,6 +399,12 @@ function pauseContract() external {
 
 **Finding:** An ETHFI buyback program is operational, distributing purchased tokens to sETHFI stakers. However, execution is Foundation-discretionary rather than programmatic.
 
+**Protocol Fee Split:**
+- Stakers: 90%
+- Node Operators: 5%
+- Protocol: 5%
+- Source: [ether.fi Staking Documentation](https://etherfi.gitbook.io/etherfi/ether.fi-whitepaper/ether.fi-staking)
+
 **Buyback Sources:**
 1. **Weekly:** 100% of eETH withdrawal fees
 2. **Monthly:** Portion of broader protocol revenue (Stake, Liquid, Cash products)
@@ -396,10 +419,12 @@ function pauseContract() external {
 
 **Caveat:**
 - Buyback execution is controlled by a **1-of-5 multisig** (any single signer can execute)
-- Distribution is announced via Foundation Twitter, not enforced by smart contract
+- Distribution is announced via Foundation communications, not enforced by smart contract
 - The Foundation has discretion over timing and amounts
 
-- Source: [ETHFI Buyback Program](https://etherfi.gitbook.io/gov/ethfi-buyback-program)
+**Sources:**
+- [ETHFI Buyback Program](https://etherfi.gitbook.io/gov/ethfi-buyback-program)
+- [Dune Dashboard: ETHFI Buybacks & Revenue](https://dune.com/ether_fi/ethfi-buybacks-and-protocol-revenue-sources)
 
 ---
 
@@ -413,7 +438,7 @@ function pauseContract() external {
 | Contract | Address | Owner |
 |----------|---------|-------|
 | Treasury (from Deployed.s.sol) | `0x0c83EAe1FE72c390A02E426572854931EefF93BA` | [UNVERIFIED - owner() reverts] |
-| Old Treasury Reference | `0x6329004E903B7F420245E7aF3f355186f2432466` | Timelock |
+| Old Treasury Reference | [`0x6329004E903B7F420245E7aF3f355186f2432466`](https://etherscan.io/address/0x6329004E903B7F420245E7aF3f355186f2432466) | Timelock |
 
 ---
 
@@ -452,14 +477,17 @@ function setFeeRecipient(address _feeRecipient) external {
 
 ### 3.1 Token Contract Source Verification
 
-**Status:** ✅ VERIFIED
+**Status:** ⚠️ PARTIAL
 
-**Finding:** ETHFI token contract is verified on Etherscan with full source code.
+**Finding:** ETHFI token contract is verified on Etherscan, but the source code is not available in the public GitHub repository.
 
 **Evidence:**
 - [Etherscan Verified Source](https://etherscan.io/address/0xFe0c30065B384F05761f15d0CC899D4F9F9Cc0eB#code)
 - Compiler: Solidity 0.8.20
 - License: MIT
+- GitHub Source: Not available in public repository
+
+**Note:** The token contract source is visible on Etherscan but not in the etherfi-protocol/smart-contracts GitHub repository.
 
 ---
 
@@ -484,9 +512,9 @@ function setFeeRecipient(address _feeRecipient) external {
 
 ### 4.1 Ownership Concentration
 
-**Status:** ⚠️ CONCENTRATED (Vesting Mitigates)
+**Status:** ⚠️ CONCENTRATED (Transparently Documented)
 
-**Finding:** Over 55% of tokens allocated to Investors and Core Contributors, though subject to vesting.
+**Finding:** The token allocation is clearly documented in official governance documentation. Over 55% is allocated to Investors and Core Contributors, with transparent vesting schedules that progressively release tokens over time.
 
 **Allocation Breakdown:**
 | Category | Percentage | Vesting | Cliff |
@@ -497,7 +525,6 @@ function setFeeRecipient(address _feeRecipient) external {
 | User Airdrops | 19.27% | Various | - |
 | Partnerships | 3.9% | - | - |
 
-**Current Circulating:** ~699M ETHFI (69.9% of total supply)
 **Fully Diluted:** 1B ETHFI
 
 - Source: [ETHFI Allocations](https://etherfi.gitbook.io/gov/ethfi-allocations)
@@ -506,18 +533,17 @@ function setFeeRecipient(address _feeRecipient) external {
 
 ### 4.2 Future Token Unlocks
 
-**Status:** ⚠️ ONGOING UNLOCKS
+**Status:** ⚠️ ONGOING UNLOCKS (Transparently Tracked)
 
-**Finding:** Continuous daily unlocks from team and investor allocations.
+**Finding:** The protocol provides transparent visibility into token unlock schedules. Continuous daily unlocks occur from team and investor allocations according to the published vesting schedule.
 
 **Unlock Status (approximate):**
 - Team: 77.96M unlocked of 232.6M (33.5%)
 - Investors: 217.55M unlocked of 325M (67%)
-- Daily unlock rate: ~1.2M ETHFI/day
 
 **Full vesting completion:** By end of 2030
 
-- Source: [DefiLlama Unlocks](https://defillama.com/unlocks/ether.fi), [CryptoRank Vesting](https://cryptorank.io/price/ether-fi/vesting)
+- Source: [DefiLlama Unlocks](https://defillama.com/unlocks/ether.fi)
 
 ---
 
@@ -549,14 +575,18 @@ function setFeeRecipient(address _feeRecipient) external {
 
 ### 5.3 Licensing
 
-**Status:** ✅ OPEN SOURCE
+**Status:** ⚠️ MIXED
 
-**Finding:** Protocol smart contracts are MIT licensed, allowing unrestricted use, modification, and distribution.
-
-**Evidence:**
+**Smart Contracts:** MIT licensed, allowing unrestricted use, modification, and distribution.
 - README states: "ether.fi is open-source and licensed under the MIT License"
 - SPDX-License-Identifier: MIT in contract headers
 - Source: [GitHub Repository](https://github.com/etherfi-protocol/smart-contracts)
+
+**Non-Smart-Contract IP:** Company-controlled with restrictions.
+- Website content, documentation, and brand assets are owned by Ether.Fi SEZC
+- Users receive only a "limited, non-transferable, non-sublicensable, non-exclusive, revocable license"
+- No explicit open licensing for documentation, SDKs, or APIs
+- Source: [Terms of Use](https://etherfi.gitbook.io/etherfi/ether.fi-legal/terms-of-use)
 
 ---
 
@@ -594,7 +624,46 @@ function setFeeRecipient(address _feeRecipient) external {
 
 7. **Unverifiable Contracts:** Aragon has not been able to verify the access control mechanism for:
    - **sETHFI** (`0x86B5780b606940Eb59A062aA85a07959518c0161`): `owner()` returns `0x0`, not a standard proxy, storage slot 0 is empty. The contract may use a non-standard access control pattern.
-   - **Treasury** (`0x0c83EAe1FE72c390A02E426572854931EefF93BA`): `owner()` reverts, not a standard proxy. Storage slot 0 contains address `0x41675c099f32341bf84bfc5382af534df5c7461a` (a contract), but its role is unclear.
+   - **Treasury** ([`0x0c83EAe1FE72c390A02E426572854931EefF93BA`](https://etherscan.io/address/0x0c83EAe1FE72c390A02E426572854931EefF93BA)): `owner()` reverts, not a standard proxy. Storage slot 0 contains address [`0x41675c099f32341bf84bfc5382af534df5c7461a`](https://etherscan.io/address/0x41675c099f32341bf84bfc5382af534df5c7461a) (a contract), but its role is unclear.
+
+---
+
+## Additional Protocol Contracts (Veda Vaults)
+
+Beyond the core ETHFI token and protocol contracts, Ether.fi offers a suite of liquid vault products built on Veda infrastructure. These vaults use a different access control pattern where `owner()` returns `0x0`, but access is managed through a `RolesAuthority` contract.
+
+### Vault Overview
+
+| Product | Contract | Type | Authority Owner |
+|---------|----------|------|-----------------|
+| eUSD | [`0x939778D83b46B456224A33Fb59630B11DEC56663`](https://etherscan.io/address/0x939778D83b46B456224A33Fb59630B11DEC56663) | Boring Vault | 4-of-6 multisig ([`0xcea80...`](https://etherscan.io/address/0xcea8039076e35a825854c5c2f85659430b06ec96)) |
+| weETHs | [`0x917cee801a67f933f2e6b33fc0cd1ed2d5909d88`](https://etherscan.io/address/0x917cee801a67f933f2e6b33fc0cd1ed2d5909d88) | Boring Vault (Symbiotic) | 4-of-6 multisig ([`0xcea80...`](https://etherscan.io/address/0xcea8039076e35a825854c5c2f85659430b06ec96)) |
+| weETHk | [`0x7223442cad8e9ca474fc40109ab981608f8c4273`](https://etherscan.io/address/0x7223442cad8e9ca474fc40109ab981608f8c4273) | Boring Vault (Karak) | 4-of-6 multisig ([`0xcea80...`](https://etherscan.io/address/0xcea8039076e35a825854c5c2f85659430b06ec96)) |
+| eBTC | [`0x657e8C867D8B37dCC18fA4Caead9C45EB088C642`](https://etherscan.io/address/0x657e8C867D8B37dCC18fA4Caead9C45EB088C642) | Boring Vault | 5-day Timelock |
+| beHYPE | [`0xd8FC8F0b03eBA61F64D08B0bef69d80916E5DdA9`](https://hyperscan.xyz/address/0xd8FC8F0b03eBA61F64D08B0bef69d80916E5DdA9) | HyperEVM | Not verified |
+
+### Access Control Pattern
+
+These Veda vaults use an `authority()` function instead of `owner()`. The authority contract (a `RolesAuthority`) determines who can call privileged functions. The RolesAuthority itself has an owner - typically a multisig or timelock.
+
+**On-chain verification:**
+```
+eUSD.authority() = 0x83da0eabc45b14bbfaec94a1f4de0901db6b9633
+RolesAuthority.owner() = 0xcea8039076e35a825854c5c2f85659430b06ec96 (4-of-6 multisig)
+
+eBTC.authority() = 0x6889e57bca038c28520c0b047a75e567502ea5f6
+RolesAuthority.owner() = 0x70a64840a353c58f63333570f53dba0948bece3d (5-day Timelock)
+```
+
+### Implications for ETHFI Token Analysis
+
+1. **Consistent multisig control:** Most vaults (eUSD, weETHs, weETHk) are ultimately controlled by the same 4-of-6 multisig, similar to the L2 ETHFI tokens.
+
+2. **eBTC has timelock protection:** eBTC uses a 5-day timelock for role authority changes, providing better protection than the other vaults.
+
+3. **No direct ETHFI value flow:** These vaults do not appear to have a direct value flow to ETHFI tokenholders. They are separate product offerings within the ether.fi ecosystem.
+
+4. **No change to overall assessment:** The existence of these vaults does not change the fundamental finding that ether.fi is controlled by team multisigs, with the 72-hour Upgrade Timelock providing the main protection for L1 ETHFI holders.
 
 ---
 
@@ -605,7 +674,7 @@ function setFeeRecipient(address _feeRecipient) external {
 | "Decentralized governance" | Off-chain voting, multisig execution |
 | "Community controls treasury" | Timelock controlled, multisig proposes |
 | "Tokenholders govern protocol" | Advisory votes only, no binding on-chain |
-| "Progressive decentralization" | Currently in Phase 1, full decentralization TBD |
+| "Progressive decentralization" | Currently in Phase 0, full decentralization TBD |
 
 ---
 
@@ -673,7 +742,7 @@ ETHFI token lacks:
 - All contract calls verified February 24, 2026
 
 ### Key Corrections from Previous Research
-1. **RoleRegistry Address:** Correct address is `0x62247D29B4B9BECf4BB73E0c722cf6445cfC7cE9` (not `0x1d3Af47C1607A2EF33033693A9989D1d1013BB50`)
+1. **RoleRegistry Address:** Correct address is [`0x62247D29B4B9BECf4BB73E0c722cf6445cfC7cE9`](https://etherscan.io/address/0x62247D29B4B9BECf4BB73E0c722cf6445cfC7cE9) (not `0x1d3Af47C1607A2EF33033693A9989D1d1013BB50`)
 2. **RoleRegistry Owner:** Owner is Upgrade Timelock (not 3-of-5 multisig)
 3. **Upgrade Authority:** Requires 72-hour timelock (not instant multisig)
 4. **Upgrade Admin:** 4-of-7 multisig at `0xcdd57D11476c22d265722F68390b036f3DA48c21`
