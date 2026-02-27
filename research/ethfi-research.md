@@ -19,7 +19,7 @@ ETHFI is a governance token for the ether.fi protocol, which has expanded from l
 - **Supply:** Fixed at 1B with ~998.5M currently circulating (some burned). No mint function exists.
 - **Governance:** Off-chain voting → multisig execution. Not on-chain binding.
 - **Upgrade Authority:** 4-of-7 multisig → 72-hour Timelock → RoleRegistry → Protocol contracts. Upgrades require a 72-hour delay.
-- **Value Accrual:** Active buyback program distributing to sETHFI stakers, but Foundation-discretionary via 1-of-5 wallet.
+- **Value Accrual:** Active buyback program distributing to ETHFI stakers (sETHFI holders), but Foundation-discretionary via 1-of-5 wallet.
 - **Token Rights:** No censorship, no pause, no blacklist in ETHFI token contract.
 - **L2 Tokens:** Upgradeable on Arbitrum and Base, controlled by 3-of-6 multisigs (no timelock).
 
@@ -37,10 +37,10 @@ ETHFI is a governance token for the ether.fi protocol, which has expanded from l
 | eETH | [`0x35fA164735182de50811E8e2E824cFb9B6118ac2`](https://etherscan.io/address/0x35fA164735182de50811E8e2E824cFb9B6118ac2) | Rebasing Token | Yes (UUPS) |
 | weETH | [`0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee`](https://etherscan.io/address/0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee) | Wrapped Token | Yes (UUPS) |
 | EtherFiAdmin | [`0x0EF8fa4760Db8f5Cd4d993f3e3416f30f942D705`](https://etherscan.io/address/0x0EF8fa4760Db8f5Cd4d993f3e3416f30f942D705) | Admin | Yes (UUPS) |
-| Treasury | [`0x0c83EAe1FE72c390A02E426572854931EefF93BA`](https://etherscan.io/address/0x0c83EAe1FE72c390A02E426572854931EefF93BA) | Protocol Treasury | [UNVERIFIED] |
+| Treasury | [`0x0c83EAe1FE72c390A02E426572854931EefF93BA`](https://etherscan.io/address/0x0c83EAe1FE72c390A02E426572854931EefF93BA) | 3-of-8 Safe | No |
 | Upgrade Timelock | [`0x9f26d4C958fD811A1F59B01B86Be7dFFc9d20761`](https://etherscan.io/address/0x9f26d4C958fD811A1F59B01B86Be7dFFc9d20761) ([source](https://github.com/etherfi-protocol/smart-contracts/blob/master/src/EtherFiTimelock.sol)) | TimelockController (72h) | No |
 | Operating Timelock | [`0xcD425f44758a08BaAB3C4908f3e3dE5776e45d7a`](https://etherscan.io/address/0xcD425f44758a08BaAB3C4908f3e3dE5776e45d7a) ([source](https://github.com/etherfi-protocol/smart-contracts/blob/master/src/EtherFiTimelock.sol)) | TimelockController (8h) | No |
-| sETHFI | [`0x86B5780b606940Eb59A062aA85a07959518c0161`](https://etherscan.io/address/0x86B5780b606940Eb59A062aA85a07959518c0161) | Staking | [UNVERIFIED] |
+| sETHFI | [`0x86B5780b606940Eb59A062aA85a07959518c0161`](https://etherscan.io/address/0x86B5780b606940Eb59A062aA85a07959518c0161) | Boring Vault (ETHFI staking) | No |
 
 ### L2 Token Contracts
 
@@ -65,6 +65,8 @@ ETHFI is a governance token for the ether.fi protocol, which has expanded from l
 | Operating Timelock | EXECUTOR_ROLE | `0x2aCA71020De61bb532008049e1Bd41E451AE8AdC` | 3-of-5 Multisig | `hasRole(EXECUTOR_ROLE, addr) = true` | Team-controlled |
 | Arbitrum ETHFI | owner | [`0x0c6ca434...`](https://arbiscan.io/address/0x0c6ca434756eedf928a55ebeaf0019364b279732) | 3-of-6 Multisig | `eth_call owner()` | Team-controlled |
 | Base ETHFI | owner | [`0x7a00657a...`](https://basescan.org/address/0x7a00657a45420044bc526b90ad667affaee0a868) | 3-of-6 Multisig | `eth_call owner()` | Team-controlled |
+| sETHFI | authority | [`0x3994741a...`](https://etherscan.io/address/0x3994741a5b29c60d0ab318de1024f9256fe959dc) | RolesAuthority | `authority() = 0x3994741a...` | 4-of-6 Multisig |
+| Treasury | threshold | 3-of-8 | Safe Multisig | `getThreshold() = 3, getOwners().length = 8` | Team-controlled |
 
 ### Multisig Details
 
@@ -218,8 +220,12 @@ The Upgrade Timelock (`0x9f26d4C958fD811A1F59B01B86Be7dFFc9d20761`) owns the Rol
 - Oracle execution - `ETHERFI_ORACLE_EXECUTOR_TASK_MANAGER_ROLE`
 - Parameter updates - `ETHERFI_ORACLE_EXECUTOR_ADMIN_ROLE`
 - Asset recovery - `EETH_OPERATING_ADMIN_ROLE`, `WEETH_OPERATING_ADMIN_ROLE`
+- **L2 token upgrades:** Arbitrum and Base ETHFI tokens can be upgraded via `upgradeToAndCall()` and have minting control via `setMinter()` - controlled by 3-of-6 multisigs with NO timelock
 
-**Implication:** While contract upgrades require 72 hours notice, operational actions like pausing the protocol, changing fee recipients, or executing oracle reports can happen instantly by role holders. Role holders are managed by the Timelock, but once granted, they can act without further timelock approval.
+**Role Holders for Key Roles (verified on-chain):**
+- `LIQUIDITY_POOL_ADMIN_ROLE`: EtherFiAdmin (`0x0EF8fa...`) and Operating Timelock (`0xcD425f...`)
+
+**Implication:** While L1 contract upgrades require 72 hours notice via the Upgrade Timelock, operational actions can happen instantly by role holders. L2 ETHFI tokens have no timelock protection at all. Role holders are managed by the Upgrade Timelock, but once granted, they can act without further approval.
 
 ---
 
@@ -256,23 +262,31 @@ graph LR
 
 **Status:** ⚠️ PARTIAL
 
-**Finding:** Protocol roles are managed via RoleRegistry at `0x62247D29B4B9BECf4BB73E0c722cf6445cfC7cE9`. The RoleRegistry is owned by the **Upgrade Timelock**, not a multisig directly. However, the Timelock proposers are team-controlled multisigs.
+**Finding:** Protocol roles are managed through a layered system with multiple access control patterns:
+
+1. **RoleRegistry** ([`0x62247D29B4B9BECf4BB73E0c722cf6445cfC7cE9`](https://etherscan.io/address/0x62247D29B4B9BECf4BB73E0c722cf6445cfC7cE9)): Manages system-wide roles using Solady's EnumerableRoles. Owned by the **Upgrade Timelock** (72-hour delay). Role hashes are defined on individual contracts but registered here.
+
+2. **Timelocks**: Both timelocks use OpenZeppelin's TimelockController with their own internal `hasRole()` — not managed by the RoleRegistry.
+
+3. **Boring Vaults** (sETHFI, eUSD, etc.): Use `RolesAuthority` pattern, separate from the RoleRegistry. Authority contracts are controlled by the 4-of-6 multisig.
+
+4. **Gnosis Safes**: Treasury and other Safes have their own threshold-based access pattern.
+
+**Key Role Holders (verified on-chain):**
+- `LIQUIDITY_POOL_ADMIN_ROLE`: EtherFiAdmin + Operating Timelock (8h)
+- `PROTOCOL_PAUSER` / `PROTOCOL_UNPAUSER`: Managed by RoleRegistry
+- Timelock PROPOSER/EXECUTOR roles: 4-of-7 (Upgrade) and 3-of-5 (Operating) multisigs
 
 **On-chain verification:**
 ```
 RoleRegistry.owner() = 0x9f26d4c958fd811a1f59b01b86be7dffc9d20761 (Upgrade Timelock)
 Upgrade Timelock minDelay = 259200 seconds (72 hours)
-Upgrade Timelock PROPOSER_ROLE holder = 0xcdd57D11476c22d265722F68390b036f3DA48c21 (4-of-7)
+Operating Timelock minDelay = 28800 seconds (8 hours)
 ```
 
-**Defined Roles (RoleRegistry.sol lines 13-14):**
-```solidity
-bytes32 public constant PROTOCOL_PAUSER = keccak256("PROTOCOL_PAUSER");
-bytes32 public constant PROTOCOL_UNPAUSER = keccak256("PROTOCOL_UNPAUSER");
-```
-- Source: [RoleRegistry.sol:13-14](https://github.com/etherfi-protocol/smart-contracts/blob/master/src/RoleRegistry.sol#L13-L14)
+**Complexity Note:** This is a convoluted role system that is difficult to trace fully. The important points: timelocks provide delays for upgrades and role changes, key operational roles are held by the Operating multisig and EtherFiAdmin, and ultimately all these systems are controlled by team multisigs. ETHFI tokenholders have no direct role in any of these systems. We have seen no evidence of bad faith, but tokenholders must trust the EtherFi team.
 
-**Implication:** Role changes require a 72-hour timelock, providing exit opportunity for users who disagree with proposed changes.
+**Implication:** Role changes via RoleRegistry require a 72-hour timelock, providing exit opportunity. However, operational roles (once granted) can act immediately.
 
 ---
 
@@ -289,13 +303,23 @@ bytes32 public constant PROTOCOL_UNPAUSER = keccak256("PROTOCOL_UNPAUSER");
 4. Contract implementation is replaced
 
 **Contract Ownership vs Upgrade Authority:**
-| Contract | owner() | Upgrade Authority |
-|----------|---------|-------------------|
-| LiquidityPool | Timelock | **Timelock (72h delay)** |
-| eETH | Timelock | **Timelock (72h delay)** |
-| weETH | Timelock | **Timelock (72h delay)** |
-| EtherFiAdmin | Timelock | **Timelock (72h delay)** |
-| RoleRegistry | Timelock | **Timelock (72h delay)** |
+| Contract | Type | owner() | Upgrade Authority |
+|----------|------|---------|-------------------|
+| LiquidityPool | UUPS | Upgrade Timelock | **72h delay** |
+| eETH | UUPS | Upgrade Timelock | **72h delay** |
+| weETH | UUPS | Upgrade Timelock | **72h delay** |
+| EtherFiAdmin | UUPS | Upgrade Timelock | **72h delay** |
+| RoleRegistry | UUPS | Upgrade Timelock | **72h delay** |
+| sETHFI | Boring Vault | - | **Not upgradeable** (authority: 4-of-6) |
+| eUSD | Boring Vault | - | **Not upgradeable** (authority: 4-of-6) |
+| weETHs | Boring Vault | - | **Not upgradeable** (authority: 4-of-6) |
+| weETHk | Boring Vault | - | **Not upgradeable** (authority: 4-of-6) |
+| eBTC | Boring Vault | - | **Not upgradeable** (authority: 5-day Timelock) |
+| Treasury | Gnosis Safe | - | **Not upgradeable** (3-of-8) |
+| Arbitrum ETHFI | UUPS | 3-of-6 | **Instant** (no timelock) |
+| Base ETHFI | UUPS | 3-of-6 | **Instant** (no timelock) |
+
+**Note:** Boring Vaults use `authority()` instead of `owner()`. The authority contract (RolesAuthority) controls privileged functions. Boring Vaults are non-upgradeable by design. See "Additional Protocol Contracts (Veda Vaults)" section for details.
 
 **Verification Commands:**
 ```bash
@@ -345,7 +369,7 @@ totalSupply() = 998,535,999 ETHFI (approximately 1.46M burned)
 **Contract Analysis:**
 - Inherits `ERC20Burnable` - allows holders to burn their own tokens
 - No `mint()` function in contract
-- All 1B minted at deployment to: [`0x7A6A41F353B3002751d94118aA7f4935dA39bB53`](https://etherscan.io/address/0x7A6A41F353B3002751d94118aA7f4935dA39bB53)
+- All 1B minted at deployment to a 4-of-6 Safe: [`0x7A6A41F353B3002751d94118aA7f4935dA39bB53`](https://etherscan.io/address/0x7A6A41F353B3002751d94118aA7f4935dA39bB53)
 
 **Documentation Confirmation:**
 > "ETHFI has a fixed supply of 1B, with no further issuance."
@@ -355,9 +379,16 @@ totalSupply() = 998,535,999 ETHFI (approximately 1.46M burned)
 
 ### 1.6 Privileged Access Gating
 
-**Status:** ⚠️ PAUSE EXISTS (Protocol, not Token)
+**Status:** ⚠️ TEAM-CONTROLLED (No Tokenholder Access)
 
-**Finding:** Protocol contracts (LiquidityPool, eETH operations) can be paused by addresses holding PROTOCOL_PAUSER role. The ETHFI token itself has no pause function.
+**Finding:** ETHFI tokenholders have no direct access to protocol operations. All privileged functions are controlled by team multisigs or role holders appointed by team multisigs. Beyond pause, privileged access includes fee configuration, validator management, oracle execution, and asset recovery.
+
+**Key Privileged Functions:**
+- **Pause/Unpause:** `PROTOCOL_PAUSER` and `PROTOCOL_UNPAUSER` roles can halt protocol operations
+- **Fee Configuration:** `LIQUIDITY_POOL_ADMIN_ROLE` can change fee recipients via `setFeeRecipient()`
+- **Validator Management:** Multiple roles control validator creation, approval, and funding
+- **Oracle Execution:** `ETHERFI_ORACLE_EXECUTOR_TASK_MANAGER_ROLE` executes reward distributions
+- **Asset Recovery:** Operating admin roles can recover assets from protocol contracts
 
 **Pause Authority (LiquidityPool.sol lines 448-453):**
 ```solidity
@@ -370,7 +401,24 @@ function pauseContract() external {
 ```
 - Source: [LiquidityPool.sol:448-453](https://github.com/etherfi-protocol/smart-contracts/blob/master/src/LiquidityPool.sol#L448-L453)
 
-**Impact:** While protocol operations can be paused, ETHFI token transfers remain unaffected.
+**Tokenholder Control:** None. ETHFI tokenholders cannot directly invoke any protocol function. Their only power is advisory voting in offchain governance, which the team multisigs may choose to follow.
+
+### EtherFiAdmin Contract
+
+EtherFiAdmin ([`0x0EF8fa4760Db8f5Cd4d993f3e3416f30f942D705`](https://etherscan.io/address/0x0EF8fa4760Db8f5Cd4d993f3e3416f30f942D705)) is the primary execution engine for protocol operations. It coordinates batch operations and timing-sensitive tasks.
+
+**Key Functions:**
+- `pauseAll()` / `unPauseAll()`: Protocol-wide pause control
+- `executeTasks()`: Batch execution of oracle-triggered tasks (reward distribution, rebase, validator management)
+- `updateAdmin()`: Change admin configuration (requires Upgrade Timelock)
+- `setDailyExecutionTimestamp()`: Controls execution windows
+
+**Privileged Roles Required:**
+- `ETHERFI_ORACLE_EXECUTOR_TASK_MANAGER_ROLE`: Execute reward distribution tasks
+- `ETHERFI_ORACLE_EXECUTOR_ADMIN_ROLE`: Configure execution parameters
+- `PROTOCOL_PAUSER` / `PROTOCOL_UNPAUSER`: Pause control
+
+**Source:** [EtherFiAdmin.sol](https://github.com/etherfi-protocol/smart-contracts/blob/master/src/EtherFiAdmin.sol)
 
 ---
 
@@ -397,20 +445,22 @@ function pauseContract() external {
 
 **Status:** ✅ ACTIVE (with caveats)
 
-**Finding:** An ETHFI buyback program is operational, distributing purchased tokens to sETHFI stakers. However, execution is Foundation-discretionary rather than programmatic.
+**Finding:** An ETHFI buyback program is operational, distributing purchased tokens to ETHFI stakers (sETHFI holders). However, execution is Foundation-discretionary rather than programmatic.
 
-**Protocol Fee Split:**
-- Stakers: 90%
+**Protocol Fee Split (for eETH staking rewards):**
+- eETH Stakers: 90%
 - Node Operators: 5%
 - Protocol: 5%
 - Source: [ether.fi Staking Documentation](https://etherfi.gitbook.io/etherfi/ether.fi-whitepaper/ether.fi-staking)
+
+**Note:** This fee split applies to ETH staking rewards accrued by eETH holders. The 5% protocol revenue contributes to ETHFI buybacks.
 
 **Buyback Sources:**
 1. **Weekly:** 100% of eETH withdrawal fees
 2. **Monthly:** Portion of broader protocol revenue (Stake, Liquid, Cash products)
 
 **Distribution:**
-- All buyback proceeds → sETHFI stakers
+- All buyback proceeds → ETHFI stakers (sETHFI holders)
 - Staking at: [ether.fi/app/ethfi](https://www.ether.fi/app/ethfi)
 
 **On-chain Evidence:**
@@ -419,8 +469,10 @@ function pauseContract() external {
 
 **Caveat:**
 - Buyback execution is controlled by a **1-of-5 multisig** (any single signer can execute)
+- All 5 signers are EOAs (verified on-chain)
 - Distribution is announced via Foundation communications, not enforced by smart contract
 - The Foundation has discretion over timing and amounts
+- The buyback wallet appears to have no other protocol powers beyond holding and distributing ETHFI
 
 **Sources:**
 - [ETHFI Buyback Program](https://etherfi.gitbook.io/gov/ethfi-buyback-program)
@@ -437,7 +489,7 @@ function pauseContract() external {
 **Treasury Contracts:**
 | Contract | Address | Owner |
 |----------|---------|-------|
-| Treasury (from Deployed.s.sol) | `0x0c83EAe1FE72c390A02E426572854931EefF93BA` | [UNVERIFIED - owner() reverts] |
+| Treasury (from Deployed.s.sol) | [`0x0c83EAe1FE72c390A02E426572854931EefF93BA`](https://etherscan.io/address/0x0c83EAe1FE72c390A02E426572854931EefF93BA) | 3-of-8 Safe Multisig |
 | Old Treasury Reference | [`0x6329004E903B7F420245E7aF3f355186f2432466`](https://etherscan.io/address/0x6329004E903B7F420245E7aF3f355186f2432466) | Timelock |
 
 ---
@@ -622,9 +674,9 @@ function setFeeRecipient(address _feeRecipient) external {
 
 6. **Two-Timelock System:** The protocol uses Upgrade Timelock (72h) and Operating Timelock (8h) with different admin multisigs. Both timelocks verified.
 
-7. **Unverifiable Contracts:** Aragon has not been able to verify the access control mechanism for:
-   - **sETHFI** (`0x86B5780b606940Eb59A062aA85a07959518c0161`): `owner()` returns `0x0`, not a standard proxy, storage slot 0 is empty. The contract may use a non-standard access control pattern.
-   - **Treasury** ([`0x0c83EAe1FE72c390A02E426572854931EefF93BA`](https://etherscan.io/address/0x0c83EAe1FE72c390A02E426572854931EefF93BA)): `owner()` reverts, not a standard proxy. Storage slot 0 contains address [`0x41675c099f32341bf84bfc5382af534df5c7461a`](https://etherscan.io/address/0x41675c099f32341bf84bfc5382af534df5c7461a) (a contract), but its role is unclear.
+7. **sETHFI and Treasury Access Control:**
+   - **sETHFI** ([`0x86B5780b606940Eb59A062aA85a07959518c0161`](https://etherscan.io/address/0x86B5780b606940Eb59A062aA85a07959518c0161)): Boring Vault using `authority()` pattern. RolesAuthority at [`0x3994741a5b29c60d0ab318de1024f9256fe959dc`](https://etherscan.io/address/0x3994741a5b29c60d0ab318de1024f9256fe959dc) owned by 4-of-6 multisig ([`0xcea8039076e35a825854c5c2f85659430b06ec96`](https://etherscan.io/address/0xcea8039076e35a825854c5c2f85659430b06ec96)). Not upgradeable.
+   - **Treasury** ([`0x0c83EAe1FE72c390A02E426572854931EefF93BA`](https://etherscan.io/address/0x0c83EAe1FE72c390A02E426572854931EefF93BA)): 3-of-8 Gnosis Safe multisig. Not upgradeable.
 
 ---
 
@@ -657,13 +709,13 @@ RolesAuthority.owner() = 0x70a64840a353c58f63333570f53dba0948bece3d (5-day Timel
 
 ### Implications for ETHFI Token Analysis
 
-1. **Consistent multisig control:** Most vaults (eUSD, weETHs, weETHk) are ultimately controlled by the same 4-of-6 multisig, similar to the L2 ETHFI tokens.
+1. **Consistent multisig control:** Most vaults (eUSD, weETHs, weETHk, sETHFI) are controlled by the same 4-of-6 multisig ([`0xcea8039076e35a825854c5c2f85659430b06ec96`](https://etherscan.io/address/0xcea8039076e35a825854c5c2f85659430b06ec96)), similar to L2 ETHFI tokens.
 
-2. **eBTC has timelock protection:** eBTC uses a 5-day timelock for role authority changes, providing better protection than the other vaults.
+2. **eBTC has timelock protection:** eBTC uses a 5-day timelock for role authority changes, providing better protection than other vaults.
 
-3. **No direct ETHFI value flow:** These vaults do not appear to have a direct value flow to ETHFI tokenholders. They are separate product offerings within the ether.fi ecosystem.
+3. **Indirect ETHFI value flow:** While these vaults don't directly distribute to ETHFI tokenholders, they generate protocol revenue. Per the [buyback program docs](https://etherfi.gitbook.io/gov/ethfi-buyback-program), "a portion of broader protocol revenue (Stake, Liquid, Cash products)" funds monthly ETHFI buybacks. The [Dune dashboard](https://dune.com/ether_fi/ethfi-buybacks-and-protocol-revenue-sources) tracks liquid vault revenue contributions.
 
-4. **No change to overall assessment:** The existence of these vaults does not change the fundamental finding that ether.fi is controlled by team multisigs, with the 72-hour Upgrade Timelock providing the main protection for L1 ETHFI holders.
+4. **No change to overall assessment:** The vaults confirm the pattern: ether.fi products are controlled by team multisigs, with the 72-hour Upgrade Timelock providing protection only for core L1 contracts (LiquidityPool, eETH, weETH). The value flow to ETHFI remains Foundation-discretionary via the 1-of-5 buyback wallet.
 
 ---
 
@@ -706,14 +758,14 @@ ETHFI token lacks:
 | RoleRegistry | `0x62247D29B4B9BECf4BB73E0c722cf6445cfC7cE9` | Upgrade Timelock | 2026-02-24 |
 | Upgrade Timelock | `0x9f26d4C958fD811A1F59B01B86Be7dFFc9d20761` | - | 2026-02-24 |
 | Operating Timelock | `0xcD425f44758a08BaAB3C4908f3e3dE5776e45d7a` | 8h delay, 3-of-5 proposer | 2026-02-24 |
-| Treasury | `0x0c83EAe1FE72c390A02E426572854931EefF93BA` | [UNVERIFIED - owner() reverts] | - |
+| Treasury | [`0x0c83EAe1FE72c390A02E426572854931EefF93BA`](https://etherscan.io/address/0x0c83EAe1FE72c390A02E426572854931EefF93BA) | 3-of-8 Safe Multisig | 2026-02-27 |
 | Upgrade Admin (4-of-7) | `0xcdd57D11476c22d265722F68390b036f3DA48c21` | Team | 2026-02-24 |
 | Operating Admin (3-of-5) | `0x2aCA71020De61bb532008049e1Bd41E451AE8AdC` | Team | 2026-02-24 |
 | LiquidityPool | `0x308861A430be4cce5502d0A12724771Fc6DaF216` | Upgrade Timelock | 2026-02-24 |
 | eETH | `0x35fA164735182de50811E8e2E824cFb9B6118ac2` | Upgrade Timelock | 2026-02-24 |
 | weETH | `0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee` | Upgrade Timelock | 2026-02-24 |
 | EtherFiAdmin | `0x0EF8fa4760Db8f5Cd4d993f3e3416f30f942D705` | Upgrade Timelock | 2026-02-24 |
-| sETHFI | `0x86B5780b606940Eb59A062aA85a07959518c0161` | [UNVERIFIED - owner() returns 0x0] | - |
+| sETHFI | [`0x86B5780b606940Eb59A062aA85a07959518c0161`](https://etherscan.io/address/0x86B5780b606940Eb59A062aA85a07959518c0161) | RolesAuthority → 4-of-6 Multisig | 2026-02-27 |
 | Buyback Wallet (1-of-5) | `0x2f5301a3D59388c509C65f8698f521377D41Fd0F` | Foundation | 2026-02-24 |
 | Arbitrum ETHFI | `0x7189fb5B6504bbfF6a852B13B7B82a3c118fDc27` | 3-of-6 Multisig | 2026-02-24 |
 | Base ETHFI | `0x6C240DDA6b5c336DF09A4D011139beAAa1eA2Aa2` | 3-of-6 Multisig | 2026-02-24 |
