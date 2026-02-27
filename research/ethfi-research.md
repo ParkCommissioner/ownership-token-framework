@@ -610,7 +610,7 @@ function setFeeRecipient(address _feeRecipient) external {
 
 ### Identified Risks
 
-1. **Governance Advisory Only:** Team/Foundation multisig can propose and execute changes through timelock without binding tokenholder approval. Snapshot votes are advisory.
+1. **Governance Advisory Only:** Team/Foundation multisig can propose and execute changes through timelock without binding tokenholder approval. Offchain votes are advisory.
 
 2. **Insider Concentration:** 55% allocated to investors + team (vesting mitigates but doesn't eliminate)
 
@@ -730,7 +730,7 @@ ETHFI token lacks:
 - [Ether.fi Governance Documentation](https://etherfi.gitbook.io/gov/)
 
 ### Governance
-- [Agora Voting Platform](https://vote.ether.fi/)
+- [Offchain Voting Platform](https://vote.ether.fi/)
 - [Governance Forum](https://governance.ether.fi/)
 - [Governance Roadmap](https://etherfi.gitbook.io/gov/governance-roadmap)
 
