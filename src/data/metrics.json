@@ -2689,11 +2689,11 @@
           "name": "Onchain Governance Workflow",
           "about": "Evaluates whether an onchain process exists that grants tokenholders ultimate authority over protocol decisions.",
           "status": "❌",
-          "notes": "No onchain Governor contract deployed. Governance uses offchain voting with a 4-day voting period and 1M ETHFI quorum. Execution is handled by multisig, meaning tokenholders can signal preference but cannot force execution.\n\nThe protocol has published a four-phase decentralization roadmap and is currently in Phase 1. Phase 2 targets full Governor deployment with treasury access.",
+          "notes": "No onchain Governor contract deployed. Governance uses offchain voting with a 4-day voting period and 1M ETHFI quorum. Execution is handled by multisig, meaning tokenholders can signal preference but cannot force execution.\n\nThe protocol has published a multi-stage decentralisation roadmap and is currently in Phase 0. Phase 1 targets delegate elections and security council formation.",
           "evidence": [
             {
               "name": "Governance Structure",
-              "summary": "Governance platform states Phase 1 includes 'launching offchain voting, delegate elections, our security council, and discourse groups.'",
+              "summary": "Governance roadmap states Phase 0 includes offchain voting, delegate elections, security council, and discourse groups.",
               "urls": [
                 {
                   "name": "Governance Info",
