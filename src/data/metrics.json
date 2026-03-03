@@ -2871,10 +2871,11 @@
           "id": "onchain-ctrl__censorship",
           "name": "Token Censorship",
           "about": "Examines whether any roles exist that can freeze, blacklist, seize, or otherwise censor token balances or transfers.",
-          "status": "\u2705",
-          "notes": "The current SWISE implementation does **not** contain blacklist, freeze, or forced transfer functions. No per-address transfer restrictions exist. Pause affects all transfers globally, not selectively.\n\n**Caveat:** Token upgradeability means censorship capabilities could be added in a future implementation.",
+          "status": "\u26a0\ufe0f",
+          "notes": "The current SWISE implementation does **not** contain blacklist, freeze, or forced transfer functions. No per-address transfer restrictions exist. Pause affects all transfers globally, not selectively.\n\n**Risk:** Token upgradeability means censorship capabilities could be added in a future implementation by the multisig.",
           "evidence": [
             {
+              "summary": "No blacklist, freeze, or force transfer functions exist in the current implementation. However, proxy upgradeability means these could be added in a future implementation.",
               "urls": [
                 {
                   "name": "StakeWiseToken.sol (no blacklist functions)",
@@ -2987,7 +2988,11 @@
           "about": "Are there additional offchain value accrual flows that benefit tokenholders?",
           "status": "\u26a0\ufe0f",
           "notes": "StakeWise Labs operates as a commercial entity. **No evidence** exists of revenue sharing agreements between Labs and SWISE tokenholders.",
-          "evidence": []
+          "evidence": [
+            {
+              "summary": "No public revenue sharing agreements found between StakeWise Labs and SWISE tokenholders. Labs operates independently as a commercial entity."
+            }
+          ]
         }
       ]
     },
@@ -3070,19 +3075,20 @@
         "Metric 4"
       ],
       "about": "This metric evaluates whether ownership and therefore effective voting power in governance is meaningfully distributed.",
-      "summary": "SWISE has approximately **2,921 holders**. Top 20 holders control ~82% of supply, with significant concentration in vesting contracts (~38%). Original 4-year vesting schedule from April 2021 is near complete.",
+      "summary": "SWISE has **several thousand holders** with significant concentration among top holders (over 80% held by top 20). Substantial holdings remain in vesting contracts. Original 4-year vesting schedule from April 2021 is near complete.",
       "criteria": [
         {
           "id": "distribution__concentration",
           "name": "Ownership Concentration",
           "about": "Measures whether a single actor or coordinated group controls a majority of the voting supply.",
           "status": "\u26a0\ufe0f",
-          "notes": "**~2,921 holders**. Top 20 holders control approximately **82% of supply**. Largest holder is a vesting escrow contract holding ~23% of supply. Significant concentration in vesting contracts (~38% of total supply).\n\n**Total Supply:** 1,000,000,000 SWISE",
+          "notes": "**Several thousand holders** (approximately 2,900 as of March 2026). Top 20 holders control over **80% of supply**. Largest holder is a vesting escrow contract. Significant concentration in vesting contracts.\n\n**Total Supply:** 1,000,000,000 SWISE. See Etherscan for current holder distribution.",
           "evidence": [
             {
+              "summary": "Holder concentration data changes over time. Link to live holder data provided for current figures.",
               "urls": [
                 {
-                  "name": "SWISE Token Holders",
+                  "name": "SWISE Token Holders (live data)",
                   "url": "https://etherscan.io/token/0x48c3399719b582dd63eb5aadf12a40b4c3f52fa2#balances",
                   "type": "explorer"
                 }
