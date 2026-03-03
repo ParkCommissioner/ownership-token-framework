@@ -3483,7 +3483,7 @@
         "Metric 2"
       ],
       "about": "This metric evaluates whether the system's operation produces observable, onchain value flows (or token-scarcity effects) that accrue value to tokenholders under rule-based constraints that do not rely on manual transfers, trusted executors, or other unenforced expectations.",
-      "summary": "Protocol fees (10-20% of yield) from all four products flow to a shared Buyback Operator that purchases OGN for distribution to xOGN stakers. However, **buyback execution is manual** and the buyback contract is controlled by the Strategist multisig, not governance.",
+      "summary": "Protocol fees (10-20% of yield) from all four products flow to a shared Buyback Operator that purchases OGN for distribution to xOGN stakers. However, buyback execution is manual and the buyback contract is controlled by the Strategist multisig, not governance.",
       "criteria": [
         {
           "id": "val-accrual__active",
