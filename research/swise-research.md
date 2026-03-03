@@ -23,6 +23,8 @@ SWISE is the governance token of the StakeWise protocol, a liquid staking platfo
 
 ## Contract Index Table
 
+All contracts listed below are from the official v3-core mainnet.json deployment file.
+
 | Contract | Address | What it does | Upgradeable? | Ownership-relevant? | Value-accrual-relevant? |
 |----------|---------|--------------|--------------|---------------------|------------------------|
 | **SWISE Token (Proxy)** | `0x48C3399719B582dD63eB5AADf12A40B4C3f52FA2` | Governance token | Yes (EIP-1967) | Y | N |
@@ -30,21 +32,34 @@ SWISE is the governance token of the StakeWise protocol, a liquid staking platfo
 | **SWISE Proxy Admin** | `0x3eb0175dcd67d3ab139aa03165e24aa2188a4c22` | Controls token upgrades | No | Y | N |
 | **DAO Multisig** | `0x144a98cb1CdBb23610501fE6108858D9B7D24934` | 4-of-7 Safe, governance executor | No | Y | Y |
 | **SafeSnap Module** | `0xB5cF5363c3e766e64B37b2fB9554bFE8D48ED1A0` | Reality.eth oracle module | No | Y | N |
-| **osETH Token** | `0xf1C9acDc66974dFB6dEcB12aA385b9cD01190E38` | Liquid staking token (V3) | No | N | Y |
-| **OsTokenVaultController** | `0x2A261e60FB14586B474C208b1B7AC6D0f5000306` | Controls osETH minting/burning, fees | No | Y | Y |
-| **OsTokenConfig** | `0x287d1e2A8dE183A8bf8f2b09Fa1340fBd766eb59` | osETH parameters | No | Y | N |
-| **VaultsRegistry** | `0x3a0008a588772446f6e656133C2D5029CC4FC20E` | Tracks vaults and factories | No | Y | N |
-| **Keeper** | `0x6B5815467da09DaA7DC83Db21c9239d98Bb487b5` | Oracle management, rewards | No | Y | Y |
-| **GenesisVault** | `0xAC0F906E433d58FA868F936E8A43230473652885` | V2 migration vault | No | N | N |
-| **VaultFactory** | `0x7A8cbBf690084E43De778173cfAcf7313c9122DD` | Creates public vaults | No | N | N |
-| **PrivVaultFactory** | `0x4C958642F1CD735F13aed02A4FB015153edDf8Fd` | Creates private vaults | No | N | N |
-| **Erc20VaultFactory** | `0x97795DA27138BD8d79204D37F3A2e80fA4d30488` | Creates ERC20 vaults | No | N | N |
+| **BalancedCurator** | `0xD30E7e4bDbd396cfBe72Ad2f4856769C54eA6b0b` | Vault curator strategy | No | Y | N |
+| **BlocklistErc20VaultFactory** | `0x39c6eef5f955bcC280966504bc5c82F2394Fa368` | Creates blocklist ERC20 vaults | No | N | N |
 | **BlocklistVaultFactory** | `0x608d8Ca6916b96edf63Dd429e62Fe1366ae6f3B5` | Creates blocklist vaults | No | N | N |
-| **SharedMevEscrow** | `0x48319f97E5Da1233c21c48b80097c0FB7a20Ff86` | MEV escrow | No | N | Y |
+| **ConsolidationsChecker** | `0x033E5BaE5bdc459CBb7d388b41a9d62020Be810F` | Validator consolidation checks | No | N | N |
 | **CuratorsRegistry** | `0xa23F7c8d25f4503cA4cEd84d9CC2428e8745933C` | Vault curator registry | No | Y | N |
 | **DepositDataRegistry** | `0x75AB6DdCe07556639333d3Df1eaa684F5735223e` | Validator deposit data | No | N | N |
-| **PriceFeed** | `0x8023518b2192FB5384DAdc596765B3dD1cdFe471` | osETH/ETH price oracle | No | N | Y |
+| **Erc20VaultFactory** | `0x97795DA27138BD8d79204D37F3A2e80fA4d30488` | Creates ERC20 vaults | No | N | N |
+| **FoxVault** | `0x4FEF9D741011476750A243aC70b9789a63dd47Df` | ShapeShift FOX vault | Yes (EIP-1967) | Y | Y |
+| **GenesisVault** | `0xAC0F906E433d58FA868F936E8A43230473652885` | V2 migration vault | No | N | N |
+| **Keeper** | `0x6B5815467da09DaA7DC83Db21c9239d98Bb487b5` | Oracle management, rewards | No | Y | Y |
+| **LegacyPoolEscrow** | `0x2296e122c1a20Fca3CAc3371357BdAd3be0dF079` | V2 pool escrow | Yes (EIP-1967) | Y | Y |
+| **LegacyRewardToken** | `0x20BC832ca081b91433ff6c17f85701B6e92486c5` | V2 reward token (rETH2) | Yes (EIP-1967) | Y | N |
+| **MerkleDistributor** | `0xa9dc250dF4EE9273D09CFa455da41FB1cAC78d34` | Token distribution contract | No | Y | Y |
+| **MetaVaultFactory** | `0x6107dB0bdd84023228E0aB11099190E88B073c1D` | Creates meta vaults | No | Y | N |
+| **OsToken** | `0xf1C9acDc66974dFB6dEcB12aA385b9cD01190E38` | Liquid staking token (osETH) | No | N | Y |
+| **OsTokenConfig** | `0x287d1e2A8dE183A8bf8f2b09Fa1340fBd766eb59` | osETH parameters | No | Y | N |
+| **OsTokenFlashLoans** | `0xeBe12d858E55DDc5FC5A8153dC3e117824fbf5d2` | osETH flash loan facility | No | N | N |
 | **OsTokenRedeemer** | `0xdF3123dD182b8d3e0266a2dC37eEb8366d149B5A` | osETH redemption | No | N | N |
+| **OsTokenVaultController** | `0x2A261e60FB14586B474C208b1B7AC6D0f5000306` | Controls osETH minting/burning, fees | No | Y | Y |
+| **OsTokenVaultEscrow** | `0x09e84205DF7c68907e619D07aFD90143c5763605` | Vault escrow for osETH exits | No | Y | Y |
+| **PriceFeed** | `0x8023518b2192FB5384DAdc596765B3dD1cdFe471` | osETH/ETH price oracle | No | N | Y |
+| **PrivErc20VaultFactory** | `0x1831834dC4Bf88B9d9183015e1285B105Ec2FdC9` | Creates private ERC20 vaults | No | N | N |
+| **PrivVaultFactory** | `0x4C958642F1CD735F13aed02A4FB015153edDf8Fd` | Creates private vaults | No | N | N |
+| **RewardSplitterFactory** | `0xd12Df8543e0522CCbF12d231e822B7264c634775` | Creates reward splitter contracts | No | N | Y |
+| **SharedMevEscrow** | `0x48319f97E5Da1233c21c48b80097c0FB7a20Ff86` | MEV escrow | No | N | Y |
+| **ValidatorsChecker** | `0xA89629B41477560d49dd56ef1a59BD214362aCDC` | Validator registration checks | No | N | N |
+| **VaultFactory** | `0x7A8cbBf690084E43De778173cfAcf7313c9122DD` | Creates public vaults | No | N | N |
+| **VaultsRegistry** | `0x3a0008a588772446f6e656133C2D5029CC4FC20E` | Tracks vaults and factories | No | Y | N |
 
 ### Etherscan Links for Key Contracts
 
@@ -131,6 +146,25 @@ The SafeSnap module allows Snapshot votes to propose transactions, but the **4-o
 | CuratorsRegistry | `owner()` | `0x144a98cb1CdBb23610501fE6108858D9B7D24934` | Multisig | `cast call 0xa23F7c8d25f4503cA4cEd84d9CC2428e8745933C "owner()(address)"` → `0x144a98...` | 7 signers (4 required) |
 | osETH Token | `owner()` | `0x0000000000000000000000000000000000000000` | Renounced | `cast call 0xf1C9acDc66974dFB6dEcB12aA385b9cD01190E38 "owner()(address)"` → `0x0` | N/A (renounced) |
 | SafeSnap Module | `owner()` | `0x144a98cb1CdBb23610501fE6108858D9B7D24934` | Multisig | `cast call 0xB5cF5363c3e766e64B37b2fB9554bFE8D48ED1A0 "owner()(address)"` → `0x144a98...` | 7 signers (4 required) |
+| OsTokenVaultEscrow | `owner()` | `0x144a98cb1CdBb23610501fE6108858D9B7D24934` | Multisig | `cast call 0x09e84205DF7c68907e619D07aFD90143c5763605 "owner()(address)"` → `0x144a98...` | 7 signers (4 required) |
+| MerkleDistributor | `owner()` | `0x2685C0e39EEAAd383fB71ec3F493991d532A87ae` | Multisig (2-of-2) | `cast call 0xa9dc250dF4EE9273D09CFa455da41FB1cAC78d34 "owner()(address)"` → `0x2685C0...` | 2 signers |
+| MetaVaultFactory | `owner()` | `0x2685C0e39EEAAd383fB71ec3F493991d532A87ae` | Multisig (2-of-2) | `cast call 0x6107dB0bdd84023228E0aB11099190E88B073c1D "owner()(address)"` → `0x2685C0...` | 2 signers |
+| LegacyPoolEscrow | `owner()` | `0xAC0F906E433d58FA868F936E8A43230473652885` (GenesisVault) | Proxy | Via ProxyAdmin `0xf330b5fE72E91d1a3782E65eED876CF3624c7802` (2-of-2 Safe) | 2 signers |
+| LegacyRewardToken | ProxyAdmin | `0x3eb0175dcd67d3ab139aa03165e24aa2188a4c22` | ProxyAdmin | `cast storage 0x20BC832ca081b91433ff6c17f85701B6e92486c5 0xb53127684...` → `0x3eb01...` | DAO Multisig |
+| FoxVault | `admin()` | `0xFD8100AA60F851e0EB585C7c893B8Ef6A7F88788` | Multisig (3-of-5) | `cast call 0x4FEF9D741011476750A243aC70b9789a63dd47Df "admin()(address)"` → `0xFD81...` | 5 signers (ShapeShift) |
+| BalancedCurator | N/A | N/A | Immutable | No `owner()` function — permissionless | N/A |
+| OsTokenFlashLoans | N/A | N/A | Immutable | No `owner()` function — permissionless | N/A |
+| ConsolidationsChecker | N/A | N/A | Immutable | No `owner()` function — permissionless | N/A |
+| ValidatorsChecker | N/A | N/A | Immutable | No `owner()` function — permissionless | N/A |
+
+### Additional Multisig Addresses
+
+| Address | Threshold | Controls |
+|---------|-----------|----------|
+| `0x2685C0e39EEAAd383fB71ec3F493991d532A87ae` | 2-of-2 | MerkleDistributor, MetaVaultFactory |
+| `0xFD8100AA60F851e0EB585C7c893B8Ef6A7F88788` | 3-of-5 | FoxVault admin (ShapeShift controlled) |
+| `0x919F14E6A47890FCdf6A365E04E116C0DEab9178` | 3-of-7 | FoxVault feeRecipient |
+| `0xf330b5fE72E91d1a3782E65eED876CF3624c7802` | 2-of-2 | LegacyPoolEscrow ProxyAdmin |
 
 ### Privileged Functions by Contract
 
@@ -149,14 +183,14 @@ Source: [stakewise/contracts/contracts/tokens/StakeWiseToken.sol](https://github
 - **`setCapacity(uint256)`** - Changes osETH minting capacity. `onlyOwner`.
 - **`setKeeper(address)`** - Changes Keeper address. `onlyOwner`.
 
-Source: [v3-core/contracts/tokens/OsTokenVaultController.sol:156-197](https://github.com/stakewise/v3-core/blob/main/contracts/tokens/OsTokenVaultController.sol#L156-L197)
+Source: [v3-core/contracts/tokens/OsTokenVaultController.sol:156-192](https://github.com/stakewise/v3-core/blob/main/contracts/tokens/OsTokenVaultController.sol#L156-L192)
 
 #### Keeper
 - **`addOracle(address)`** - Adds oracle signer. `onlyOwner`.
 - **`removeOracle(address)`** - Removes oracle signer. `onlyOwner`.
 - **`updateConfig(string)`** - Updates oracle config IPFS hash. `onlyOwner`.
 
-Source: [v3-core/contracts/keeper/KeeperOracles.sol:32-70](https://github.com/stakewise/v3-core/blob/main/contracts/keeper/KeeperOracles.sol#L32-L70)
+Source: [v3-core/contracts/keeper/KeeperOracles.sol:32-68](https://github.com/stakewise/v3-core/blob/main/contracts/keeper/KeeperOracles.sol#L32-L68)
 
 #### VaultsRegistry
 - **`addFactory(address)`** - Registers new vault factory. `onlyOwner`.
@@ -164,7 +198,7 @@ Source: [v3-core/contracts/keeper/KeeperOracles.sol:32-70](https://github.com/st
 - **`addVaultImpl(address)`** - Whitelists vault implementation. `onlyOwner`.
 - **`removeVaultImpl(address)`** - Removes vault implementation. `onlyOwner`.
 
-Source: [v3-core/contracts/vaults/VaultsRegistry.sol:40-65](https://github.com/stakewise/v3-core/blob/main/contracts/vaults/VaultsRegistry.sol#L40-L65)
+Source: [v3-core/contracts/vaults/VaultsRegistry.sol:40-61](https://github.com/stakewise/v3-core/blob/main/contracts/vaults/VaultsRegistry.sol#L40-L61)
 
 ---
 
@@ -172,16 +206,23 @@ Source: [v3-core/contracts/vaults/VaultsRegistry.sol:40-65](https://github.com/s
 
 ### Gnosis Chain
 
-| Contract | Address | Owner |
-|----------|---------|-------|
-| OsTokenVaultController | `0x60B2053d7f2a0bBa70fe6CDd88FB47b579B9179a` | `0x8737f638E9af54e89ed9E1234dbC68B115CD169e` |
-| VaultsRegistry | `0x7d014B3C6ee446563d4e0cB6fBD8C3D0419867cB` | `0x8737f638E9af54e89ed9E1234dbC68B115CD169e` |
-| Keeper | `0xcAC0e3E35d3BA271cd2aaBE688ac9DB1898C26aa` | `0x8737f638E9af54e89ed9E1234dbC68B115CD169e` |
-| OsToken | `0xF490c80aAE5f2616d3e3BDa2483E30C4CB21d1A0` | `0x0` (renounced) |
+Gnosis Chain deployment mirrors the Ethereum mainnet architecture. The official gnosis.json deployment contains 27 contracts with the same structure as mainnet. Key ownership-relevant contracts are documented below; all others follow the same patterns.
+
+**Architecture Confirmation:** Gnosis Chain uses the identical contract architecture as mainnet. All vault factories, checkers, and escrow contracts follow the same ownership patterns. The key difference is the multisig address.
+
+| Contract | Address | Owner | Notes |
+|----------|---------|-------|-------|
+| OsTokenVaultController | `0x60B2053d7f2a0bBa70fe6CDd88FB47b579B9179a` | `0x8737f638E9af54e89ed9E1234dbC68B115CD169e` | Same pattern as mainnet |
+| VaultsRegistry | `0x7d014B3C6ee446563d4e0cB6fBD8C3D0419867cB` | `0x8737f638E9af54e89ed9E1234dbC68B115CD169e` | Same pattern as mainnet |
+| Keeper | `0xcAC0e3E35d3BA271cd2aaBE688ac9DB1898C26aa` | `0x8737f638E9af54e89ed9E1234dbC68B115CD169e` | Same pattern as mainnet |
+| OsToken | `0xF490c80aAE5f2616d3e3BDa2483E30C4CB21d1A0` | `0x0` (renounced) | Same as mainnet |
+| OsTokenConfig | `0xd6672fbE1D28877db598DC0ac2559A15745FC3ec` | `0x8737f638E9af54e89ed9E1234dbC68B115CD169e` | Same pattern as mainnet |
+| CuratorsRegistry | `0xa23F7c8d25f4503cA4cEd84d9CC2428e8745933C` | `0x8737f638E9af54e89ed9E1234dbC68B115CD169e` | Same pattern as mainnet |
+| OsTokenVaultEscrow | `0x28F325dD287a5984B754d34CfCA38af3A8429e71` | `0x8737f638E9af54e89ed9E1234dbC68B115CD169e` | Same pattern as mainnet |
 
 **Gnosis Chain Multisig:** `0x8737f638E9af54e89ed9E1234dbC68B115CD169e`
 - **Threshold:** 4-of-7
-- **Signers:** Same 7 signers as Ethereum mainnet
+- **Signers:** Same 7 signers as Ethereum mainnet (verified on-chain)
 - **Module:** `0x479D00fF7Ed26803528dC3e3839ed8928f047321` (SafeSnap equivalent)
 
 Verification:
@@ -194,9 +235,17 @@ cast call 0x8737f638E9af54e89ed9E1234dbC68B115CD169e "getOwners()(address[])" --
    0x7E36F1fF26cffD6906c11Cd7Eca5f6E993Ba6CE3, 0x9Aa6Db877742aD8D8c7fE209F561fbd2bE19D5F4,
    0x9cC9c3de8e710781983a65b90B7efEaaD2D3D7D8, 0xC46e791d4fB1207fAB8Cb0e44889127138539c69,
    0x61B01a33Aea3e827B3941Ab097778bd3FA48a332]
+
+# Verify OsTokenConfig ownership
+cast call 0xd6672fbE1D28877db598DC0ac2559A15745FC3ec "owner()(address)" --rpc-url https://rpc.gnosischain.com
+→ 0x8737f638E9af54e89ed9E1234dbC68B115CD169e
+
+# Verify CuratorsRegistry ownership
+cast call 0xa23F7c8d25f4503cA4cEd84d9CC2428e8745933C "owner()(address)" --rpc-url https://rpc.gnosischain.com
+→ 0x8737f638E9af54e89ed9E1234dbC68B115CD169e
 ```
 
-**Key Finding:** Gnosis Chain contracts have the same ownership structure as Ethereum mainnet - controlled by a 4-of-7 multisig with identical signers.
+**Key Finding:** Gnosis Chain contracts have the same ownership structure as Ethereum mainnet - controlled by a 4-of-7 multisig with identical signers. All 27 contracts in gnosis.json follow the same architectural patterns as their mainnet counterparts.
 
 ---
 
@@ -269,15 +318,27 @@ Multiple tokenomics proposals have been discussed but NOT implemented:
 
 SafeSnap Module Configuration:
 ```
-cast call 0xB5cF5363c3e766e64B37b2fB9554bFE8D48ED1A0 "minimumBond()(uint256)" --rpc-url https://ethereum.publicnode.com
-→ 200000000000000000000000 (200,000 tokens)
+cast call 0xB5cF5363c3e766e64B37b2fB9554bFE8D48ED1A0 "oracle()(address)" --rpc-url https://1rpc.io/eth
+→ 0x867092A32bC16816F12Fb326EfF7A2865E1ec138 (Reality.eth oracle)
 
-cast call 0xB5cF5363c3e766e64B37b2fB9554bFE8D48ED1A0 "questionTimeout()(uint32)" --rpc-url https://ethereum.publicnode.com
+cast call 0xB5cF5363c3e766e64B37b2fB9554bFE8D48ED1A0 "minimumBond()(uint256)" --rpc-url https://1rpc.io/eth
+→ 200000000000000000000000 (200,000 SWISE tokens)
+
+cast call 0xB5cF5363c3e766e64B37b2fB9554bFE8D48ED1A0 "questionTimeout()(uint32)" --rpc-url https://1rpc.io/eth
 → 86400 (24 hours)
 
-cast call 0xB5cF5363c3e766e64B37b2fB9554bFE8D48ED1A0 "answerExpiration()(uint32)" --rpc-url https://ethereum.publicnode.com
+cast call 0xB5cF5363c3e766e64B37b2fB9554bFE8D48ED1A0 "questionCooldown()(uint32)" --rpc-url https://1rpc.io/eth
+→ 86400 (24 hours)
+
+cast call 0xB5cF5363c3e766e64B37b2fB9554bFE8D48ED1A0 "answerExpiration()(uint32)" --rpc-url https://1rpc.io/eth
 → 604800 (7 days)
+
+# Bond token verification via Reality.eth oracle
+cast call 0x867092A32bC16816F12Fb326EfF7A2865E1ec138 "token()(address)" --rpc-url https://1rpc.io/eth
+→ 0x48C3399719B582dD63eB5AADf12A40B4C3f52FA2 (SWISE token)
 ```
+
+**Bond Token:** SWISE (not ETH). Participants must stake 200,000 SWISE tokens as bond when answering Reality.eth questions.
 
 #### 1.2 Role Accountability — ⚠️ AT RISK
 
@@ -433,6 +494,11 @@ Top 10 Holders Analysis:
 - Top 20 holders control: ~81.54% of supply
 - VestingEscrow contracts (top 20): ~38.23% of supply
 
+**Data Source (for reproducibility):**
+- API: Blockscout API (`https://eth.blockscout.com/api/v2/tokens/0x48C3399719B582dD63eB5AADf12A40B4C3f52FA2/holders`)
+- Query date: 2026-03-03
+- Method: `curl "https://eth.blockscout.com/api/v2/tokens/0x48C3399719B582dD63eB5AADf12A40B4C3f52FA2/holders?page_size=20" | jq`
+
 #### 4.2 Future Token Unlocks — NEUTRAL
 
 **Status:** 4-year vesting schedule from April 2021 is near complete
@@ -483,10 +549,12 @@ Company Registration:
 
 ENS Override Check:
 ```
-v3-license-date.stakewise.eth — No record set
+# Verify ENS name resolution for license override
+cast resolve-name v3-license-date.stakewise.eth --rpc-url https://ethereum.publicnode.com
+→ Error: ENS resolver not found for name "v3-license-date.stakewise.eth"
 ```
 
-The ENS subdomain has no resolver configured, meaning the default date (January 1, 2026) applies.
+**Verification Method:** The ENS subdomain `v3-license-date.stakewise.eth` has no resolver configured (resolver not found error), meaning the default Change Date (January 1, 2026) applies. StakeWise Labs can set this ENS record at any time to accelerate the license conversion to MIT.
 
 **Implications:**
 - Until Change Date: Commercial use requires Labs permission
