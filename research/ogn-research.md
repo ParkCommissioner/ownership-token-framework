@@ -7,12 +7,18 @@
 
 ## Executive Summary
 
-OGN (Origin Token) is the governance token for Origin Protocol, which operates yield-bearing products OETH (Origin Ether) and OUSD (Origin Dollar) on Ethereum, and Super OETH on Base. This research analyzes OGN against the Aragon Ownership Token Framework criteria to determine what tokenholders actually own, control, and can economically benefit from.
+OGN (Origin Token) is the governance token for Origin Protocol, which operates yield-bearing products across multiple chains:
+- **OETH** (Origin Ether) on Ethereum
+- **OUSD** (Origin Dollar) on Ethereum
+- **Super OETH** on Base
+- **OS** (Origin Sonic) on Sonic
+
+This research analyzes OGN against the Aragon Ownership Token Framework criteria to determine what tokenholders actually own, control, and can economically benefit from.
 
 **Key Findings:**
 - **On-chain governance is real but partial**: xOGN holders have binding on-chain governance power over Ethereum contracts through a Governor contract connected to a 2-day Timelock
-- **Base governance is multisig-controlled**: Base chain products (Super OETH) are governed by a 5/8 multisig, NOT by xOGN tokenholders
-- **Value accrual exists but has discretionary elements**: 20% of OETH fees flow to buybacks, but the buyback contract is controlled by a 2/8 multisig, not governance
+- **L2/alt-chain governance is multisig-controlled**: Base (Super OETH) and Sonic (OS) products are governed by 5/8 multisigs, NOT by xOGN tokenholders
+- **Value accrual exists but has discretionary elements**: 10-20% of product fees flow to the same Buyback Operator (1/3 multisig), but the buyback contract itself is controlled by a 2/8 Strategist multisig, not governance
 - **Strategist bypass**: A 2/8 Strategist multisig can pause operations, move funds between strategies, and change reward rates without tokenholder approval
 - **Token is non-upgradeable**: OGN token itself cannot be upgraded, providing protection against supply manipulation
 
@@ -48,6 +54,27 @@ OGN (Origin Token) is the governance token for Origin Protocol, which operates y
 | OETH Vault | `0x39254033945AA2E4809Cc2977E7087BEE48bd7Ab` | Holds assets, manages strategies | Y | Y | Y |
 | Wrapped OETH | `0xDcEe70654261AF21C44c093C300eD3Bb97b78192` | ERC-4626 wrapper | Y | N | N |
 
+### Ethereum Mainnet - OUSD Product Contracts
+
+| Contract | Address | What it does | Upgradeable? | Ownership-relevant? | Value-accrual-relevant? |
+|----------|---------|--------------|--------------|---------------------|------------------------|
+| OUSD Token | `0x2A8e1E676Ec238d8A992307B495b45B3fEAa5e86` | Rebasing stablecoin | Y | Y | N |
+| OUSD Vault | `0xE75D77B1865Ae93c7eaa3040B038D7aA7BC02F70` | Holds stablecoins, manages strategies | Y | Y | Y |
+
+**OUSD Governance Verification:**
+```bash
+# OUSD Vault governor is Timelock
+cast call --rpc-url https://eth.drpc.org 0xE75D77B1865Ae93c7eaa3040B038D7aA7BC02F70 "governor()(address)"
+# Result: 0x35918cDE7233F2dD33fA41ae3Cb6aE0e42E0e69F
+
+# OUSD Vault sends 20% fees to Buyback Operator
+cast call --rpc-url https://eth.drpc.org 0xE75D77B1865Ae93c7eaa3040B038D7aA7BC02F70 "trusteeFeeBps()(uint256)"
+# Result: 2000
+
+cast call --rpc-url https://eth.drpc.org 0xE75D77B1865Ae93c7eaa3040B038D7aA7BC02F70 "trusteeAddress()(address)"
+# Result: 0xBB077E716A5f1F1B63ed5244eBFf5214E50fec8c
+```
+
 ### Base Chain Contracts
 
 | Contract | Address | What it does | Governor |
@@ -58,6 +85,49 @@ OGN (Origin Token) is the governance token for Origin Protocol, which operates y
 | Guardian Multisig (Base) | `0x28bce2eE5775B652D92bB7c2891A89F036619703` | 1/2 | Emergency pause |
 | Super OETH Vault | `0x98a0CbeF61bD2D21435f433bE4CD42B56B38CC93` | Base yield vault | Base Timelock |
 | Super OETH Token | `0xDBFeFD2e8460a6Ee4955A68582F85708BAEA60A3` | Rebasing yield token | Base Timelock |
+
+**Super OETH Fee Flow Verification:**
+```bash
+# Super OETH Vault sends 20% fees to Buyback Operator
+cast call --rpc-url https://base.drpc.org 0x98a0CbeF61bD2D21435f433bE4CD42B56B38CC93 "trusteeFeeBps()(uint256)"
+# Result: 2000
+
+cast call --rpc-url https://base.drpc.org 0x98a0CbeF61bD2D21435f433bE4CD42B56B38CC93 "trusteeAddress()(address)"
+# Result: 0xBB077E716A5f1F1B63ed5244eBFf5214E50fec8c
+```
+
+### Sonic Chain Contracts
+
+| Contract | Address | What it does | Governor |
+|----------|---------|--------------|----------|
+| Origin Sonic (OS) Token | `0xb1e25689D55734FD3ffFc939c4C3Eb52DFf8A794` | Liquid staking token | Sonic Timelock |
+| Wrapped OS (wOS) | `0x9F0dF7799f6FDAd409300080cfF680f5A23df4b1` | ERC-4626 wrapper | Sonic Timelock |
+| OS Vault | `0xa3c0eCA00D2B76b4d1F170b0AB3FdeA16C180186` | Holds Sonic, manages strategies | Sonic Timelock |
+| Timelock (Sonic) | `0x31a91336414d3B955E494E7d485a6B06b55FC8fB` | 2-day execution delay | Multisig-controlled |
+| Admin Multisig (Sonic) | `0xAdDEA7933Db7d83855786EB43a238111C69B00b6` | 5/8 | Same 8 signers as Ethereum |
+
+**Sonic Governance Verification:**
+```bash
+# OS Vault governor is Sonic Timelock
+cast call --rpc-url https://rpc.soniclabs.com 0xa3c0eCA00D2B76b4d1F170b0AB3FdeA16C180186 "governor()(address)"
+# Result: 0x31a91336414d3B955E494E7d485a6B06b55FC8fB
+
+# OS Vault sends 10% fees to SAME Buyback Operator as Ethereum
+cast call --rpc-url https://rpc.soniclabs.com 0xa3c0eCA00D2B76b4d1F170b0AB3FdeA16C180186 "trusteeFeeBps()(uint256)"
+# Result: 1000 (10%)
+
+cast call --rpc-url https://rpc.soniclabs.com 0xa3c0eCA00D2B76b4d1F170b0AB3FdeA16C180186 "trusteeAddress()(address)"
+# Result: 0xBB077E716A5f1F1B63ed5244eBFf5214E50fec8c
+
+# Sonic Admin Multisig has same 8 signers as Ethereum
+cast call --rpc-url https://rpc.soniclabs.com 0xAdDEA7933Db7d83855786EB43a238111C69B00b6 "getOwners()(address[])"
+# Result: [same 8 addresses as Ethereum Admin Multisig]
+
+cast call --rpc-url https://rpc.soniclabs.com 0xAdDEA7933Db7d83855786EB43a238111C69B00b6 "getThreshold()(uint256)"
+# Result: 5
+```
+
+**Critical Finding**: Sonic (OS) fees also flow to the same Buyback Operator multisig on Ethereum, contributing to OGN value accrual. However, Sonic governance is 5/8 multisig-controlled (same as Base), NOT xOGN tokenholder-controlled.
 
 ---
 
@@ -87,11 +157,13 @@ xOGN Holders
      │
      ▼ (is governor of)
 ┌─────────────────────────────────────┐
-│ Protocol Contracts                  │
+│ Protocol Contracts (Ethereum)       │
 │ - OGN Token (owner)                 │
 │ - xOGN (governor)                   │
 │ - OETH Vault (governor)             │
 │ - OETH Token (governor)             │
+│ - OUSD Vault (governor)             │
+│ - OUSD Token (governor)             │
 │ - FixedRateRewardsSource (governor) │
 └─────────────────────────────────────┘
 ```
@@ -124,9 +196,13 @@ cast call --rpc-url https://eth.drpc.org 0x39254033945AA2E4809Cc2977E7087BEE48bd
 # Result: 0x35918cDE7233F2dD33fA41ae3Cb6aE0e42E0e69F
 ```
 
-### 2.2 Base Chain Governance (CRITICAL DIFFERENCE)
+### 2.2 L2/Alt-Chain Governance (CRITICAL DIFFERENCE)
 
-**Base governance is NOT controlled by xOGN tokenholders.** The Base Timelock is controlled by a 5/8 multisig:
+**Base and Sonic governance are NOT controlled by xOGN tokenholders.** Both chains use Timelocks controlled by 5/8 multisigs with the same 8 signers as the Ethereum Admin Multisig.
+
+#### Base Chain
+
+The Base Timelock is controlled by a 5/8 multisig:
 
 ```bash
 # Base Admin Multisig has PROPOSER_ROLE on Base Timelock
@@ -145,6 +221,20 @@ cast call --rpc-url https://base.drpc.org 0xf817cb3092179083c48c014688D98B72fB61
 ```
 
 The Base Admin Multisig signers are the same 8 addresses as the Ethereum Admin Multisig, but they have full proposer/executor control on Base - xOGN holders cannot directly vote on Base governance proposals.
+
+#### Sonic Chain
+
+The Sonic Timelock (`0x31a91336414d3B955E494E7d485a6B06b55FC8fB`) is controlled by the Sonic Admin Multisig (`0xAdDEA7933Db7d83855786EB43a238111C69B00b6`), which is a 5/8 multisig with the exact same 8 signers as Ethereum:
+
+```bash
+cast call --rpc-url https://rpc.soniclabs.com 0xAdDEA7933Db7d83855786EB43a238111C69B00b6 "getOwners()(address[])"
+# Result: [same 8 addresses as Ethereum Admin Multisig]
+
+cast call --rpc-url https://rpc.soniclabs.com 0xAdDEA7933Db7d83855786EB43a238111C69B00b6 "getThreshold()(uint256)"
+# Result: 5
+```
+
+**Summary**: xOGN governance only controls Ethereum mainnet. Base and Sonic are controlled by the same 8 people who sign the Ethereum Admin Multisig.
 
 ### 2.3 Role Matrix
 
@@ -469,11 +559,29 @@ The OGN token has a `paused` state controlled by the owner (Timelock). If paused
 
 ### 6.1 Revenue Sources
 
-| Source | Fee | Collected By | Flow |
-|--------|-----|--------------|------|
-| OETH Yield | 20% of yield | OETH Vault | → Buyback Operator |
-| OUSD Yield | 20% of yield | OUSD Vault | → Buyback Operator |
-| Super OETH Yield | [TBD - check Base] | Super OETH Vault | [TBD] |
+| Source | Chain | Fee | Collected By | Flow |
+|--------|-------|-----|--------------|------|
+| OETH Yield | Ethereum | 20% of yield | OETH Vault | → Buyback Operator (0xBB077E71...) |
+| OUSD Yield | Ethereum | 20% of yield | OUSD Vault | → Buyback Operator (0xBB077E71...) |
+| Super OETH Yield | Base | 20% of yield | Super OETH Vault | → Buyback Operator (0xBB077E71...) |
+| OS Yield | Sonic | 10% of yield | OS Vault | → Buyback Operator (0xBB077E71...) |
+
+**All products send fees to the SAME Buyback Operator multisig (1/3) on Ethereum.** This centralizes fee collection across all chains.
+
+**Verification:**
+```bash
+# Super OETH fee flow
+cast call --rpc-url https://base.drpc.org 0x98a0CbeF61bD2D21435f433bE4CD42B56B38CC93 "trusteeFeeBps()(uint256)"
+# Result: 2000 (20%)
+cast call --rpc-url https://base.drpc.org 0x98a0CbeF61bD2D21435f433bE4CD42B56B38CC93 "trusteeAddress()(address)"
+# Result: 0xBB077E716A5f1F1B63ed5244eBFf5214E50fec8c
+
+# OS (Sonic) fee flow
+cast call --rpc-url https://rpc.soniclabs.com 0xa3c0eCA00D2B76b4d1F170b0AB3FdeA16C180186 "trusteeFeeBps()(uint256)"
+# Result: 1000 (10%)
+cast call --rpc-url https://rpc.soniclabs.com 0xa3c0eCA00D2B76b4d1F170b0AB3FdeA16C180186 "trusteeAddress()(address)"
+# Result: 0xBB077E716A5f1F1B63ed5244eBFf5214E50fec8c
+```
 
 ### 6.2 Distribution Mechanism
 
