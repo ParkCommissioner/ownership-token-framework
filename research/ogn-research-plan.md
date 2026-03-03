@@ -27,6 +27,18 @@ This plan provides a structured approach to analyzing the OGN token under the Ar
 | Timelock | `0x35918cDE7233F2dD33fA41ae3Cb6aE0e42E0e69F` | Verified |
 | Admin Multisig (5/8) | `0xbe2AB3d3d8F6a32b96414ebbd865dBD276d3d899` | Verified |
 | Guardian Multisig (2/9) | `0xF14BBdf064E3F67f51cd9BD646aE3716aD938FDC` | Verified |
+| OGN Buyback | `0x77314EB392b2be47C014cde0706908b3307Ad6a9` | Verified |
+
+#### Treasury and Revenue Infrastructure (Ethereum)
+
+| Contract | Address | Notes |
+|----------|---------|-------|
+| OGN Buyback | `0x77314EB392b2be47C014cde0706908b3307Ad6a9` | Converts fees to OGN |
+| OGN Rewards Source (FixedRateRewardsSource) | `0x7609c88e5880e934dd3a75bcfef44e31b1badb8b` | Programmatic rewards distribution |
+| Buyback Operator Multisig (1/3) | `0xBB077E716A5f1F1B63ed5244eBFf5214E50fec8c` | Executes buyback swaps |
+| Admin Multisig (5/8) | `0xbe2AB3d3d8F6a32b96414ebbd865dBD276d3d899` | May hold treasury assets — verify |
+
+**Note on Treasury**: Origin does not appear to have a dedicated treasury contract. Treasury functions are managed through the Admin multisig. Step 1 of Section 2.2 must verify where protocol-owned assets reside.
 
 #### OETH Contracts (Ethereum)
 
@@ -264,22 +276,35 @@ This plan provides a structured approach to analyzing the OGN token under the Ar
 
 **Investigation Approach**:
 1. Verify the "100% of protocol fees → OGN buybacks → xOGN distribution" mechanism
-2. Find the buyback contract and verify recent activity
+2. Analyze the OGN Buyback contract (`0x77314EB392b2be47C014cde0706908b3307Ad6a9`) and verify recent activity
 3. Trace fee flows from OETH/OUSD vaults to buyback mechanism
-4. Check xOGN rewards distribution contract for recent activity
+4. Analyze FixedRateRewardsSource contract (`0x7609c88e5880e934dd3a75bcfef44e31b1badb8b`) to determine if distribution is programmatic or manual
+
+**Key Clarification — Programmatic vs Manual Distribution**:
+The FixedRateRewardsSource contract must be analyzed to determine:
+- Is `collectRewards()` callable by anyone, or gated?
+- Does reward distribution occur automatically (e.g., drip) or require manual triggers?
+- Who has `strategist` and `governor` roles, and what can they change?
+
+Per documentation: "The FixedRateRewardsSource contract will accrue OGN tokens for OGN stakers. The strategist can change the rate at which rewards are released. The governor can change the rate, the strategist, and the target address."
+
+**This is critical**: If the Buyback Operator multisig must manually execute buybacks, and/or the strategist must manually call distribution functions, value accrual is not fully programmatic.
 
 **Sources**:
-- OGN Rewards Source contract (`0x7609c88e5880e934dd3a75bcfef44e31b1badb8b`)
-- Buyback Operator multisig (`0xBB077E716A5f1F1B63ed5244eBFf5214E50fec8c`)
+- OGN Buyback contract (`0x77314EB392b2be47C014cde0706908b3307Ad6a9`)
+- OGN Rewards Source / FixedRateRewardsSource contract (`0x7609c88e5880e934dd3a75bcfef44e31b1badb8b`)
+- Buyback Operator multisig (`0xBB077E716A5f1F1B63ed5244eBFf5214E50fec8c`) transaction history
 - OETH Dripper contract
 - Transaction history on Etherscan
 
 **Evidence Required**:
-- Recent buyback transactions
+- Recent buyback transactions (OGN Buyback contract)
 - Recent reward distribution transactions to xOGN
 - Fee collection evidence from OETH/OUSD
+- **Analysis of FixedRateRewardsSource showing whether distribution is automatic or requires manual calls**
+- **Who currently holds strategist/governor roles on the rewards contract**
 
-**Done When**: Can verify active, observable value flows from protocol operation to xOGN holders.
+**Done When**: Can verify active, observable value flows AND classify whether distribution is programmatic (contract-driven) or requires manual multisig/strategist intervention.
 
 ---
 
@@ -287,24 +312,35 @@ This plan provides a structured approach to analyzing the OGN token under the Ar
 
 **Question**: Are protocol treasury assets controlled by xOGN governance?
 
+**Step 1 — Identify Treasury Locations** (required before other investigation):
+Origin Protocol does not appear to have a dedicated treasury contract. Treasury functions are likely managed through:
+1. Admin Multisig (5/8): `0xbe2AB3d3d8F6a32b96414ebbd865dBD276d3d899`
+2. Timelock: `0x35918cDE7233F2dD33fA41ae3Cb6aE0e42E0e69F`
+3. Possibly within product contracts (OETH/OUSD vaults hold assets)
+
+**First step must be**: Query balances of Admin Multisig and Timelock to identify where protocol-owned assets reside. Check for any governance proposals or documentation describing treasury structure.
+
 **Investigation Approach**:
-1. Identify all treasury addresses
-2. Verify admin/owner is Timelock or governance-controlled
-3. Check if Admin multisig has direct treasury access
+1. **Step 1**: Identify treasury locations by checking balances of Admin Multisig and Timelock
+2. Query Admin Multisig (`0xbe2AB3d3d8F6a32b96414ebbd865dBD276d3d899`) for ETH/token holdings
+3. Query Timelock (`0x35918cDE7233F2dD33fA41ae3Cb6aE0e42E0e69F`) for any held assets
+4. Check governance proposals for treasury-related decisions
+5. Verify admin/owner of any identified treasury addresses is Timelock or governance-controlled
+6. Determine if Admin multisig can move treasury assets without governance approval
 
 **Sources**:
-- Treasury contract(s) — need to identify
-- Timelock permissions
+- Admin Multisig holdings on Etherscan
+- Timelock holdings on Etherscan
+- Governance forum for treasury proposals
+- DeFi Llama or similar for protocol treasury tracking
 
 **Evidence Required**:
-- Treasury addresses and balances
-- Owner/admin of each treasury
-- Whether governance can direct treasury usage
+- **List of addresses holding protocol treasury assets**
+- Asset balances in each treasury location
+- Owner/admin of each treasury address
+- Whether governance can direct treasury usage vs Admin multisig discretion
 
-**Gaps/Concerns**:
-- Need to identify specific treasury contracts
-
-**Done When**: Can state whether treasury is governance-controlled.
+**Done When**: Can identify where treasury assets reside AND state whether governance controls them.
 
 ---
 
@@ -402,22 +438,28 @@ This plan provides a structured approach to analyzing the OGN token under the Ar
 **Question**: Does any single actor or coordinated group control majority voting power?
 
 **Investigation Approach**:
-1. Analyze xOGN holder distribution
+1. Analyze xOGN holder distribution using Etherscan holder list (primary source)
 2. Identify largest holders and their relationship (team, investors, DAOs)
 3. Check for common control indicators
+4. Cross-reference with public Dune dashboards if available (secondary)
 
-**Sources**:
-- xOGN holders on Etherscan
-- Token holder analytics (Dune, Arkham)
-- Team/investor disclosures
+**Note on Data Sources**: Prioritize Etherscan holder data and contract reads for xOGN distribution. Arkham may require authentication and should only be used as a fallback. Time of observation should be noted as distribution data becomes stale.
+
+**Sources** (in priority order):
+1. xOGN holder list on Etherscan (`0x63898b3b6Ef3d39332082178656E9862bee45C57`)
+2. Public Dune dashboards for Origin Protocol
+3. Team/investor disclosures in governance forum or docs
+4. Arkham (fallback only, may require account)
 
 **Evidence Required**:
-- Top 10-20 xOGN holders
-- Assessment of common control
+- Top 10-20 xOGN holders with addresses
+- Assessment of common control (are top holders related?)
 - Team/investor holdings if disclosed
+- Total xOGN supply and concentration metrics (e.g., % held by top 5)
 
 **Gaps/Concerns**:
 - Difficult to determine common control without insider information
+- Distribution snapshot is point-in-time — note observation date
 
 **Done When**: Can assess concentration risk with available evidence.
 
@@ -557,10 +599,39 @@ This plan provides a structured approach to analyzing the OGN token under the Ar
 
 **Question**: Is governance consistent across Ethereum and Base?
 
+**Key Clarification — Cross-Chain Verification Method**:
+Origin Protocol uses Chainlink CCIP (Cross-Chain Interoperability Protocol) for bridging. The research must determine how Base governance relates to Ethereum governance:
+
+**Possible scenarios to investigate**:
+1. **Unified governance**: Base Timelock accepts messages bridged from Ethereum governance
+2. **Independent governance**: Base has separate admin controls (same signers, different chain)
+3. **Hybrid**: Some functions bridged, others locally controlled
+
+**Cross-Chain Verification Steps**:
+1. Read Base Timelock (`0xf817cb3092179083c48c014688D98B72fB61464f`) to identify its admin/proposer roles
+2. Check if the Base Timelock admin is a bridge contract or the Admin Multisig
+3. If a bridge contract, verify it connects to Ethereum governance
+4. Compare Base Admin Multisig (`0x92A19381444A001d62cE67BaFF066fA1111d7202`) signers to Ethereum Admin Multisig signers
+5. Check if Super OETH Vault admin is controlled by Base Timelock
+
 **Investigation**:
-1. Compare Ethereum vs Base admin/guardian structures
-2. Are Base contracts controlled by Ethereum governance?
-3. Cross-chain execution mechanisms
+1. Compare Ethereum vs Base admin/guardian structures (are signers the same?)
+2. Read Base Timelock contract — who can propose/execute? Is there a bridge involved?
+3. Determine if Base Timelock receives messages from Ethereum or operates independently
+4. If independent, assess whether this creates governance fragmentation
+5. Document the governance model for Super OETH specifically
+
+**Sources**:
+- Base Timelock contract on Basescan (`0xf817cb3092179083c48c014688D98B72fB61464f`)
+- Base Admin Multisig on Basescan (`0x92A19381444A001d62cE67BaFF066fA1111d7202`)
+- Super OETH Vault contract (identify and check admin)
+- https://docs.originprotocol.com/yield-bearing-tokens/core-concepts/bridging
+
+**Evidence Required**:
+- Base Timelock admin/proposer addresses
+- Whether same signers control both Ethereum and Base multisigs
+- Whether Base contracts can be upgraded without Ethereum governance approval
+- Clear statement of governance model: unified, independent, or hybrid
 
 ---
 
