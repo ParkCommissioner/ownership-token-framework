@@ -2682,7 +2682,7 @@
         "Metric 1"
       ],
       "about": "This metric evaluates whether economically material outcomes are mediated through tokenholder governance, or whether admins, multisigs, security councils, or other privileged roles retain onchain powers that can change the rules or selectively restrict use and exit.",
-      "summary": "SWISE holders vote **offchain** with execution through a **multisig**. The multisig can execute transactions independently, meaning tokenholder votes are advisory only. The SWISE token is **upgradeable** and includes a **pause function**, both controlled by the multisig. Fixed 1B supply with no mint function in current implementation, but upgradeability means this could change.",
+      "summary": "SWISE holders vote offchain with execution through a multisig. The multisig can execute transactions independently, meaning tokenholder votes are advisory only. The SWISE token is upgradeable and includes a pause function, both controlled by the multisig. Fixed 1B supply with no mint function in current implementation, but upgradeability means this could change.",
       "criteria": [
         {
           "id": "onchain-ctrl__governance-workflow",
@@ -2895,7 +2895,7 @@
         "Metric 2"
       ],
       "about": "This metric evaluates whether the system's operation produces observable, onchain value flows (or token-scarcity effects) that accrue value to tokenholders under rule-based constraints that do not rely on manual transfers, trusted executors, or other unenforced expectations.",
-      "summary": "Protocol fees (5% on osETH rewards) flow to the DAO treasury, but there is **no distribution mechanism** directing value to SWISE holders. Multiple tokenomics proposals (veSWISE, dLP) have been discussed but **remain unimplemented**. SWISE provides governance participation rights only.",
+      "summary": "Protocol fees (5% on osETH rewards) flow to the DAO treasury, but there is no distribution mechanism directing value to SWISE holders. Multiple tokenomics proposals (veSWISE, dLP) have been discussed but remain unimplemented. SWISE provides governance participation rights only.",
       "criteria": [
         {
           "id": "val-accrual__active",
@@ -3003,7 +3003,7 @@
         "Metric 3"
       ],
       "about": "This metric measures whether a token's economically material code and deployments are independently verifiable from primary evidence without relying on insider assurances.",
-      "summary": "Both SWISE proxy and implementation contracts are **verified on Etherscan**. All V3 core contracts are verified with matching open-source code on GitHub. The repository has undergone **security audits** (Sigma Prime, September 2024).",
+      "summary": "Both SWISE proxy and implementation contracts are verified on Etherscan. All V3 core contracts are verified with matching open-source code on GitHub. The repository has undergone security audits (Sigma Prime, September 2024).",
       "criteria": [
         {
           "id": "verifiability__token-source",
@@ -3075,7 +3075,7 @@
         "Metric 4"
       ],
       "about": "This metric evaluates whether ownership and therefore effective voting power in governance is meaningfully distributed.",
-      "summary": "SWISE has **several thousand holders** with significant concentration among top holders (over 80% held by top 20). Substantial holdings remain in vesting contracts. Original 4-year vesting schedule from April 2021 is near complete.",
+      "summary": "SWISE has several thousand holders with significant concentration among top holders (over 80% held by top 20). Substantial holdings remain in vesting contracts. Original 4-year vesting schedule from April 2021 is near complete.",
       "criteria": [
         {
           "id": "distribution__concentration",
@@ -3123,7 +3123,7 @@
         "Reference"
       ],
       "about": "Economically material assets and obligations often sit offchain\u2014outside the custody and direct enforcement of a token\u2014while still determining which interfaces and domains most users reach, where fees are charged or captured, who can commercialize or restrict the software, and who can sign contracts or move offchain funds.",
-      "summary": "Brand, domains, and IP are controlled by **StakeWise Labs** (Estonia), not a DAO-controlled entity. V3-core uses **BUSL-1.1 license** with change date of January 1, 2026 (converts to MIT). Core protocol IP is owned by StakeWise Labs.",
+      "summary": "Brand, domains, and IP are controlled by StakeWise Labs (Estonia), not a DAO-controlled entity. V3-core uses BUSL-1.1 license with change date of January 1, 2026 (converts to MIT). Core protocol IP is owned by StakeWise Labs.",
       "criteria": [
         {
           "id": "offchain__trademark",
