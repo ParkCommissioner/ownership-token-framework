@@ -1,8 +1,8 @@
 # ENA Token Research Report
 ## Aragon Ownership Token Framework Analysis
 
-**Date:** 2026-02-24
-**Status:** Complete (Revision 2)
+**Date:** 2026-03-04
+**Status:** Complete (Revision 3)
 **Token:** ENA (Ethena Governance Token)
 **Network:** Ethereum Mainnet
 **Contract:** [`0x57e114B691Db790C35207b2e685D4A43181e6061`](https://etherscan.io/address/0x57e114B691Db790C35207b2e685D4A43181e6061)
@@ -81,7 +81,10 @@ sENA Token (UPGRADEABLE - TransparentUpgradeableProxy)
 
 rsENA Token (UPGRADEABLE - Proxy)
     │
-    └─► Implementation: 0x09bba67c316e59840699124a8dc0bbda6a2a9d59
+    ├─► Implementation: 0x09bba67c316e59840699124a8dc0bbda6a2a9d59
+    ├─► ProxyAdmin: 0xa59b36aca119a30c527eddaa386eb130bcf1939f
+    │       └─► Owner: 0x27a907d1f809e8c03d806dc31c8e0c545a3187fc (5-of-8 multisig, DIFFERENT from Dev Multisig)
+    └─► Can upgrade contract logic without tokenholder approval
 
 USDe Token (not upgradeable)
     │
@@ -126,6 +129,7 @@ StakingRewardsDistributor
 | EthenaMinting | owner() | [`0x3b0aaf6e...`](https://etherscan.io/address/0x3b0aaf6e6fcd4a7ceef8c92c32dfea9e64dc1862) | Multisig (5/11) | `eth_call owner()` |
 | StakingRewardsDistributor | owner() | [`0x3b0aaf6e...`](https://etherscan.io/address/0x3b0aaf6e6fcd4a7ceef8c92c32dfea9e64dc1862) | Multisig (5/11) | `eth_call owner()` |
 | StakingRewardsDistributor | operator() | [`0xe3880B79...`](https://etherscan.io/address/0xe3880B792F6F0f8795CbAACd92E7Ca78F5d3646e) | **EOA** | `eth_call operator()` |
+| rsENA | ProxyAdmin owner | [`0x27a907d1...`](https://etherscan.io/address/0x27a907d1f809e8c03d806dc31c8e0c545a3187fc) | Multisig (5/8) | `eth_getStorageAt` EIP-1967 admin slot → ProxyAdmin → owner() |
 
 ### Dev Multisig Composition
 
@@ -226,8 +230,39 @@ eth_call owner() on 0xf849d7792ff9b30a57656ee10a2776bcb49f4fe4
 # Result: 0x3b0aaf6e6fcd4a7ceef8c92c32dfea9e64dc1862 (Dev Multisig)
 ```
 
-**rsENA is also upgradeable:**
-- Implementation: `0x09bba67c316e59840699124a8dc0bbda6a2a9d59`
+**rsENA Upgrade Path (Verified Onchain):**
+
+```
+rsENA Proxy: 0xc65433845ecd16688eda196497fa9130d6c47bd8
+    │
+    ├─► Implementation: 0x09bba67c316e59840699124a8dc0bbda6a2a9d59
+    │   (EIP-1967 slot: 0x360894...bbc)
+    │
+    └─► ProxyAdmin: 0xa59b36aca119a30c527eddaa386eb130bcf1939f
+            │
+            └─► Owner: 0x27a907d1f809e8c03d806dc31c8e0c545a3187fc (5-of-8 multisig)
+```
+
+**Verification:**
+```bash
+# rsENA admin slot
+eth_getStorageAt(0xc654...d8, 0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103)
+# Result: 0xa59b36aca119a30c527eddaa386eb130bcf1939f
+
+# rsENA ProxyAdmin owner
+eth_call owner() on 0xa59b36aca119a30c527eddaa386eb130bcf1939f
+# Result: 0x27a907d1f809e8c03d806dc31c8e0c545a3187fc
+
+# rsENA ProxyAdmin owner threshold
+eth_call getThreshold() on 0x27a907d1f809e8c03d806dc31c8e0c545a3187fc
+# Result: 5
+
+# rsENA ProxyAdmin owner owners count
+eth_call getOwners() on 0x27a907d1f809e8c03d806dc31c8e0c545a3187fc
+# Result: 8 addresses
+```
+
+**Note:** The rsENA ProxyAdmin owner (`0x27a907d1...`) is a **different multisig** from the Dev Multisig. This is a 5-of-8 Safe with signers not publicly identified.
 
 **Non-upgradeable contracts:** ENA, USDe, sUSDe, EthenaMinting V2
 
@@ -328,16 +363,18 @@ bytes32 private constant FULL_RESTRICTED_STAKER_ROLE = keccak256("FULL_RESTRICTE
    - Example: Ethereal committed 15% of tokens to sENA holders
    - Source: [Ethena Network docs](https://docs.ethena.fi/ethena-network)
 
-2. **Fee Switch (Pending):** Parameters met, awaiting final activation
+2. **Fee Switch (Pending Activation):** Parameters met, awaiting final activation
    - USDe supply: ~6.1B (above $6B threshold) - verified: `eth_call totalSupply()` on USDe
-   - Cumulative revenue: $166M+ by Nov 2024 per [fee switch proposal](https://gov.ethenafoundation.com/t/ena-fee-switch-parameters/396)
+   - Cumulative revenue: **$500M+** as of Sept 2025 per Ethena announcement; $665M annual fees per [DefiLlama](https://defillama.com/protocol/ethena)
+   - Original Nov 2024 figure ($166M) is stale - protocol revenue has grown significantly
    - Status: Requires Risk Committee sign-off + governance vote
 
 **rsENA (Restaked ENA):**
 - Contract: [`0xc65433845ecd16688eda196497fa9130d6c47bd8`](https://etherscan.io/address/0xc65433845ecd16688eda196497fa9130d6c47bd8)
 - Total supply: ~5,240,606 rsENA (verified: `eth_call totalSupply()`)
-- Purpose: Per [docs](https://docs.ethena.fi/ena), rsENA allows staking sENA for additional rewards
-- **Aragon has not verified whether rsENA rewards are currently active or what mechanism distributes them**
+- Purpose: Generalized restaking via Symbiotic partnership to provide economic security for USDe cross-chain transfers using LayerZero's DVN messaging system
+- **Mellow Finance Vault:** rsENA is available via [Mellow Finance vault](https://app.mellow.finance/vaults/ethereum-rsena)
+- **Rewards:** rsENA holders receive additional rewards in both ENA and USDe for providing economic security. Per [ENA docs](https://docs.ethena.fi/ena), restaked ENA serves as the first infrastructure layer for the Ethena Network
 
 **Evidence:**
 - sENA total supply: 911,543,344 (verified: `eth_call totalSupply()`)
@@ -368,32 +405,41 @@ Protocol Operations (delta-neutral strategies)
 - **Reserve Fund** (negative funding backup): [`0x2b5ab59163a6e93b4486f6055d33ca4a115dd4d5`](https://etherscan.io/address/0x2b5ab59163a6e93b4486f6055d33ca4a115dd4d5)
 - **Trading Operations**: [`0x0a0b96A730ED5CDa84bcB63c1Ee2edCb6B7764d6`](https://etherscan.io/address/0x0a0b96A730ED5CDa84bcB63c1Ee2edCb6B7764d6)
 
-**Key Finding:** Revenue ($166M+ by Nov 2024) flows through Hot Swap → sUSDe Payout → sUSDe stakers. **ENA tokenholders do NOT directly control these treasury flows.** Distribution decisions are discretionary by multisig signers.
+**Key Finding:** Revenue ($500M+ cumulative as of Sept 2025) flows through Hot Swap → sUSDe Payout → sUSDe stakers. **ENA tokenholders do NOT directly control these treasury flows.** Distribution decisions are discretionary by multisig signers.
 
-### 2.3 Accrual Mechanism Control
+**Vesting Contracts:** Aragon has not been able to verify onchain vesting contract addresses for Foundation and Ecosystem Development ENA allocations. These allocations appear to be held in multisig wallets rather than programmatic vesting contracts.
+
+### 2.3 Accrual Mechanism Control (ENA-Specific)
 
 **Status:** ⚠️
-**Finding:** Value distribution parameters controlled by EOAs and multisigs, not tokenholders.
+**Finding:** All ENA value accrual mechanisms are controlled by multisigs or EOAs, not by ENA tokenholders.
 
-**sUSDe Reward Rate Mechanism:**
+**ENA Value Accrual Controls:**
 
-The amount of USDe distributed to sUSDe stakers is controlled by the **operator** (an EOA) of the StakingRewardsDistributor contract:
+| Mechanism | Controller | Control Type | Tokenholder Input |
+|-----------|------------|--------------|-------------------|
+| **Fee Switch Activation** | Dev Multisig (5/11) + Risk Committee | Discretionary | Snapshot vote (advisory only) |
+| **Ethena Network Airdrops** | Ethena Foundation | Discretionary allocation | None |
+| **sENA Upgrade** | Dev Multisig via ProxyAdmin | Unilateral | None |
+| **rsENA Upgrade** | 5-of-8 multisig | Unilateral | None |
+| **rsENA Restaking Rewards** | Symbiotic integration | Protocol-determined | None |
 
-```solidity
-// StakingRewardsDistributor.sol lines 88-95
-function transferInRewards(uint256 _rewardsAmount) external {
-    if (msg.sender != operator) revert OnlyOperator();
-    if (USDE_TOKEN.balanceOf(address(this)) < _rewardsAmount) revert InsufficientFunds();
-    STAKING_VAULT.transferInRewards(_rewardsAmount);
-}
-```
-**Source:** [StakingRewardsDistributor.sol#L88-L95](https://github.com/ethena-labs/bbp-public-assets/blob/main/contracts/contracts/StakingRewardsDistributor.sol#L88-L95)
+**Fee Switch Control:**
+- The fee switch, which would direct protocol revenue to sENA holders, requires:
+  1. Risk Committee approval (members elected via Snapshot, but Committee is advisory)
+  2. Governance Snapshot vote (non-binding)
+  3. Dev Multisig execution (discretionary)
+- ENA tokenholders cannot force fee switch activation even with majority support
 
-**Current operator:** [`0xe3880B792F6F0f8795CbAACd92E7Ca78F5d3646e`](https://etherscan.io/address/0xe3880B792F6F0f8795CbAACd92E7Ca78F5d3646e) (EOA, verified: `eth_call operator()`)
+**Ecosystem Airdrop Control:**
+- Protocols joining Ethena Network commit token allocations to sENA holders
+- These commitments are negotiated by Ethena Foundation, not governed by ENA holders
+- Distribution parameters set by each protocol, not by ENA governance
 
-The operator can set any reward amount up to the contract's USDe balance. The owner (Dev Multisig) can replace the operator at any time.
-
-**Max USDe mint/redeem limits:** Set by Dev Multisig via `setMaxMintPerBlock()` and `setMaxRedeemPerBlock()` on EthenaMinting.
+**sENA/rsENA Upgrade Control:**
+- sENA can be upgraded by Dev Multisig without tokenholder vote
+- rsENA can be upgraded by a separate 5-of-8 multisig without tokenholder vote
+- No timelock on upgrades - changes can be immediate
 
 ### 2.4 Offchain Value Accrual
 
@@ -430,7 +476,7 @@ The operator can set any reward amount up to the contract's USDe balance. The ow
 | Contract | Etherscan | GitHub | Verified |
 |----------|-----------|--------|----------|
 | ENA | [`0x57e114B6...`](https://etherscan.io/address/0x57e114B691Db790C35207b2e685D4A43181e6061#code) | [ENA.sol](https://github.com/ethena-labs/bbp-public-assets/blob/main/contracts/contracts/ENA.sol) | ✅ |
-| sENA | [`0x8bE3460A...`](https://etherscan.io/address/0x8bE3460A480c80728a8C4D7a5D5303c85ba7B3b9#code) | [Proxy - implementation verified] | ✅ |
+| sENA | [`0x8bE3460A...`](https://etherscan.io/address/0x8bE3460A480c80728a8C4D7a5D5303c85ba7B3b9#code) | Verified on Etherscan; no public GitHub repo identified | ✅ |
 | USDe | [`0x4c9edd58...`](https://etherscan.io/address/0x4c9edd5852cd905f086c759e8383e09bff1e68b3#code) | [USDe.sol](https://github.com/ethena-labs/bbp-public-assets/blob/main/contracts/contracts/USDe.sol) | ✅ |
 | sUSDe | [`0x9d39a5de...`](https://etherscan.io/address/0x9d39a5de30e57443bff2a8307a4256c8797a3497#code) | [StakedUSDeV2.sol](https://github.com/ethena-labs/bbp-public-assets/blob/main/contracts/contracts/StakedUSDeV2.sol) | ✅ |
 | EthenaMinting | [`0xe3490297...`](https://etherscan.io/address/0xe3490297a08d6fC8Da46Edb7B6142E4F461b62D3#code) | [EthenaMinting.sol](https://github.com/ethena-labs/bbp-public-assets/blob/main/contracts/contracts/EthenaMinting.sol) | ✅ |
@@ -582,6 +628,18 @@ curl -X POST https://1rpc.io/eth -d '{"jsonrpc":"2.0","method":"eth_call","param
 # StakingRewardsDistributor operator
 curl -X POST https://1rpc.io/eth -d '{"jsonrpc":"2.0","method":"eth_call","params":[{"to":"0xf2fa332bd83149c66b09b45670bce64746c6b439","data":"0x570ca735"},"latest"],"id":1}'
 # Result: 0xe3880B792F6F0f8795CbAACd92E7Ca78F5d3646e (EOA)
+
+# rsENA admin slot
+curl -X POST https://1rpc.io/eth -d '{"jsonrpc":"2.0","method":"eth_getStorageAt","params":["0xc65433845ecd16688eda196497fa9130d6c47bd8","0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103","latest"],"id":1}'
+# Result: 0xa59b36aca119a30c527eddaa386eb130bcf1939f
+
+# rsENA ProxyAdmin owner
+curl -X POST https://1rpc.io/eth -d '{"jsonrpc":"2.0","method":"eth_call","params":[{"to":"0xa59b36aca119a30c527eddaa386eb130bcf1939f","data":"0x8da5cb5b"},"latest"],"id":1}'
+# Result: 0x27a907d1f809e8c03d806dc31c8e0c545a3187fc (5-of-8 multisig)
+
+# rsENA ProxyAdmin owner threshold
+curl -X POST https://1rpc.io/eth -d '{"jsonrpc":"2.0","method":"eth_call","params":[{"to":"0x27a907d1f809e8c03d806dc31c8e0c545a3187fc","data":"0xe75235b8"},"latest"],"id":1}'
+# Result: 5
 ```
 
 ---
@@ -602,3 +660,5 @@ curl -X POST https://1rpc.io/eth -d '{"jsonrpc":"2.0","method":"eth_call","param
 - [Fee Switch Proposal](https://gov.ethenafoundation.com/t/ena-fee-switch-parameters/396)
 - [Tokenomist.ai - ENA](https://tokenomist.ai/ethena)
 - [Ethena Terms of Service](https://docs.ethena.fi/resources/terms-of-service)
+- [Mellow Finance rsENA Vault](https://app.mellow.finance/vaults/ethereum-rsena)
+- [DefiLlama - Ethena](https://defillama.com/protocol/ethena)
