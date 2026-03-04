@@ -1537,7 +1537,7 @@
         "Metric 1"
       ],
       "about": "This metric evaluates whether economically material outcomes are mediated through tokenholder governance, or whether admins, multisigs, security councils, or other privileged roles retain onchain powers that can change the rules or selectively restrict use and exit.",
-      "summary": "ENA governance is advisory only. Tokenholders vote via Snapshot, but a 5-of-11 Dev Multisig executes all decisions. There is no onchain governance workflow, no timelock, and ENA holders cannot elect or remove multisig signers. The ENA token itself is non-upgradeable, but sENA and rsENA use TransparentUpgradeableProxy controlled by the multisig. Staking contracts include blacklist capabilities with seizure powers.",
+      "summary": "ENA governance is advisory only. Tokenholders vote via Snapshot, but a 5-of-11 Dev Multisig executes all decisions. There is no onchain governance workflow, no timelock, and ENA holders cannot elect or remove multisig signers. The ENA token itself is non-upgradeable, but sENA uses TransparentUpgradeableProxy controlled by the Dev Multisig, and rsENA is controlled by a **different 5-of-8 multisig** (0x27a907d1...). Staking contracts include blacklist capabilities with seizure powers.",
       "criteria": [
         {
           "id": "onchain-ctrl__governance-workflow",
@@ -1626,7 +1626,7 @@
           "name": "Protocol Upgrade Authority",
           "about": "Determines whether core protocol logic can be upgraded and whether such upgrades are controlled by tokenholders.",
           "status": "\u26a0\ufe0f",
-          "notes": "**sENA is upgradeable** via TransparentUpgradeableProxy. The Dev Multisig controls upgrades without tokenholder approval. rsENA is also upgradeable. ENA, USDe, sUSDe, and EthenaMinting are non-upgradeable.",
+          "notes": "**sENA is upgradeable** via TransparentUpgradeableProxy controlled by Dev Multisig. **rsENA is also upgradeable** but controlled by a **different 5-of-8 multisig** (0x27a907d1...), not the Dev Multisig. Neither upgrade path involves tokenholder approval. ENA, USDe, sUSDe, and EthenaMinting are non-upgradeable.",
           "evidence": [
             {
               "name": "sENA Upgrade Path (Verified Onchain)",
@@ -1643,19 +1643,29 @@
                   "type": "explorer"
                 },
                 {
-                  "name": "ProxyAdmin",
+                  "name": "sENA ProxyAdmin",
                   "url": "https://etherscan.io/address/0xf849d7792ff9b30a57656ee10a2776bcb49f4fe4#code",
                   "type": "explorer"
                 }
               ]
             },
             {
-              "name": "rsENA Also Upgradeable",
-              "summary": "rsENA (Restaked ENA) is also a proxy contract with implementation at 0x09bba67c316e59840699124a8dc0bbda6a2a9d59.",
+              "name": "rsENA Upgrade Path (Verified Onchain)",
+              "summary": "rsENA uses EIP-1967 proxy with a **DIFFERENT** upgrade controller.\n\n**Implementation:** 0x09bba67c316e59840699124a8dc0bbda6a2a9d59\n\n**ProxyAdmin:** 0xa59b36aca119a30c527eddaa386eb130bcf1939f\n\n**ProxyAdmin Owner:** 0x27a907d1f809e8c03d806dc31c8e0c545a3187fc (5-of-8 multisig)\n\nThis is a **separate multisig** from the Dev Multisig. Signers are not publicly identified.",
               "urls": [
                 {
                   "name": "rsENA Proxy",
                   "url": "https://etherscan.io/address/0xc65433845ecd16688eda196497fa9130d6c47bd8#code",
+                  "type": "explorer"
+                },
+                {
+                  "name": "rsENA ProxyAdmin",
+                  "url": "https://etherscan.io/address/0xa59b36aca119a30c527eddaa386eb130bcf1939f",
+                  "type": "explorer"
+                },
+                {
+                  "name": "rsENA ProxyAdmin Owner (5-of-8 Multisig)",
+                  "url": "https://etherscan.io/address/0x27a907d1f809e8c03d806dc31c8e0c545a3187fc",
                   "type": "explorer"
                 }
               ]
@@ -1808,18 +1818,18 @@
         "Metric 2"
       ],
       "about": "This metric evaluates whether the system's operation produces observable, onchain value flows (or token-scarcity effects) that accrue value to tokenholders under rule-based constraints that do not rely on manual transfers, trusted executors, or other unenforced expectations.",
-      "summary": "ENA has no active programmatic value accrual to tokenholders. A fee switch was approved in parameters but remains pending activation. sENA holders receive ecosystem airdrops from Ethena Network protocols. Protocol revenue ($166M+ by Nov 2024) flows through multisig-controlled wallets to sUSDe stakers, NOT to ENA/sENA holders. The StakingRewardsDistributor operator is a single EOA.",
+      "summary": "ENA has no active programmatic value accrual to tokenholders from core protocol revenue. A fee switch was approved in parameters but remains pending activation. sENA holders receive ecosystem airdrops from Ethena Network protocols. rsENA holders receive rewards via Symbiotic/Mellow Finance. Protocol revenue ($500M+ cumulative as of Sept 2025) flows through multisig-controlled wallets to sUSDe stakers, NOT to ENA/sENA holders.",
       "criteria": [
         {
           "id": "val-accrual__active",
           "name": "Accrual Active",
           "about": "Assesses whether value flows to tokenholders are currently active rather than merely theoretical or proposed.",
           "status": "\u26a0\ufe0f",
-          "notes": "Fee switch parameters met (USDe supply >$6B), but activation pending. sENA holders receive **ecosystem airdrops** from Ethena Network protocols (e.g., Ethereal 15% allocation). rsENA exists (~5.2M supply) but Aragon has not verified whether rewards are active. Currently, **no programmatic protocol revenue flows to ENA/sENA holders**.",
+          "notes": "Fee switch parameters met (USDe supply >$6B), but activation pending. sENA holders receive **ecosystem airdrops** from Ethena Network protocols (e.g., Ethereal 15% allocation). rsENA (~5.2M supply) is available via Mellow Finance vault with rewards in ENA and USDe for providing Symbiotic economic security. Currently, **no direct programmatic protocol revenue flows to ENA/sENA holders** from Ethena's core business.",
           "evidence": [
             {
               "name": "Fee Switch Status",
-              "summary": "Parameters approved November 2024. USDe supply ~6.1B (above $6B threshold). Cumulative revenue $166M+ by Nov 2024. Activation requires Risk Committee sign-off + governance vote \u2014 still pending.",
+              "summary": "Parameters approved November 2024. USDe supply ~6.1B (above $6B threshold). Cumulative revenue **$500M+** as of Sept 2025 ($665M annual fees per DefiLlama). Activation requires Risk Committee sign-off + governance vote \u2014 still pending.",
               "urls": [
                 {
                   "name": "Fee Switch Parameters Proposal",
@@ -1830,6 +1840,11 @@
                   "name": "USDe Token (verify totalSupply)",
                   "url": "https://etherscan.io/address/0x4c9edd5852cd905f086c759e8383e09bff1e68b3#readContract",
                   "type": "explorer"
+                },
+                {
+                  "name": "DefiLlama - Ethena Fees",
+                  "url": "https://defillama.com/protocol/ethena",
+                  "type": "docs"
                 }
               ]
             },
@@ -1845,8 +1860,8 @@
               ]
             },
             {
-              "name": "rsENA (Restaked ENA)",
-              "summary": "rsENA contract exists with ~5.2M supply. Per docs, allows staking sENA for additional rewards. **Aragon has not verified whether rsENA rewards are currently active or what mechanism distributes them.**",
+              "name": "rsENA (Restaked ENA via Symbiotic)",
+              "summary": "rsENA (~5.2M supply) provides economic security for USDe cross-chain transfers using LayerZero DVN messaging via Symbiotic partnership. rsENA holders receive rewards in **ENA and USDe** per docs. Available via **Mellow Finance vault**.",
               "urls": [
                 {
                   "name": "rsENA Contract",
@@ -1856,6 +1871,11 @@
                 {
                   "name": "ENA Staking Documentation",
                   "url": "https://docs.ethena.fi/ena",
+                  "type": "docs"
+                },
+                {
+                  "name": "Mellow Finance rsENA Vault",
+                  "url": "https://app.mellow.finance/vaults/ethereum-rsena",
                   "type": "docs"
                 }
               ]
@@ -1867,7 +1887,7 @@
           "name": "Treasury Ownership",
           "about": "Determines whether protocol treasury assets are programmatically controlled by tokenholder governance.",
           "status": "\u26a0\ufe0f",
-          "notes": "Protocol revenue flows through multisig-controlled wallets. **Treasury is NOT tokenholder-controlled.** Revenue ($166M+ by Nov 2024) flows: Hot Swap \u2192 sUSDe Payout \u2192 StakingRewardsDistributor \u2192 sUSDe stakers. ENA tokenholders do NOT directly control these treasury flows. Distribution decisions are discretionary.",
+          "notes": "Protocol revenue flows through multisig-controlled wallets. **Treasury is NOT tokenholder-controlled.** Revenue (**$500M+ cumulative** as of Sept 2025) flows: Hot Swap \u2192 sUSDe Payout \u2192 StakingRewardsDistributor \u2192 sUSDe stakers. ENA tokenholders do NOT directly control these treasury flows. Distribution decisions are discretionary.",
           "evidence": [
             {
               "name": "Revenue Flow",
@@ -1913,37 +1933,37 @@
           "name": "Accrual Mechanism Control",
           "about": "Evaluates whether tokenholders can modify parameters governing value capture, such as fees or revenue routing.",
           "status": "\u26a0\ufe0f",
-          "notes": "Value distribution parameters controlled by EOAs and multisigs, NOT tokenholders. The **StakingRewardsDistributor operator is a single EOA** that controls when rewards are distributed to sUSDe stakers. Max USDe mint/redeem limits are set by the Dev Multisig.",
+          "notes": "All ENA value accrual mechanisms are controlled by multisigs or EOAs, **NOT** by ENA tokenholders. Fee switch requires discretionary multisig execution. Ecosystem airdrops are Foundation-negotiated. sENA/rsENA can be upgraded without tokenholder vote.",
           "evidence": [
             {
-              "name": "sUSDe Reward Rate Mechanism",
-              "summary": "The amount of USDe distributed to sUSDe stakers is controlled by the **operator** (an EOA) of StakingRewardsDistributor. The operator can call transferInRewards() to set any reward amount up to the contract's USDe balance. The owner (Dev Multisig) can replace the operator at any time.",
+              "name": "ENA Value Accrual Controls",
+              "summary": "**Fee Switch Activation:** Dev Multisig (5/11) + Risk Committee \u2014 Snapshot votes are advisory only, cannot force activation.\n\n**Ethena Network Airdrops:** Ethena Foundation \u2014 negotiated allocations, no ENA holder governance.\n\n**sENA Upgrade:** Dev Multisig via ProxyAdmin \u2014 unilateral, no timelock.\n\n**rsENA Upgrade:** Separate 5-of-8 multisig (0x27a907d1...) \u2014 unilateral, signers not publicly identified.\n\n**rsENA Restaking Rewards:** Symbiotic integration \u2014 protocol-determined, no ENA holder control.",
               "urls": [
                 {
-                  "name": "transferInRewards() function (lines 88-95)",
-                  "url": "https://github.com/ethena-labs/bbp-public-assets/blob/main/contracts/contracts/StakingRewardsDistributor.sol#L88-L95",
-                  "type": "github"
+                  "name": "Fee Switch Parameters Proposal",
+                  "url": "https://gov.ethenafoundation.com/t/ena-fee-switch-parameters/396",
+                  "type": "docs"
                 },
                 {
-                  "name": "StakingRewardsDistributor Contract",
-                  "url": "https://etherscan.io/address/0xf2fa332bd83149c66b09b45670bce64746c6b439#code",
+                  "name": "sENA ProxyAdmin",
+                  "url": "https://etherscan.io/address/0xf849d7792ff9b30a57656ee10a2776bcb49f4fe4",
                   "type": "explorer"
                 },
                 {
-                  "name": "Operator EOA",
-                  "url": "https://etherscan.io/address/0xe3880B792F6F0f8795CbAACd92E7Ca78F5d3646e",
+                  "name": "rsENA ProxyAdmin Owner (5-of-8 Multisig)",
+                  "url": "https://etherscan.io/address/0x27a907d1f809e8c03d806dc31c8e0c545a3187fc",
                   "type": "explorer"
                 }
               ]
             },
             {
-              "name": "Max USDe Mint/Redeem Limits",
-              "summary": "Set by Dev Multisig via setMaxMintPerBlock() and setMaxRedeemPerBlock() on EthenaMinting. Controls USDe supply expansion rate.",
+              "name": "Tokenholder Cannot Force Activation",
+              "summary": "Even with majority sENA/ENA support, tokenholders cannot force fee switch activation or change airdrop terms. Snapshot votes signal preference but the Dev Multisig decides execution. No onchain mechanism exists for binding governance over value accrual.",
               "urls": [
                 {
-                  "name": "EthenaMinting V2",
-                  "url": "https://etherscan.io/address/0xe3490297a08d6fC8Da46Edb7B6142E4F461b62D3#code",
-                  "type": "explorer"
+                  "name": "Governance Documentation",
+                  "url": "https://docs.ethena.fi/solution-overview/governance",
+                  "type": "docs"
                 }
               ]
             }
@@ -2008,7 +2028,7 @@
           "name": "Protocol Component Source Verification",
           "about": "Determines whether core protocol contracts are publicly accessible and verifiable against their onchain deployments.",
           "status": "\u2705",
-          "notes": "All core protocol contracts are verified on Etherscan and open source. sENA proxy and implementation both verified. Multiple audits completed.",
+          "notes": "All core protocol contracts are verified on Etherscan. Most have open source GitHub repos. **sENA is verified on Etherscan but no public GitHub repo has been identified.** Multiple audits completed.",
           "evidence": [
             {
               "name": "Verified Contracts",
