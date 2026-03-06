@@ -16,6 +16,7 @@ import { trackExpandAllCriteria } from "@/lib/analytics"
 import { getMetricsByTokenId, type Metric } from "@/lib/metrics-data"
 import { getTokenById } from "@/lib/token-data"
 import { formatUnixTimestamp } from "@/lib/utils"
+import { AIChatWidget } from "./ai-chat-widget"
 import AnalyticsContent from "./analytics-content"
 import InfoSidebar from "./info-sidebar"
 import { NewsletterSignup } from "./newsletter-signup.tsx"
@@ -202,9 +203,22 @@ export default function TokenDetail({ tokenId }: TokenDetailProps) {
                 </TabsContent>
               </Tabs> */}
 
-            {/* Right column - Info sidebar */}
+            {/* Right column - Info sidebar and AI Chat */}
             <div>
               <div className="sticky top-6 flex flex-col-reverse gap-6 lg:flex-col">
+                <AIChatWidget
+                  tokenId={token.id}
+                  tokenName={token.name}
+                  tokenSymbol={token.symbol}
+                  tokenDescription={token.description}
+                  tokenNetwork={token.network}
+                  tokenAddress={token.address}
+                  metrics={metrics}
+                  positive={token.positive}
+                  neutral={token.neutral}
+                  atRisk={token.atRisk}
+                  total={token.evidenceEntries}
+                />
                 <InfoSidebar token={token} />
                 <Button
                   className="w-fit lg:w-full"
