@@ -14,11 +14,13 @@ import { Button } from "@/components/ui/button"
 import { Container } from "@/components/ui/container"
 import { trackExpandAllCriteria } from "@/lib/analytics"
 import { getMetricsByTokenId, type Metric } from "@/lib/metrics-data"
+import { calculateSimpleScore, getScoreBreakdown } from "@/lib/score-utils"
 import { getTokenById } from "@/lib/token-data"
 import { formatUnixTimestamp } from "@/lib/utils"
 import AnalyticsContent from "./analytics-content"
 import InfoSidebar from "./info-sidebar"
 import { NewsletterSignup } from "./newsletter-signup.tsx"
+import { ScoreSummaryCard } from "./score-summary-card"
 
 // Types
 export type CriteriaStatus = "positive" | "neutral" | "at_risk" | "tbd"
@@ -163,6 +165,10 @@ export default function TokenDetail({ tokenId }: TokenDetailProps) {
     )
   }
 
+  // Calculate score for display
+  const score = calculateSimpleScore(token)
+  const breakdown = getScoreBreakdown(token)
+
   return (
     <PageWrapper>
       {/* White background section - Hero */}
@@ -175,7 +181,18 @@ export default function TokenDetail({ tokenId }: TokenDetailProps) {
       {/* Gray background section - Content */}
       <div className="bg-muted/50 flex-1">
         <Container>
-          <div className="grid grid-cols-1 gap-6 pt-6 pb-10 md:pt-12 md:pb-20 lg:grid-cols-[1fr_300px]">
+          {/* Score Summary Card */}
+          <ScoreSummaryCard
+            passed={score.passed}
+            total={score.total}
+            percentage={score.percentage}
+            positive={breakdown.positive}
+            neutral={breakdown.neutral}
+            atRisk={breakdown.atRisk}
+            className="mt-6 md:mt-12"
+          />
+
+          <div className="grid grid-cols-1 gap-6 pt-6 pb-10 md:pb-20 lg:grid-cols-[1fr_300px]">
             {/* Left column - Tabs and metrics */}
 
             <AnalyticsContent

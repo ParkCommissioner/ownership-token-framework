@@ -28,7 +28,9 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { useTokens } from "@/hooks/use-tokens"
+import { calculateSimpleScore } from "@/lib/score-utils"
 import { formatUnixTimestamp, truncateAddress } from "@/lib/utils"
+import { ProgressBar } from "./ui/progress-bar"
 
 // Types
 interface Token {
@@ -38,6 +40,9 @@ interface Token {
   address: string
   icon?: string
   evidenceEntries: number
+  positive: number
+  neutral: number
+  atRisk: number
   lastUpdated: number
   network: string
 }
@@ -128,29 +133,43 @@ const columns: ColumnDef<Token>[] = [
       </div>
     ),
   },
-  // {
-  //   accessorKey: "evidenceEntries",
-  //   meta: {
-  //     headerClassName: "hidden md:table-cell",
-  //     cellClassName: "hidden md:table-cell",
-  //   },
-  //   header: ({ column }) => (
-  //     <button
-  //       className="inline-flex items-center gap-2.5 font-medium text-sm hover:text-foreground/80"
-  //       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //       type="button"
-  //     >
-  //       Evidence entries
-  //       <ChevronsUpDownIcon className="size-4" />
-  //     </button>
-  //   ),
-  //   cell: ({ row }) => (
-  //     <MetricPill
-  //       icon={<IconBubble className="size-4" />}
-  //       value={row.original.evidenceEntries}
-  //     />
-  //   ),
-  // },
+  {
+    id: "score",
+    accessorFn: (row) => {
+      const score = calculateSimpleScore(row)
+      return score.percentage
+    },
+    meta: {
+      headerClassName: "hidden sm:table-cell",
+      cellClassName: "hidden sm:table-cell",
+    },
+    header: ({ column }) => (
+      <button
+        className="inline-flex items-center gap-2.5 font-medium text-sm hover:text-foreground/80"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        type="button"
+      >
+        Score
+        <ChevronsUpDownIcon className="size-4" />
+      </button>
+    ),
+    cell: ({ row }) => {
+      const score = calculateSimpleScore(row.original)
+      return (
+        <div className="flex flex-col gap-1.5 min-w-[120px]">
+          <ProgressBar value={score.percentage} segments={10} size="sm" />
+          <div className="flex items-baseline gap-2 text-sm">
+            <span className="font-medium tabular-nums">
+              {score.passed}/{score.total}
+            </span>
+            <span className="text-muted-foreground text-xs">
+              {score.percentage}%
+            </span>
+          </div>
+        </div>
+      )
+    },
+  },
   {
     accessorKey: "lastUpdated",
     header: ({ column }) => (
