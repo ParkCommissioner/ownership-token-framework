@@ -13,10 +13,12 @@ import {
 import { Button } from "@/components/ui/button"
 import { Container } from "@/components/ui/container"
 import { trackExpandAllCriteria } from "@/lib/analytics"
+import { calculateGroupedScore } from "@/lib/grouped-score-utils"
 import { getMetricsByTokenId, type Metric } from "@/lib/metrics-data"
 import { getTokenById } from "@/lib/token-data"
 import { formatUnixTimestamp } from "@/lib/utils"
 import AnalyticsContent from "./analytics-content"
+import { GroupedScoreCard } from "./grouped-score-card"
 import InfoSidebar from "./info-sidebar"
 import { NewsletterSignup } from "./newsletter-signup.tsx"
 
@@ -163,6 +165,9 @@ export default function TokenDetail({ tokenId }: TokenDetailProps) {
     )
   }
 
+  // Calculate grouped scores
+  const groupedScores = calculateGroupedScore(metrics)
+
   return (
     <PageWrapper>
       {/* White background section - Hero */}
@@ -175,7 +180,10 @@ export default function TokenDetail({ tokenId }: TokenDetailProps) {
       {/* Gray background section - Content */}
       <div className="bg-muted/50 flex-1">
         <Container>
-          <div className="grid grid-cols-1 gap-6 pt-6 pb-10 md:pt-12 md:pb-20 lg:grid-cols-[1fr_300px]">
+          {/* Grouped Score Card */}
+          <GroupedScoreCard scores={groupedScores} className="mt-6 md:mt-12" />
+
+          <div className="grid grid-cols-1 gap-6 pt-6 pb-10 md:pb-20 lg:grid-cols-[1fr_300px]">
             {/* Left column - Tabs and metrics */}
 
             <AnalyticsContent

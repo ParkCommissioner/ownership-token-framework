@@ -28,7 +28,14 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { useTokens } from "@/hooks/use-tokens"
-import { formatUnixTimestamp, truncateAddress } from "@/lib/utils"
+import { getMetricsByTokenId } from "@/lib/metrics-data"
+import {
+  calculateGroupedScore,
+  type CategoryScore,
+  getAssessmentColor,
+  getAssessmentLabel,
+} from "@/lib/grouped-score-utils"
+import { cn, formatUnixTimestamp, truncateAddress } from "@/lib/utils"
 
 // Types
 interface Token {
@@ -40,6 +47,24 @@ interface Token {
   evidenceEntries: number
   lastUpdated: number
   network: string
+}
+
+// Mini category badge for table
+function CategoryBadge({ category }: { category: CategoryScore }) {
+  const colors = getAssessmentColor(category.assessment)
+  return (
+    <div
+      className={cn(
+        "inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs",
+        colors.bg,
+        colors.text
+      )}
+      title={`${category.categoryName}: ${category.passed}/${category.total}`}
+    >
+      <span>{category.icon}</span>
+      <span className="tabular-nums">{category.percentage}%</span>
+    </div>
+  )
 }
 
 declare module "@tanstack/react-table" {
@@ -128,29 +153,27 @@ const columns: ColumnDef<Token>[] = [
       </div>
     ),
   },
-  // {
-  //   accessorKey: "evidenceEntries",
-  //   meta: {
-  //     headerClassName: "hidden md:table-cell",
-  //     cellClassName: "hidden md:table-cell",
-  //   },
-  //   header: ({ column }) => (
-  //     <button
-  //       className="inline-flex items-center gap-2.5 font-medium text-sm hover:text-foreground/80"
-  //       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //       type="button"
-  //     >
-  //       Evidence entries
-  //       <ChevronsUpDownIcon className="size-4" />
-  //     </button>
-  //   ),
-  //   cell: ({ row }) => (
-  //     <MetricPill
-  //       icon={<IconBubble className="size-4" />}
-  //       value={row.original.evidenceEntries}
-  //     />
-  //   ),
-  // },
+  {
+    id: "ownership",
+    meta: {
+      headerClassName: "hidden sm:table-cell",
+      cellClassName: "hidden sm:table-cell",
+    },
+    header: () => (
+      <span className="font-medium text-sm">Ownership Profile</span>
+    ),
+    cell: ({ row }) => {
+      const metrics = getMetricsByTokenId(row.original.id)
+      const scores = calculateGroupedScore(metrics)
+      return (
+        <div className="flex flex-wrap gap-1.5">
+          {scores.categories.map((cat) => (
+            <CategoryBadge key={cat.categoryId} category={cat} />
+          ))}
+        </div>
+      )
+    },
+  },
   {
     accessorKey: "lastUpdated",
     header: ({ column }) => (
