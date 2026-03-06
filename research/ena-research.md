@@ -1,8 +1,8 @@
 # ENA Token Research Report
 ## Aragon Ownership Token Framework Analysis
 
-**Date:** 2026-03-04
-**Status:** Complete (Revision 3)
+**Date:** 2026-03-06
+**Status:** Complete (Revision 4)
 **Token:** ENA (Ethena Governance Token)
 **Network:** Ethereum Mainnet
 **Contract:** [`0x57e114B691Db790C35207b2e685D4A43181e6061`](https://etherscan.io/address/0x57e114B691Db790C35207b2e685D4A43181e6061)
@@ -50,7 +50,7 @@ ENA governance is **advisory, not binding**. All protocol changes are executed b
 | **Dev Multisig** | [`0x3b0aaf6e6fcd4a7ceef8c92c32dfea9e64dc1862`](https://etherscan.io/address/0x3b0aaf6e6fcd4a7ceef8c92c32dfea9e64dc1862) | 5-of-11 | Owner of all core contracts | **No** |
 | **Hot Swap** | [`0x4423198f26764a8ce9ac8f1683c476854c885d9d`](https://etherscan.io/address/0x4423198f26764a8ce9ac8f1683c476854c885d9d) | 4-of-9 | Receives protocol revenue; converts to USDe | **No** |
 | **sUSDe Payout** | [`0x71e4f98e8f20c88112489de3dded4489802a3a87`](https://etherscan.io/address/0x71e4f98e8f20c88112489de3dded4489802a3a87) | 3-of-11 | Distributes rewards to stakers | **No** |
-| **Trading Operations** | [`0x0a0b96A730ED5CDa84bcB63c1Ee2edCb6B7764d6`](https://etherscan.io/address/0x0a0b96A730ED5CDa84bcB63c1Ee2edCb6B7764d6) | 4-of-? | Team dApp interactions | **No** |
+| **Trading Operations** | [`0x0a0b96A730ED5CDa84bcB63c1Ee2edCb6B7764d6`](https://etherscan.io/address/0x0a0b96A730ED5CDa84bcB63c1Ee2edCb6B7764d6) | 4-of-8 | Team dApp interactions | **No** |
 | **Reserve Fund** | [`0x2b5ab59163a6e93b4486f6055d33ca4a115dd4d5`](https://etherscan.io/address/0x2b5ab59163a6e93b4486f6055d33ca4a115dd4d5) | 4-of-10 | Negative funding backup | **No** |
 
 **Critical Finding:** None of the multisig members are elected by ENA tokenholders. All signers are appointed by Ethena Labs. Documentation claims 4/8 threshold, but onchain verification shows 5/11 for Dev Multisig.
@@ -181,7 +181,7 @@ ENA holders vote via Snapshot at [`ethenagovernance.eth`](https://snapshot.org/#
 | **Dev Multisig** (5/11) | All contract ownership, upgrades, minting, parameter changes | **None** - signers not elected |
 | **Hot Swap** (4/9) | Protocol revenue flow, USDe conversion | **None** - signers not elected |
 | **sUSDe Payout** (3/11) | Staker reward distribution timing/amounts | **None** - signers not elected |
-| **Trading Operations** (4/?) | Onchain operational activities | **None** - signers not elected |
+| **Trading Operations** (4/8) | Onchain operational activities | **None** - signers not elected |
 | **Reserve Fund** (4/10) | Emergency reserve deployment | **None** - signers not elected |
 
 **EOA Control Points:**
@@ -363,11 +363,10 @@ bytes32 private constant FULL_RESTRICTED_STAKER_ROLE = keccak256("FULL_RESTRICTE
    - Example: Ethereal committed 15% of tokens to sENA holders
    - Source: [Ethena Network docs](https://docs.ethena.fi/ethena-network)
 
-2. **Fee Switch (Pending Activation):** Parameters met, awaiting final activation
-   - USDe supply: ~6.1B (above $6B threshold) - verified: `eth_call totalSupply()` on USDe
+2. **Fee Switch (Pending Activation):** Forum posts received positive signals, but Snapshot vote and onchain execution still pending
+   - USDe supply: ~5.98B (verified: `eth_call totalSupply()` on USDe)
    - Cumulative revenue: **$500M+** as of Sept 2025 per Ethena announcement; $665M annual fees per [DefiLlama](https://defillama.com/protocol/ethena)
-   - Original Nov 2024 figure ($166M) is stale - protocol revenue has grown significantly
-   - Status: Requires Risk Committee sign-off + governance vote
+   - Status: Requires Risk Committee sign-off + Snapshot vote + multisig execution
 
 **rsENA (Restaked ENA):**
 - Contract: [`0xc65433845ecd16688eda196497fa9130d6c47bd8`](https://etherscan.io/address/0xc65433845ecd16688eda196497fa9130d6c47bd8)
@@ -439,7 +438,8 @@ Protocol Operations (delta-neutral strategies)
 **sENA/rsENA Upgrade Control:**
 - sENA can be upgraded by Dev Multisig without tokenholder vote
 - rsENA can be upgraded by a separate 5-of-8 multisig without tokenholder vote
-- No timelock on upgrades - changes can be immediate
+- No timelock on upgrades: changes can be immediate
+- **Upgrade Risk:** Contract upgrades could modify or eliminate value accrual mechanisms for sENA/rsENA holders without prior notice or tokenholder approval
 
 ### 2.4 Offchain Value Accrual
 
