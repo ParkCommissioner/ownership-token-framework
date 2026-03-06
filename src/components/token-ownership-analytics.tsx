@@ -12,7 +12,7 @@ import {
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table"
-import { ArrowRightIcon, ChevronsUpDownIcon } from "lucide-react"
+import { AlertTriangleIcon, ArrowRightIcon, ChevronsUpDownIcon } from "lucide-react"
 import { useState } from "react"
 import { HeroHeader } from "@/components/hero-header"
 import { NewsletterSignup } from "@/components/newsletter-signup"
@@ -28,7 +28,9 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { useTokens } from "@/hooks/use-tokens"
-import { formatUnixTimestamp, truncateAddress } from "@/lib/utils"
+import { getMetricsByTokenId } from "@/lib/metrics-data"
+import { calculateRadarScore } from "@/lib/radar-score-utils"
+import { cn, formatUnixTimestamp, truncateAddress } from "@/lib/utils"
 
 // Types
 interface Token {
@@ -38,6 +40,9 @@ interface Token {
   address: string
   icon?: string
   evidenceEntries: number
+  positive: number
+  neutral: number
+  atRisk: number
   lastUpdated: number
   network: string
 }
@@ -128,29 +133,52 @@ const columns: ColumnDef<Token>[] = [
       </div>
     ),
   },
-  // {
-  //   accessorKey: "evidenceEntries",
-  //   meta: {
-  //     headerClassName: "hidden md:table-cell",
-  //     cellClassName: "hidden md:table-cell",
-  //   },
-  //   header: ({ column }) => (
-  //     <button
-  //       className="inline-flex items-center gap-2.5 font-medium text-sm hover:text-foreground/80"
-  //       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //       type="button"
-  //     >
-  //       Evidence entries
-  //       <ChevronsUpDownIcon className="size-4" />
-  //     </button>
-  //   ),
-  //   cell: ({ row }) => (
-  //     <MetricPill
-  //       icon={<IconBubble className="size-4" />}
-  //       value={row.original.evidenceEntries}
-  //     />
-  //   ),
-  // },
+  {
+    id: "score",
+    accessorFn: (row) => {
+      const metrics = getMetricsByTokenId(row.id)
+      const radarData = calculateRadarScore(metrics)
+      return radarData.overallScore
+    },
+    meta: {
+      headerClassName: "hidden sm:table-cell",
+      cellClassName: "hidden sm:table-cell",
+    },
+    header: ({ column }) => (
+      <button
+        className="inline-flex items-center gap-2.5 font-medium text-sm hover:text-foreground/80"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        type="button"
+      >
+        Score
+        <ChevronsUpDownIcon className="size-4" />
+      </button>
+    ),
+    cell: ({ row }) => {
+      const metrics = getMetricsByTokenId(row.original.id)
+      const radarData = calculateRadarScore(metrics)
+      const hasRisks = radarData.riskFlags.length > 0
+      return (
+        <div className="flex items-center gap-2">
+          <span className="font-semibold tabular-nums">
+            {radarData.overallScore}
+          </span>
+          <span className="text-muted-foreground text-xs">/100</span>
+          {hasRisks && (
+            <div
+              className={cn(
+                "flex items-center gap-1 px-1.5 py-0.5 rounded text-xs",
+                "bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-300"
+              )}
+            >
+              <AlertTriangleIcon className="size-3" />
+              <span>{radarData.riskFlags.length}</span>
+            </div>
+          )}
+        </div>
+      )
+    },
+  },
   {
     accessorKey: "lastUpdated",
     header: ({ column }) => (
