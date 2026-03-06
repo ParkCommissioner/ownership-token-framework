@@ -28,7 +28,11 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { useTokens } from "@/hooks/use-tokens"
-import { formatUnixTimestamp, truncateAddress } from "@/lib/utils"
+import {
+  getAssessmentForRating,
+  type QualitativeRating,
+} from "@/lib/qualitative-score-utils"
+import { cn, formatUnixTimestamp, truncateAddress } from "@/lib/utils"
 
 // Types
 interface Token {
@@ -38,8 +42,31 @@ interface Token {
   address: string
   icon?: string
   evidenceEntries: number
+  positive: number
+  neutral: number
+  atRisk: number
   lastUpdated: number
   network: string
+}
+
+// Get rating from percentage
+function getRating(positive: number, total: number): QualitativeRating {
+  const percentage = total > 0 ? (positive / total) * 100 : 0
+  if (percentage >= 85) return "excellent"
+  if (percentage >= 70) return "good"
+  if (percentage >= 50) return "mixed"
+  if (percentage >= 30) return "limited"
+  return "concerning"
+}
+
+// Rating badge component
+function RatingBadge({ rating }: { rating: QualitativeRating }) {
+  const assessment = getAssessmentForRating(rating)
+  return (
+    <span className={cn("px-2 py-0.5 rounded text-xs font-medium", assessment.color.badge)}>
+      {assessment.label}
+    </span>
+  )
 }
 
 declare module "@tanstack/react-table" {
@@ -128,29 +155,32 @@ const columns: ColumnDef<Token>[] = [
       </div>
     ),
   },
-  // {
-  //   accessorKey: "evidenceEntries",
-  //   meta: {
-  //     headerClassName: "hidden md:table-cell",
-  //     cellClassName: "hidden md:table-cell",
-  //   },
-  //   header: ({ column }) => (
-  //     <button
-  //       className="inline-flex items-center gap-2.5 font-medium text-sm hover:text-foreground/80"
-  //       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //       type="button"
-  //     >
-  //       Evidence entries
-  //       <ChevronsUpDownIcon className="size-4" />
-  //     </button>
-  //   ),
-  //   cell: ({ row }) => (
-  //     <MetricPill
-  //       icon={<IconBubble className="size-4" />}
-  //       value={row.original.evidenceEntries}
-  //     />
-  //   ),
-  // },
+  {
+    id: "assessment",
+    accessorFn: (row) => {
+      const percentage =
+        row.evidenceEntries > 0 ? (row.positive / row.evidenceEntries) * 100 : 0
+      return percentage
+    },
+    meta: {
+      headerClassName: "hidden sm:table-cell",
+      cellClassName: "hidden sm:table-cell",
+    },
+    header: ({ column }) => (
+      <button
+        className="inline-flex items-center gap-2.5 font-medium text-sm hover:text-foreground/80"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        type="button"
+      >
+        Assessment
+        <ChevronsUpDownIcon className="size-4" />
+      </button>
+    ),
+    cell: ({ row }) => {
+      const rating = getRating(row.original.positive, row.original.evidenceEntries)
+      return <RatingBadge rating={rating} />
+    },
+  },
   {
     accessorKey: "lastUpdated",
     header: ({ column }) => (
