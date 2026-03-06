@@ -28,7 +28,8 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { useTokens } from "@/hooks/use-tokens"
-import { formatUnixTimestamp, truncateAddress } from "@/lib/utils"
+import { getGradeForPercentage } from "@/lib/letter-grade-utils"
+import { cn, formatUnixTimestamp, truncateAddress } from "@/lib/utils"
 
 // Types
 interface Token {
@@ -38,6 +39,9 @@ interface Token {
   address: string
   icon?: string
   evidenceEntries: number
+  positive: number
+  neutral: number
+  atRisk: number
   lastUpdated: number
   network: string
 }
@@ -128,29 +132,50 @@ const columns: ColumnDef<Token>[] = [
       </div>
     ),
   },
-  // {
-  //   accessorKey: "evidenceEntries",
-  //   meta: {
-  //     headerClassName: "hidden md:table-cell",
-  //     cellClassName: "hidden md:table-cell",
-  //   },
-  //   header: ({ column }) => (
-  //     <button
-  //       className="inline-flex items-center gap-2.5 font-medium text-sm hover:text-foreground/80"
-  //       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //       type="button"
-  //     >
-  //       Evidence entries
-  //       <ChevronsUpDownIcon className="size-4" />
-  //     </button>
-  //   ),
-  //   cell: ({ row }) => (
-  //     <MetricPill
-  //       icon={<IconBubble className="size-4" />}
-  //       value={row.original.evidenceEntries}
-  //     />
-  //   ),
-  // },
+  {
+    id: "grade",
+    accessorFn: (row) => {
+      const percentage =
+        row.evidenceEntries > 0 ? (row.positive / row.evidenceEntries) * 100 : 0
+      return percentage
+    },
+    meta: {
+      headerClassName: "hidden sm:table-cell",
+      cellClassName: "hidden sm:table-cell",
+    },
+    header: ({ column }) => (
+      <button
+        className="inline-flex items-center gap-2.5 font-medium text-sm hover:text-foreground/80"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        type="button"
+      >
+        Grade
+        <ChevronsUpDownIcon className="size-4" />
+      </button>
+    ),
+    cell: ({ row }) => {
+      const gradeInfo = getGradeForPercentage(
+        row.original.positive,
+        row.original.evidenceEntries
+      )
+      return (
+        <div className="flex items-center gap-2">
+          <span
+            className={cn(
+              "inline-flex items-center justify-center w-10 h-8 rounded font-bold text-sm",
+              gradeInfo.color.bg,
+              gradeInfo.color.text
+            )}
+          >
+            {gradeInfo.grade}
+          </span>
+          <span className="text-xs text-muted-foreground tabular-nums">
+            {gradeInfo.percentage}%
+          </span>
+        </div>
+      )
+    },
+  },
   {
     accessorKey: "lastUpdated",
     header: ({ column }) => (

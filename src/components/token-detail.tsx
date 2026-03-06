@@ -13,11 +13,13 @@ import {
 import { Button } from "@/components/ui/button"
 import { Container } from "@/components/ui/container"
 import { trackExpandAllCriteria } from "@/lib/analytics"
+import { calculateLetterGradeProfile } from "@/lib/letter-grade-utils"
 import { getMetricsByTokenId, type Metric } from "@/lib/metrics-data"
 import { getTokenById } from "@/lib/token-data"
 import { formatUnixTimestamp } from "@/lib/utils"
 import AnalyticsContent from "./analytics-content"
 import InfoSidebar from "./info-sidebar"
+import { LetterGradeCard } from "./letter-grade-card"
 import { NewsletterSignup } from "./newsletter-signup.tsx"
 
 // Types
@@ -163,6 +165,9 @@ export default function TokenDetail({ tokenId }: TokenDetailProps) {
     )
   }
 
+  // Calculate letter grade profile
+  const gradeProfile = calculateLetterGradeProfile(token, metrics)
+
   return (
     <PageWrapper>
       {/* White background section - Hero */}
@@ -175,7 +180,10 @@ export default function TokenDetail({ tokenId }: TokenDetailProps) {
       {/* Gray background section - Content */}
       <div className="bg-muted/50 flex-1">
         <Container>
-          <div className="grid grid-cols-1 gap-6 pt-6 pb-10 md:pt-12 md:pb-20 lg:grid-cols-[1fr_300px]">
+          {/* Letter Grade Card */}
+          <LetterGradeCard profile={gradeProfile} className="mt-6 md:mt-12" />
+
+          <div className="grid grid-cols-1 gap-6 pt-6 pb-10 md:pb-20 lg:grid-cols-[1fr_300px]">
             {/* Left column - Tabs and metrics */}
 
             <AnalyticsContent
