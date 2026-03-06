@@ -1537,7 +1537,7 @@
         "Metric 1"
       ],
       "about": "This metric evaluates whether economically material outcomes are mediated through tokenholder governance, or whether admins, multisigs, security councils, or other privileged roles retain onchain powers that can change the rules or selectively restrict use and exit.",
-      "summary": "ENA governance is advisory only. Tokenholders vote via Snapshot, but a 5-of-11 Dev Multisig executes all decisions. There is no onchain governance workflow, no timelock, and ENA holders cannot elect or remove multisig signers. The ENA token itself is non-upgradeable, but sENA uses TransparentUpgradeableProxy controlled by the Dev Multisig, and rsENA is controlled by a **different 5-of-8 multisig** (0x27a907d1...). Staking contracts include blacklist capabilities with seizure powers.",
+      "summary": "ENA governance is advisory only. Tokenholders vote via Snapshot, but a Dev Multisig executes all decisions. There is no onchain governance workflow, no timelock, and ENA holders cannot elect or remove multisig signers. The ENA token itself is non-upgradeable, but sENA and rsENA are upgradeable proxies controlled by separate multisigs. Staking contracts include blacklist capabilities with seizure powers.",
       "criteria": [
         {
           "id": "onchain-ctrl__governance-workflow",
@@ -1564,7 +1564,7 @@
             },
             {
               "name": "Multisig Execution",
-              "summary": "The Dev Multisig (5-of-11) owns all core contracts. Verified onchain: getThreshold() returns 5, getOwners() returns 11 addresses. Documentation claims 4/8, but onchain reality is 5/11.",
+              "summary": "The Dev Multisig owns all core contracts. Verified onchain: `getThreshold()` returns 5, `getOwners()` returns 11 addresses. Documentation claims 4/8, but onchain reality is 5/11.",
               "urls": [
                 {
                   "name": "Dev Multisig",
@@ -1584,7 +1584,7 @@
           "evidence": [
             {
               "name": "Multisig Control Matrix",
-              "summary": "**Dev Multisig** (5/11): All contract ownership, upgrades, minting, parameter changes \u2014 signers NOT elected by ENA holders.\n\n**Hot Swap** (4/9): Protocol revenue flow, USDe conversion \u2014 signers NOT elected.\n\n**sUSDe Payout** (3/11): Staker reward distribution \u2014 signers NOT elected.\n\n**Trading Operations** (4/?): Onchain operational activities \u2014 signers NOT elected.\n\n**Reserve Fund** (4/10): Emergency reserve deployment \u2014 signers NOT elected.",
+              "summary": "**Dev Multisig:** All contract ownership, upgrades, minting, parameter changes. Signers NOT elected by ENA holders.\n\n**Hot Swap:** Protocol revenue flow, USDe conversion. Signers NOT elected.\n\n**sUSDe Payout:** Staker reward distribution. Signers NOT elected.\n\n**Trading Operations:** Onchain operational activities. Signers NOT elected.\n\n**Reserve Fund:** Emergency reserve deployment. Signers NOT elected.",
               "urls": [
                 {
                   "name": "Multisig Matrix Documentation",
@@ -1605,17 +1605,32 @@
                   "name": "sUSDe Payout Multisig",
                   "url": "https://etherscan.io/address/0x71e4f98e8f20c88112489de3dded4489802a3a87",
                   "type": "explorer"
+                },
+                {
+                  "name": "Trading Operations Multisig",
+                  "url": "https://etherscan.io/address/0x0a0b96A730ED5CDa84bcB63c1Ee2edCb6B7764d6",
+                  "type": "explorer"
+                },
+                {
+                  "name": "Reserve Fund Multisig",
+                  "url": "https://etherscan.io/address/0x2b5ab59163a6e93b4486f6055d33ca4a115dd4d5",
+                  "type": "explorer"
                 }
               ]
             },
             {
               "name": "EOA Control Points",
-              "summary": "**StakingRewardsDistributor Operator** (EOA): Can trigger transferInRewards() to distribute USDe to sUSDe stakers.\n\n**Minters** (20 EOAs): Can mint USDe via EthenaMinting.\n\n**Redeemers** (20 EOAs): Can redeem USDe.\n\n**Gatekeepers** (3+ EOAs): Can disable USDe mint/redeem globally.",
+              "summary": "**StakingRewardsDistributor Operator** (EOA): Can trigger `transferInRewards()` to distribute USDe to sUSDe stakers.\n\n**Minters** (20 EOAs): Can mint USDe via EthenaMinting.\n\n**Redeemers** (20 EOAs): Can redeem USDe.\n\n**Gatekeepers** (3+ EOAs): Can disable USDe mint/redeem globally.",
               "urls": [
                 {
                   "name": "StakingRewardsDistributor Operator (EOA)",
                   "url": "https://etherscan.io/address/0xe3880B792F6F0f8795CbAACd92E7Ca78F5d3646e",
                   "type": "explorer"
+                },
+                {
+                  "name": "Multisig Matrix (Minter/Redeemer/Gatekeeper docs)",
+                  "url": "https://docs.ethena.fi/solution-design/key-trust-assumptions/matrix-of-multisig-and-timelocks",
+                  "type": "docs"
                 }
               ]
             }
@@ -1626,11 +1641,11 @@
           "name": "Protocol Upgrade Authority",
           "about": "Determines whether core protocol logic can be upgraded and whether such upgrades are controlled by tokenholders.",
           "status": "\u26a0\ufe0f",
-          "notes": "**sENA is upgradeable** via TransparentUpgradeableProxy controlled by Dev Multisig. **rsENA is also upgradeable** but controlled by a **different 5-of-8 multisig** (0x27a907d1...), not the Dev Multisig. Neither upgrade path involves tokenholder approval. ENA, USDe, sUSDe, and EthenaMinting are non-upgradeable.",
+          "notes": "**sENA is upgradeable** via proxy controlled by Dev Multisig. **rsENA is also upgradeable** but controlled by a different multisig. Neither upgrade path involves tokenholder approval. ENA, USDe, sUSDe, and EthenaMinting are non-upgradeable.",
           "evidence": [
             {
-              "name": "sENA Upgrade Path (Verified Onchain)",
-              "summary": "sENA uses EIP-1967 TransparentUpgradeableProxy.\n\n**Implementation:** 0x7fd57b46ae1a7b14f6940508381877ee03e1018b\n\n**ProxyAdmin:** 0xf849d7792ff9b30a57656ee10a2776bcb49f4fe4\n\n**ProxyAdmin Owner:** Dev Multisig (0x3b0aaf6e...)\n\nThe Dev Multisig can upgrade sENA contract logic at any time without tokenholder approval.",
+              "name": "sENA Upgrade Path",
+              "summary": "sENA uses EIP-1967 proxy pattern. The Dev Multisig can upgrade sENA contract logic at any time without tokenholder approval. No timelock.",
               "urls": [
                 {
                   "name": "sENA Proxy",
@@ -1650,8 +1665,8 @@
               ]
             },
             {
-              "name": "rsENA Upgrade Path (Verified Onchain)",
-              "summary": "rsENA uses EIP-1967 proxy with a **DIFFERENT** upgrade controller.\n\n**Implementation:** 0x09bba67c316e59840699124a8dc0bbda6a2a9d59\n\n**ProxyAdmin:** 0xa59b36aca119a30c527eddaa386eb130bcf1939f\n\n**ProxyAdmin Owner:** 0x27a907d1f809e8c03d806dc31c8e0c545a3187fc (5-of-8 multisig)\n\nThis is a **separate multisig** from the Dev Multisig. Signers are not publicly identified.",
+              "name": "rsENA Upgrade Path",
+              "summary": "rsENA uses EIP-1967 proxy with a **different** upgrade controller than sENA. Controlled by a separate multisig with signers not publicly identified. No timelock.",
               "urls": [
                 {
                   "name": "rsENA Proxy",
@@ -1672,11 +1687,26 @@
             },
             {
               "name": "Non-Upgradeable Contracts",
-              "summary": "ENA, USDe, sUSDe, and EthenaMinting V2 are NOT proxies. Verified by checking EIP-1967 implementation slot returns 0x0.",
+              "summary": "ENA, USDe, sUSDe, and EthenaMinting V2 are not proxy contracts.",
               "urls": [
                 {
                   "name": "ENA Token",
                   "url": "https://etherscan.io/address/0x57e114B691Db790C35207b2e685D4A43181e6061#code",
+                  "type": "explorer"
+                },
+                {
+                  "name": "USDe Token",
+                  "url": "https://etherscan.io/address/0x4c9edd5852cd905f086c759e8383e09bff1e68b3#code",
+                  "type": "explorer"
+                },
+                {
+                  "name": "sUSDe Token",
+                  "url": "https://etherscan.io/address/0x9d39a5de30e57443bff2a8307a4256c8797a3497#code",
+                  "type": "explorer"
+                },
+                {
+                  "name": "EthenaMinting V2",
+                  "url": "https://etherscan.io/address/0xe3490297a08d6fC8Da46Edb7B6142E4F461b62D3#code",
                   "type": "explorer"
                 }
               ]
@@ -1688,11 +1718,11 @@
           "name": "Token Upgrade Authority",
           "about": "Assesses whether token behavior can be modified and, if so, whether such changes are controlled by tokenholder governance.",
           "status": "\u26a0\ufe0f",
-          "notes": "The ENA token itself is **NOT upgradeable**. It uses Ownable2Step, not a proxy pattern. Verified: EIP-1967 implementation slot returns 0x0. Token behavior is immutable. However, the owner (Dev Multisig) retains mint authority subject to rate limits.",
+          "notes": "The ENA token itself is **NOT upgradeable**. It uses Ownable2Step, not a proxy pattern. Token behavior is immutable. However, the owner (Dev Multisig) retains mint authority subject to rate limits.",
           "evidence": [
             {
               "name": "ENA Non-Upgradeability Verification",
-              "summary": "EIP-1967 implementation slot at 0x360894... returns empty (0x0), confirming ENA is not a proxy. The token inherits Ownable2Step, ERC20Burnable, ERC20Permit \u2014 no upgrade mechanism exists.",
+              "summary": "The ENA token inherits Ownable2Step, ERC20Burnable, ERC20Permit. No upgrade mechanism exists in the contract.",
               "urls": [
                 {
                   "name": "ENA.sol Source",
@@ -1717,10 +1747,10 @@
           "evidence": [
             {
               "name": "Mint Function",
-              "summary": "The mint() function allows the owner to create new tokens subject to two constraints:\n\n**MAX_INFLATION = 10** (10% of total supply per mint)\n\n**MINT_WAIT_PERIOD = 365 days** (minimum time between mints)\n\nOwner (Dev Multisig) can invoke without tokenholder approval.",
+              "summary": "The `mint()` function allows the owner to create new tokens subject to two constraints:\n\n**MAX_INFLATION = 10** (10% of total supply per mint)\n\n**MINT_WAIT_PERIOD = 365 days** (minimum time between mints)\n\nOwner (Dev Multisig) can invoke without tokenholder approval.",
               "urls": [
                 {
-                  "name": "ENA.sol mint() function (lines 42-49)",
+                  "name": "ENA.sol `mint()` function (lines 42-49)",
                   "url": "https://github.com/ethena-labs/bbp-public-assets/blob/main/contracts/contracts/ENA.sol#L42-L49",
                   "type": "github"
                 },
@@ -1738,11 +1768,11 @@
           "name": "Privileged Access Gating",
           "about": "Assesses whether any bounded actor set can block or selectively restrict economically meaningful protocol actions or exit paths, versus access that is permissionless and symmetric for similarly situated users.",
           "status": "\u26a0\ufe0f",
-          "notes": "Multiple privileged roles can restrict economically meaningful protocol actions. Gatekeepers (3+ EOAs) can disable USDe minting/redemption globally. Only the Owner can re-enable. The StakingRewardsDistributor operator (a single EOA) controls when rewards are distributed to sUSDe stakers.",
+          "notes": "Gatekeepers can disable USDe minting/redemption globally. Only the Owner can re-enable. The StakingRewardsDistributor operator (a single EOA) controls when rewards are distributed to sUSDe stakers.",
           "evidence": [
             {
               "name": "Privileged Roles (per Multisig Matrix)",
-              "summary": "**Owner (EthenaMinting):** Can set max mint/redeem limits for USDe, add/remove collateral assets and custodians.\n\n**Admin (EthenaMinting):** Can grant/revoke Minter, Redeemer, Gatekeeper roles.\n\n**Gatekeeper:** Can call disableMintRedeem() to halt USDe operations globally.\n\n**Operator (StakingRewardsDistributor):** Single EOA that controls transferInRewards() to distribute USDe to sUSDe stakers.",
+              "summary": "**Owner (EthenaMinting):** Can set max mint/redeem limits for USDe, add/remove collateral assets and custodians.\n\n**Admin (EthenaMinting):** Can grant/revoke Minter, Redeemer, Gatekeeper roles.\n\n**Gatekeeper:** Can call `disableMintRedeem()` to halt USDe operations globally.\n\n**Operator (StakingRewardsDistributor):** Single EOA that controls `transferInRewards()` to distribute USDe to sUSDe stakers.",
               "urls": [
                 {
                   "name": "Multisig Matrix Documentation",
@@ -1761,17 +1791,17 @@
               "summary": "Gatekeepers can halt but **only the Owner can re-enable**. This creates asymmetric power.",
               "urls": [
                 {
-                  "name": "disableMintRedeem() (line 278)",
+                  "name": "`disableMintRedeem()` (line 278)",
                   "url": "https://github.com/ethena-labs/bbp-public-assets/blob/main/contracts/contracts/EthenaMinting.sol#L278",
                   "type": "github"
                 },
                 {
-                  "name": "removeMinterRole() (line 339)",
+                  "name": "`removeMinterRole()` (line 339)",
                   "url": "https://github.com/ethena-labs/bbp-public-assets/blob/main/contracts/contracts/EthenaMinting.sol#L339",
                   "type": "github"
                 },
                 {
-                  "name": "removeRedeemerRole() (line 345)",
+                  "name": "`removeRedeemerRole()` (line 345)",
                   "url": "https://github.com/ethena-labs/bbp-public-assets/blob/main/contracts/contracts/EthenaMinting.sol#L345",
                   "type": "github"
                 }
@@ -1784,11 +1814,11 @@
           "name": "Token Censorship",
           "about": "Examines whether any roles exist that can freeze, blacklist, seize, or otherwise censor token balances or transfers.",
           "status": "\u26a0\ufe0f",
-          "notes": "The ENA base token has no blacklist capability. However, sENA and sUSDe staking contracts include BLACKLIST_MANAGER_ROLE with freeze and seizure powers. FULL_RESTRICTED addresses cannot transfer tokens, and redistributeLockedAmount() allows admin to seize frozen assets.",
+          "notes": "The ENA base token has no blacklist capability. However, sENA and sUSDe staking contracts include BLACKLIST_MANAGER_ROLE with freeze and seizure powers. FULL_RESTRICTED addresses cannot transfer tokens, and `redistributeLockedAmount()` allows admin to seize frozen assets.",
           "evidence": [
             {
               "name": "sENA/sUSDe Blacklist Capabilities",
-              "summary": "StakedUSDe.sol defines three restriction roles:\n\n**SOFT_RESTRICTED_STAKER_ROLE:** Cannot stake/unstake\n\n**FULL_RESTRICTED_STAKER_ROLE:** Cannot transfer at all (frozen)\n\n**BLACKLIST_MANAGER_ROLE:** Can assign restrictions\n\nThe redistributeLockedAmount() function allows admin to seize and redistribute frozen assets.",
+              "summary": "StakedUSDe.sol defines three restriction roles:\n\n**SOFT_RESTRICTED_STAKER_ROLE:** Cannot stake/unstake\n\n**FULL_RESTRICTED_STAKER_ROLE:** Cannot transfer at all (frozen)\n\n**BLACKLIST_MANAGER_ROLE:** Can assign restrictions\n\nThe `redistributeLockedAmount()` function allows admin to seize and redistribute frozen assets.",
               "urls": [
                 {
                   "name": "StakedUSDe.sol blacklist roles (lines 26-32)",
@@ -1796,7 +1826,7 @@
                   "type": "github"
                 },
                 {
-                  "name": "redistributeLockedAmount() (lines 106-127)",
+                  "name": "`redistributeLockedAmount()` (lines 106-127)",
                   "url": "https://github.com/ethena-labs/bbp-public-assets/blob/main/contracts/contracts/StakedUSDe.sol#L106-L127",
                   "type": "github"
                 },
@@ -1818,18 +1848,18 @@
         "Metric 2"
       ],
       "about": "This metric evaluates whether the system's operation produces observable, onchain value flows (or token-scarcity effects) that accrue value to tokenholders under rule-based constraints that do not rely on manual transfers, trusted executors, or other unenforced expectations.",
-      "summary": "ENA has no active programmatic value accrual to tokenholders from core protocol revenue. A fee switch was approved in parameters but remains pending activation. sENA holders receive ecosystem airdrops from Ethena Network protocols. rsENA holders receive rewards via Symbiotic/Mellow Finance. Protocol revenue ($500M+ cumulative as of Sept 2025) flows through multisig-controlled wallets to sUSDe stakers, NOT to ENA/sENA holders.",
+      "summary": "No active programmatic value accrual to ENA holders from core protocol revenue. Fee switch received positive forum signals but awaits Snapshot vote and execution. sENA holders receive ecosystem airdrops. rsENA holders receive rewards via Symbiotic. Protocol revenue flows to sUSDe stakers, not ENA/sENA holders.",
       "criteria": [
         {
           "id": "val-accrual__active",
           "name": "Accrual Active",
           "about": "Assesses whether value flows to tokenholders are currently active rather than merely theoretical or proposed.",
           "status": "\u26a0\ufe0f",
-          "notes": "Fee switch parameters met (USDe supply >$6B), but activation pending. sENA holders receive **ecosystem airdrops** from Ethena Network protocols (e.g., Ethereal 15% allocation). rsENA (~5.2M supply) is available via Mellow Finance vault with rewards in ENA and USDe for providing Symbiotic economic security. Currently, **no direct programmatic protocol revenue flows to ENA/sENA holders** from Ethena's core business.",
+          "notes": "Fee switch received positive forum signals but awaits Snapshot vote and execution. sENA holders receive **ecosystem airdrops** from Ethena Network protocols. rsENA (~5.2M supply) is available via Mellow Finance vault with rewards for Symbiotic economic security. **No direct programmatic protocol revenue flows to ENA/sENA holders** from Ethena's core business.",
           "evidence": [
             {
               "name": "Fee Switch Status",
-              "summary": "Parameters approved November 2024. USDe supply ~6.1B (above $6B threshold). Cumulative revenue **$500M+** as of Sept 2025 ($665M annual fees per DefiLlama). Activation requires Risk Committee sign-off + governance vote \u2014 still pending.",
+              "summary": "Forum posts received positive signals in November 2024. USDe supply ~5.98B. Cumulative revenue **$500M+** as of Sept 2025. Activation requires Risk Committee sign-off + Snapshot vote + multisig execution.",
               "urls": [
                 {
                   "name": "Fee Switch Parameters Proposal",
@@ -1887,11 +1917,11 @@
           "name": "Treasury Ownership",
           "about": "Determines whether protocol treasury assets are programmatically controlled by tokenholder governance.",
           "status": "\u26a0\ufe0f",
-          "notes": "Protocol revenue flows through multisig-controlled wallets. **Treasury is NOT tokenholder-controlled.** Revenue (**$500M+ cumulative** as of Sept 2025) flows: Hot Swap \u2192 sUSDe Payout \u2192 StakingRewardsDistributor \u2192 sUSDe stakers. ENA tokenholders do NOT directly control these treasury flows. Distribution decisions are discretionary.",
+          "notes": "Protocol revenue flows through multisig-controlled wallets. **Treasury is NOT tokenholder-controlled.** Revenue flows: Hot Swap \u2192 sUSDe Payout \u2192 StakingRewardsDistributor \u2192 sUSDe stakers. ENA tokenholders do NOT control treasury flows.",
           "evidence": [
             {
               "name": "Revenue Flow",
-              "summary": "Protocol Operations (delta-neutral strategies) \u2192 **Hot Swap Multisig** (4/9, receives revenue, converts to USDe) \u2192 **sUSDe Payout Multisig** (3/11) \u2192 **StakingRewardsDistributor** \u2192 sUSDe Stakers.\n\nENA/sENA holders are NOT in this flow unless fee switch activates.",
+              "summary": "Protocol Operations (delta-neutral strategies)\n\u2192 **Hot Swap Multisig** (receives revenue, converts to USDe)\n\u2192 **sUSDe Payout Multisig**\n\u2192 **StakingRewardsDistributor**\n\u2192 sUSDe Stakers\n\nENA/sENA holders are NOT in this flow unless fee switch activates.",
               "urls": [
                 {
                   "name": "Key Addresses Documentation",
@@ -1917,7 +1947,7 @@
             },
             {
               "name": "Reserve Fund (Negative Funding Backup)",
-              "summary": "Separate from revenue treasury. Used only for negative funding emergencies. 4-of-10 multisig, NOT tokenholder-controlled.",
+              "summary": "Separate from revenue treasury. Used only for negative funding emergencies. NOT tokenholder-controlled.",
               "urls": [
                 {
                   "name": "Reserve Fund Multisig",
@@ -1937,7 +1967,7 @@
           "evidence": [
             {
               "name": "ENA Value Accrual Controls",
-              "summary": "**Fee Switch Activation:** Dev Multisig (5/11) + Risk Committee \u2014 Snapshot votes are advisory only, cannot force activation.\n\n**Ethena Network Airdrops:** Ethena Foundation \u2014 negotiated allocations, no ENA holder governance.\n\n**sENA Upgrade:** Dev Multisig via ProxyAdmin \u2014 unilateral, no timelock.\n\n**rsENA Upgrade:** Separate 5-of-8 multisig (0x27a907d1...) \u2014 unilateral, signers not publicly identified.\n\n**rsENA Restaking Rewards:** Symbiotic integration \u2014 protocol-determined, no ENA holder control.",
+              "summary": "**Fee Switch Activation:** Dev Multisig + Risk Committee. Snapshot votes are advisory only.\n\n**Ethena Network Airdrops:** Ethena Foundation negotiates allocations.\n\n**sENA Upgrade:** Dev Multisig via ProxyAdmin. Unilateral, no timelock.\n\n**rsENA Upgrade:** Separate multisig. Unilateral, no timelock.\n\n**rsENA Restaking Rewards:** Symbiotic integration.\n\n**Upgrade Risk:** Contract upgrades could modify or eliminate value accrual mechanisms without tokenholder approval.",
               "urls": [
                 {
                   "name": "Fee Switch Parameters Proposal",
@@ -1974,11 +2004,11 @@
           "name": "Offchain Value Accrual",
           "about": "Are there additional offchain value accrual flows that benefit tokenholders?",
           "status": "\u26a0\ufe0f",
-          "notes": "Value generation happens offchain (delta-neutral strategies on CEXs), but flow to ENA/sENA tokenholders is **not programmatic**. Revenue flows to sUSDe stakers, not ENA holders. If fee switch activates, a portion would route to sENA holders, but this is pending and discretionary.",
+          "notes": "Value generation happens offchain (delta-neutral strategies on CEXs), but flow to ENA/sENA tokenholders is **not programmatic**. Revenue flows to sUSDe stakers, not ENA holders.",
           "evidence": [
             {
               "name": "Offchain Value Chain",
-              "summary": "1. Ethena runs delta-neutral strategies on centralized exchanges (offchain)\n2. Revenue flows to Hot Swap multisig\n3. Hot Swap converts revenue to USDe\n4. sUSDe Payout receives USDe\n5. Operator triggers transferInRewards() to distribute to **sUSDe stakers**\n\n**Currently, ENA/sENA holders do NOT directly receive protocol revenue.**",
+              "summary": "1. Ethena runs delta-neutral strategies on CEXs (offchain)\n\n2. Revenue flows to Hot Swap multisig\n\n3. Hot Swap converts revenue to USDe\n\n4. sUSDe Payout receives USDe\n\n5. Operator triggers `transferInRewards()` to distribute to sUSDe stakers\n\n**ENA/sENA holders do NOT receive protocol revenue.**",
               "urls": [
                 {
                   "name": "Fee Switch Proposal (shows $166M+ revenue)",
@@ -1998,7 +2028,7 @@
         "Metric 3"
       ],
       "about": "This metric measures whether a token's economically material code and deployments are independently verifiable from primary evidence without relying on insider assurances.",
-      "summary": "All core Ethena contracts are verified on Etherscan and open source on GitHub. The protocol has undergone multiple security audits including Quantstamp (2023), Code4rena (2023, 2024).",
+      "summary": "All core contracts are verified on Etherscan and open source on GitHub. Multiple security audits completed.",
       "criteria": [
         {
           "id": "verifiability__token-source",
@@ -2041,6 +2071,11 @@
                 {
                   "name": "sENA Proxy",
                   "url": "https://etherscan.io/address/0x8bE3460A480c80728a8C4D7a5D5303c85ba7B3b9#code",
+                  "type": "explorer"
+                },
+                {
+                  "name": "rsENA Proxy",
+                  "url": "https://etherscan.io/address/0xc65433845ecd16688eda196497fa9130d6c47bd8#code",
                   "type": "explorer"
                 },
                 {
@@ -2101,7 +2136,7 @@
         "Metric 4"
       ],
       "about": "This metric evaluates whether ownership and therefore effective voting power in governance is meaningfully distributed.",
-      "summary": "ENA has a 70% insider allocation (Contributors 30%, Investors 25%, Foundation 15%). Vesting unlocks continue through April 2028 for all categories. Circulating supply is approximately 55% of total supply.",
+      "summary": "70% insider allocation. Vesting unlocks continue through April 2028 for all categories. Circulating supply is approximately 55% of total.",
       "criteria": [
         {
           "id": "distribution__concentration",
@@ -2133,7 +2168,7 @@
           "name": "Future Token Unlocks",
           "about": "Are there known, future events (such as vesting cliffs) that will materially affect the concentration of tokens?",
           "status": "\u26a0\ufe0f",
-          "notes": "Material unlocks ongoing for **all vesting categories** through 2028.\n\n**Core Contributors** (30%): 1-year cliff with 25% unlock (March 2025 passed), then 3-year monthly linear.\n\n**Investors** (25%): Same schedule as Contributors.\n\n**Ecosystem Development** (28%): Linear over 4 years.\n\n**Foundation** (15%): No vesting disclosed, discretionary.\n\nMonthly unlocks continue through ~April 2028.",
+          "notes": "Monthly unlocks continue for all vesting categories through April 2028. Contributors, Investors, and Ecosystem receive linear monthly unlocks. Foundation allocation has no disclosed vesting.",
           "evidence": [
             {
               "name": "Vesting Schedules",
@@ -2161,8 +2196,8 @@
       "tags": [
         "Reference"
       ],
-      "about": "Economically material assets and obligations often sit offchain\u2014outside the custody and direct enforcement of a token\u2014while still determining which interfaces and domains most users reach, where fees are charged or captured, who can commercialize or restrict the software, and who can sign contracts or move offchain funds.",
-      "summary": "Trademarks and IP are owned by Ethena (BVI) Limited, a British Virgin Islands company not controlled by ENA tokenholders. Primary interfaces operate under BVI law. Code is open source (GPL-3.0) but copyright belongs to Ethena Labs.",
+      "about": "Economically material assets and obligations often sit offchain, outside the custody and direct enforcement of a token, while still determining which interfaces and domains most users reach, where fees are charged or captured, who can commercialize or restrict the software, and who can sign contracts or move offchain funds.",
+      "summary": "Trademarks and IP owned by Ethena (BVI) Limited, not controlled by ENA tokenholders. Primary interfaces operate under BVI law. Code is open source but copyright belongs to Ethena Labs.",
       "criteria": [
         {
           "id": "offchain__trademark",
