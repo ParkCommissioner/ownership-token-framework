@@ -12,7 +12,7 @@ import {
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table"
-import { ArrowRightIcon, ChevronsUpDownIcon } from "lucide-react"
+import { ArrowRightIcon, ChevronsUpDownIcon, LinkIcon, CoinsIcon, FileTextIcon } from "lucide-react"
 import { useState } from "react"
 import { HeroHeader } from "@/components/hero-header"
 import { NewsletterSignup } from "@/components/newsletter-signup"
@@ -32,8 +32,8 @@ import { getMetricsByTokenId } from "@/lib/metrics-data"
 import {
   calculateGroupedScore,
   type CategoryScore,
+  type CategoryIconType,
   getAssessmentColor,
-  getAssessmentLabel,
 } from "@/lib/grouped-score-utils"
 import { cn, formatUnixTimestamp, truncateAddress } from "@/lib/utils"
 
@@ -49,20 +49,32 @@ interface Token {
   network: string
 }
 
-// Mini category badge for table
+function CategoryIcon({ type, className }: { type: CategoryIconType; className?: string }) {
+  switch (type) {
+    case "onchain":
+      return <LinkIcon className={className} />
+    case "value":
+      return <CoinsIcon className={className} />
+    case "offchain":
+      return <FileTextIcon className={className} />
+  }
+}
+
+// Mini category pill badge for table
 function CategoryBadge({ category }: { category: CategoryScore }) {
   const colors = getAssessmentColor(category.assessment)
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs",
+        "inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs border",
         colors.bg,
-        colors.text
+        colors.text,
+        colors.border
       )}
       title={`${category.categoryName}: ${category.passed}/${category.total}`}
     >
-      <span>{category.icon}</span>
-      <span className="tabular-nums">{category.percentage}%</span>
+      <CategoryIcon type={category.iconType} className="size-3" />
+      <span className="font-medium tabular-nums">{category.passed}/{category.total}</span>
     </div>
   )
 }
