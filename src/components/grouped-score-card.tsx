@@ -2,97 +2,70 @@ import { cn } from "@/lib/utils"
 import {
   type CategoryScore,
   type GroupedScore,
-  getAssessmentColor,
   getAssessmentLabel,
 } from "@/lib/grouped-score-utils"
-
-interface CategoryScoreColumnProps {
-  category: CategoryScore
-}
-
-function CategoryScoreColumn({ category }: CategoryScoreColumnProps) {
-  const colors = getAssessmentColor(category.assessment)
-  const assessmentLabel = getAssessmentLabel(category.assessment)
-
-  // Calculate filled segments for progress bar (10 segments)
-  const filledSegments = Math.round((category.percentage / 100) * 10)
-
-  return (
-    <div className="flex flex-col items-center gap-2 p-4 rounded-lg border bg-background">
-      <div className="flex items-center gap-1.5 text-sm font-medium">
-        <span>{category.icon}</span>
-        <span className="hidden sm:inline">{category.categoryName}</span>
-        <span className="sm:hidden">{category.shortName}</span>
-      </div>
-
-      {/* Progress bar */}
-      <div className="flex gap-0.5 w-full max-w-[100px]">
-        {Array.from({ length: 10 }).map((_, i) => (
-          <div
-            key={i}
-            className={cn(
-              "flex-1 h-2 rounded-sm transition-colors",
-              i < filledSegments ? "bg-chart-4" : "bg-muted-foreground/20"
-            )}
-          />
-        ))}
-      </div>
-
-      {/* Fraction */}
-      <div className="text-lg font-semibold tabular-nums">
-        {category.passed} of {category.total}
-      </div>
-
-      {/* Percentage */}
-      <div className="text-sm text-muted-foreground">{category.percentage}%</div>
-
-      {/* Assessment badge */}
-      <div
-        className={cn(
-          "px-2 py-0.5 rounded text-xs font-medium",
-          colors.bg,
-          colors.text
-        )}
-      >
-        {assessmentLabel}
-      </div>
-    </div>
-  )
-}
 
 interface GroupedScoreCardProps {
   scores: GroupedScore
   className?: string
 }
 
+function getAssessmentTextColor(assessment: CategoryScore["assessment"]): string {
+  switch (assessment) {
+    case "strong":
+      return "text-green-600"
+    case "moderate":
+      return "text-blue-600"
+    case "limited":
+      return "text-amber-600"
+    case "weak":
+      return "text-red-600"
+  }
+}
+
 export function GroupedScoreCard({ scores, className }: GroupedScoreCardProps) {
   return (
-    <div className={cn("rounded-lg border bg-background p-4 md:p-6", className)}>
-      <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-4">
-        Ownership Profile
-      </h2>
-
-      {/* Category columns */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-        {scores.categories.map((category) => (
-          <CategoryScoreColumn key={category.categoryId} category={category} />
-        ))}
+    <div className={cn("rounded-lg border bg-card p-4 md:p-6", className)}>
+      {/* Header with overall score */}
+      <div className="flex flex-col gap-1 mb-6">
+        <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+          Ownership Profile
+        </h2>
+        <div className="flex items-baseline gap-2">
+          <span className="text-3xl font-semibold tabular-nums">
+            {scores.overall.passed}
+          </span>
+          <span className="text-lg text-muted-foreground">
+            of {scores.overall.total} criteria met
+          </span>
+        </div>
       </div>
 
-      {/* Overall score */}
-      <div className="pt-4 border-t">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">Overall</span>
-          <div className="flex items-baseline gap-2">
-            <span className="font-semibold tabular-nums">
-              {scores.overall.passed} of {scores.overall.total}
-            </span>
-            <span className="text-muted-foreground">criteria met</span>
-            <span className="text-muted-foreground">
-              ({scores.overall.percentage}%)
-            </span>
-          </div>
-        </div>
+      {/* Category breakdown - text only */}
+      <div className="space-y-3">
+        {scores.categories.map((category) => {
+          const label = getAssessmentLabel(category.assessment)
+          const textColor = getAssessmentTextColor(category.assessment)
+          return (
+            <div
+              key={category.categoryId}
+              className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"
+            >
+              <span className="text-sm">
+                <span className="hidden sm:inline">{category.categoryName}</span>
+                <span className="sm:hidden">{category.shortName}</span>
+              </span>
+              <div className="flex items-center gap-3">
+                <span className="text-sm tabular-nums text-muted-foreground">
+                  {category.passed}/{category.total}
+                </span>
+                <span className={cn("text-sm font-medium min-w-[70px] text-right", textColor)}>
+                  {label}
+                </span>
+              </div>
+            </div>
+          )
+        })}
       </div>
     </div>
   )

@@ -31,8 +31,6 @@ import { useTokens } from "@/hooks/use-tokens"
 import { getMetricsByTokenId } from "@/lib/metrics-data"
 import {
   calculateGroupedScore,
-  type CategoryScore,
-  getAssessmentColor,
   getAssessmentLabel,
 } from "@/lib/grouped-score-utils"
 import { cn, formatUnixTimestamp, truncateAddress } from "@/lib/utils"
@@ -49,23 +47,6 @@ interface Token {
   network: string
 }
 
-// Mini category badge for table
-function CategoryBadge({ category }: { category: CategoryScore }) {
-  const colors = getAssessmentColor(category.assessment)
-  return (
-    <div
-      className={cn(
-        "inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs",
-        colors.bg,
-        colors.text
-      )}
-      title={`${category.categoryName}: ${category.passed}/${category.total}`}
-    >
-      <span>{category.icon}</span>
-      <span className="tabular-nums">{category.percentage}%</span>
-    </div>
-  )
-}
 
 declare module "@tanstack/react-table" {
   // biome-ignore lint/correctness/noUnusedVariables: Type parameters required by @tanstack/react-table
@@ -166,10 +147,11 @@ const columns: ColumnDef<Token>[] = [
       const metrics = getMetricsByTokenId(row.original.id)
       const scores = calculateGroupedScore(metrics)
       return (
-        <div className="flex flex-wrap gap-1.5">
-          {scores.categories.map((cat) => (
-            <CategoryBadge key={cat.categoryId} category={cat} />
-          ))}
+        <div className="text-sm">
+          <span className="font-medium tabular-nums">{scores.overall.passed}/{scores.overall.total}</span>
+          <span className="text-muted-foreground ml-1.5">
+            ({scores.categories.map(c => getAssessmentLabel(c.assessment).charAt(0)).join("/")})
+          </span>
         </div>
       )
     },
