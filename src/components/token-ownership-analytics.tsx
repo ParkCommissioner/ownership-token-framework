@@ -12,7 +12,7 @@ import {
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table"
-import { ArrowRightIcon, ChevronsUpDownIcon } from "lucide-react"
+import { ArrowRightIcon, ChevronsUpDownIcon, LinkIcon, CoinsIcon, FileTextIcon } from "lucide-react"
 import { useState } from "react"
 import { HeroHeader } from "@/components/hero-header"
 import { NewsletterSignup } from "@/components/newsletter-signup"
@@ -31,7 +31,7 @@ import { useTokens } from "@/hooks/use-tokens"
 import { getMetricsByTokenId } from "@/lib/metrics-data"
 import {
   calculateGroupedScore,
-  type CategoryScore,
+  type CategoryIconType,
   getAssessmentColor,
   getAssessmentLabel,
 } from "@/lib/grouped-score-utils"
@@ -49,22 +49,15 @@ interface Token {
   network: string
 }
 
-// Mini category badge for table
-function CategoryBadge({ category }: { category: CategoryScore }) {
-  const colors = getAssessmentColor(category.assessment)
-  return (
-    <div
-      className={cn(
-        "inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs",
-        colors.bg,
-        colors.text
-      )}
-      title={`${category.categoryName}: ${category.passed}/${category.total}`}
-    >
-      <span>{category.icon}</span>
-      <span className="tabular-nums">{category.percentage}%</span>
-    </div>
-  )
+function CategoryIcon({ type, className }: { type: CategoryIconType; className?: string }) {
+  switch (type) {
+    case "onchain":
+      return <LinkIcon className={className} />
+    case "value":
+      return <CoinsIcon className={className} />
+    case "offchain":
+      return <FileTextIcon className={className} />
+  }
 }
 
 declare module "@tanstack/react-table" {
@@ -166,10 +159,22 @@ const columns: ColumnDef<Token>[] = [
       const metrics = getMetricsByTokenId(row.original.id)
       const scores = calculateGroupedScore(metrics)
       return (
-        <div className="flex flex-wrap gap-1.5">
-          {scores.categories.map((cat) => (
-            <CategoryBadge key={cat.categoryId} category={cat} />
-          ))}
+        <div className="flex items-center gap-4 text-xs">
+          {scores.categories.map((cat) => {
+            const colors = getAssessmentColor(cat.assessment)
+            const label = getAssessmentLabel(cat.assessment)
+            return (
+              <div
+                key={cat.categoryId}
+                className="flex items-center gap-1.5"
+                title={cat.categoryName}
+              >
+                <CategoryIcon type={cat.iconType} className="size-3.5 text-muted-foreground" />
+                <span className="tabular-nums font-medium">{cat.passed}/{cat.total}</span>
+                <span className={cn("text-xs", colors.text)}>{label}</span>
+              </div>
+            )
+          })}
         </div>
       )
     },

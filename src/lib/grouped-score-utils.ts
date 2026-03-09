@@ -2,11 +2,13 @@
 
 import type { Metric } from "@/lib/metrics-data"
 
+export type CategoryIconType = "onchain" | "value" | "offchain"
+
 export interface ScoreCategory {
   id: string
   name: string
   shortName: string
-  icon: string
+  iconType: CategoryIconType
   metricIds: string[]
   description: string
 }
@@ -15,7 +17,7 @@ export interface CategoryScore {
   categoryId: string
   categoryName: string
   shortName: string
-  icon: string
+  iconType: CategoryIconType
   passed: number
   total: number
   percentage: number
@@ -37,7 +39,7 @@ export const SCORE_CATEGORIES: ScoreCategory[] = [
     id: "onchain",
     name: "Onchain Ownership",
     shortName: "Onchain",
-    icon: "🔗",
+    iconType: "onchain",
     metricIds: ["onchain-ctrl", "verifiability", "distribution"],
     description: "Governance rights enforced onchain",
   },
@@ -45,7 +47,7 @@ export const SCORE_CATEGORIES: ScoreCategory[] = [
     id: "value",
     name: "Value Accrual",
     shortName: "Value",
-    icon: "💰",
+    iconType: "value",
     metricIds: ["val-accrual"],
     description: "Mechanisms that direct value to holders",
   },
@@ -53,7 +55,7 @@ export const SCORE_CATEGORIES: ScoreCategory[] = [
     id: "offchain",
     name: "Offchain Ownership",
     shortName: "Offchain",
-    icon: "📄",
+    iconType: "offchain",
     metricIds: ["offchain"],
     description: "Rights and influence existing off-chain",
   },
@@ -81,7 +83,7 @@ export function calculateGroupedScore(metrics: Metric[]): GroupedScore {
       categoryId: category.id,
       categoryName: category.name,
       shortName: category.shortName,
-      icon: category.icon,
+      iconType: category.iconType,
       passed,
       total,
       percentage,
