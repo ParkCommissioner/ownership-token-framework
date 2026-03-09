@@ -1537,7 +1537,7 @@
         "Metric 1"
       ],
       "about": "This metric evaluates whether economically material outcomes are mediated through tokenholder governance, or whether admins, multisigs, security councils, or other privileged roles retain onchain powers that can change the rules or selectively restrict use and exit.",
-      "summary": "ENA governance is advisory only. Tokenholders vote via Snapshot, but a Dev Multisig executes all decisions. There is no onchain governance workflow, no timelock, and ENA holders cannot elect or remove multisig signers. The ENA token itself is non-upgradeable, but sENA and rsENA are upgradeable proxies controlled by separate multisigs. Staking contracts include blacklist capabilities with seizure powers.",
+      "summary": "ENA governance is advisory only. Tokenholders vote via Snapshot, but the Dev Multisig executes all decisions. There is no onchain governance workflow, no timelock, and ENA holders cannot elect or remove multisig signers. The ENA token itself is non-upgradeable, but sENA and rsENA are upgradeable proxies controlled by separate multisigs. Staking contracts include blacklist capabilities with seizure powers.",
       "criteria": [
         {
           "id": "onchain-ctrl__governance-workflow",
@@ -1644,48 +1644,6 @@
           "notes": "**sENA is upgradeable** via proxy controlled by Dev Multisig. **rsENA is also upgradeable** but controlled by a different multisig. Neither upgrade path involves tokenholder approval. ENA, USDe, sUSDe, and EthenaMinting are non-upgradeable.",
           "evidence": [
             {
-              "name": "sENA Upgrade Path",
-              "summary": "sENA uses EIP-1967 proxy pattern. The Dev Multisig can upgrade sENA contract logic at any time without tokenholder approval. No timelock.",
-              "urls": [
-                {
-                  "name": "sENA Proxy",
-                  "url": "https://etherscan.io/address/0x8bE3460A480c80728a8C4D7a5D5303c85ba7B3b9#code",
-                  "type": "explorer"
-                },
-                {
-                  "name": "sENA Implementation",
-                  "url": "https://etherscan.io/address/0x7fd57b46ae1a7b14f6940508381877ee03e1018b#code",
-                  "type": "explorer"
-                },
-                {
-                  "name": "sENA ProxyAdmin",
-                  "url": "https://etherscan.io/address/0xf849d7792ff9b30a57656ee10a2776bcb49f4fe4#code",
-                  "type": "explorer"
-                }
-              ]
-            },
-            {
-              "name": "rsENA Upgrade Path",
-              "summary": "rsENA uses EIP-1967 proxy with a **different** upgrade controller than sENA. Controlled by a separate multisig with signers not publicly identified. No timelock.",
-              "urls": [
-                {
-                  "name": "rsENA Proxy",
-                  "url": "https://etherscan.io/address/0xc65433845ecd16688eda196497fa9130d6c47bd8#code",
-                  "type": "explorer"
-                },
-                {
-                  "name": "rsENA ProxyAdmin",
-                  "url": "https://etherscan.io/address/0xa59b36aca119a30c527eddaa386eb130bcf1939f",
-                  "type": "explorer"
-                },
-                {
-                  "name": "rsENA ProxyAdmin Owner (5-of-8 Multisig)",
-                  "url": "https://etherscan.io/address/0x27a907d1f809e8c03d806dc31c8e0c545a3187fc",
-                  "type": "explorer"
-                }
-              ]
-            },
-            {
               "name": "Non-Upgradeable Contracts",
               "summary": "ENA, USDe, sUSDe, and EthenaMinting V2 are not proxy contracts.",
               "urls": [
@@ -1707,6 +1665,42 @@
                 {
                   "name": "EthenaMinting V2",
                   "url": "https://etherscan.io/address/0xe3490297a08d6fC8Da46Edb7B6142E4F461b62D3#code",
+                  "type": "explorer"
+                }
+              ]
+            },
+            {
+              "name": "Upgradeable Contracts (sENA and rsENA)",
+              "summary": "**sENA:** Uses EIP-1967 proxy. Dev Multisig can upgrade without tokenholder approval. No timelock.\n\n**rsENA:** Uses EIP-1967 proxy with a different upgrade controller. Controlled by a separate multisig with signers not publicly identified. No timelock.",
+              "urls": [
+                {
+                  "name": "sENA Proxy",
+                  "url": "https://etherscan.io/address/0x8bE3460A480c80728a8C4D7a5D5303c85ba7B3b9#code",
+                  "type": "explorer"
+                },
+                {
+                  "name": "sENA Implementation",
+                  "url": "https://etherscan.io/address/0x7fd57b46ae1a7b14f6940508381877ee03e1018b#code",
+                  "type": "explorer"
+                },
+                {
+                  "name": "sENA ProxyAdmin",
+                  "url": "https://etherscan.io/address/0xf849d7792ff9b30a57656ee10a2776bcb49f4fe4#code",
+                  "type": "explorer"
+                },
+                {
+                  "name": "rsENA Proxy",
+                  "url": "https://etherscan.io/address/0xc65433845ecd16688eda196497fa9130d6c47bd8#code",
+                  "type": "explorer"
+                },
+                {
+                  "name": "rsENA Implementation",
+                  "url": "https://etherscan.io/address/0x09bba67c316e59840699124a8dc0bbda6a2a9d59#code",
+                  "type": "explorer"
+                },
+                {
+                  "name": "rsENA ProxyAdmin",
+                  "url": "https://etherscan.io/address/0xa59b36aca119a30c527eddaa386eb130bcf1939f",
                   "type": "explorer"
                 }
               ]
@@ -1848,7 +1842,7 @@
         "Metric 2"
       ],
       "about": "This metric evaluates whether the system's operation produces observable, onchain value flows (or token-scarcity effects) that accrue value to tokenholders under rule-based constraints that do not rely on manual transfers, trusted executors, or other unenforced expectations.",
-      "summary": "No active programmatic value accrual to ENA holders from core protocol revenue. Fee switch received positive forum signals but awaits Snapshot vote and execution. sENA holders receive ecosystem airdrops. rsENA holders receive rewards via Symbiotic. Protocol revenue flows to sUSDe stakers, not ENA/sENA holders.",
+      "summary": "No active programmatic value accrual to ENA holders. sENA holders receive ecosystem airdrops; rsENA holders receive Symbiotic rewards. Treasury flows through multisig-controlled wallets to sUSDe stakers. All accrual mechanisms are controlled by multisigs or EOAs, not tokenholders.",
       "criteria": [
         {
           "id": "val-accrual__active",
@@ -1859,7 +1853,7 @@
           "evidence": [
             {
               "name": "Fee Switch Status",
-              "summary": "Forum posts received positive signals in November 2024. USDe supply ~5.98B. Cumulative revenue **$500M+** as of Sept 2025. Activation requires Risk Committee sign-off + Snapshot vote + multisig execution.",
+              "summary": "Forum posts received positive signals in November 2024. USDe supply ~5.98B (the $6B threshold has **not** been met). Cumulative revenue $500M+ as of Sept 2025. Activation requires Risk Committee sign-off + Snapshot vote + multisig execution.",
               "urls": [
                 {
                   "name": "Fee Switch Parameters Proposal",
@@ -2008,7 +2002,7 @@
           "evidence": [
             {
               "name": "Offchain Value Chain",
-              "summary": "1. Ethena runs delta-neutral strategies on CEXs (offchain)\n\n2. Revenue flows to Hot Swap multisig\n\n3. Hot Swap converts revenue to USDe\n\n4. sUSDe Payout receives USDe\n\n5. Operator triggers `transferInRewards()` to distribute to sUSDe stakers\n\n**ENA/sENA holders do NOT receive protocol revenue.**",
+              "summary": "1. Ethena runs delta-neutral strategies on CEXs (offchain)\n2. Revenue flows to Hot Swap multisig\n3. Hot Swap converts revenue to USDe\n4. sUSDe Payout receives USDe\n5. Operator triggers `transferInRewards()` to distribute to sUSDe stakers\n\n**ENA/sENA holders do NOT receive protocol revenue.**",
               "urls": [
                 {
                   "name": "Fee Switch Proposal (shows $166M+ revenue)",
