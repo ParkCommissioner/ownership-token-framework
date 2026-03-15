@@ -7,7 +7,7 @@ export const Route = createFileRoute("/value-accrual/")({
     meta: generateOpenGraphMetadata({
       title: "Value Accrual Mechanisms - Ownership Token Framework",
       description:
-        "Interactive comparison of DeFi value accrual mechanisms. Explore how protocols distribute value to token holders through buybacks, burns, staking, and ve-locks.",
+        "Interactive comparison of DeFi value accrual mechanisms. Explore how protocols distribute value to token holders through buybacks, burns, staking, and ve-locks across the comparative set.",
       twitterCard: "summary_large_image",
       url: "/value-accrual",
     }),
