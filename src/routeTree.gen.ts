@@ -9,10 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ValueAccrualRouteImport } from './routes/value-accrual'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ValueAccrualIndexRouteImport } from './routes/value-accrual.index'
+import { Route as ValueAccrualProtocolIdRouteImport } from './routes/value-accrual.$protocolId'
 import { Route as TokensTokenIdRouteImport } from './routes/tokens/$tokenId'
 
+const ValueAccrualRoute = ValueAccrualRouteImport.update({
+  id: '/value-accrual',
+  path: '/value-accrual',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FaqRoute = FaqRouteImport.update({
   id: '/faq',
   path: '/faq',
@@ -23,6 +31,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ValueAccrualIndexRoute = ValueAccrualIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ValueAccrualRoute,
+} as any)
+const ValueAccrualProtocolIdRoute = ValueAccrualProtocolIdRouteImport.update({
+  id: '/$protocolId',
+  path: '/$protocolId',
+  getParentRoute: () => ValueAccrualRoute,
+} as any)
 const TokensTokenIdRoute = TokensTokenIdRouteImport.update({
   id: '/tokens/$tokenId',
   path: '/tokens/$tokenId',
@@ -32,35 +50,69 @@ const TokensTokenIdRoute = TokensTokenIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/faq': typeof FaqRoute
+  '/value-accrual': typeof ValueAccrualRouteWithChildren
   '/tokens/$tokenId': typeof TokensTokenIdRoute
+  '/value-accrual/$protocolId': typeof ValueAccrualProtocolIdRoute
+  '/value-accrual/': typeof ValueAccrualIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/faq': typeof FaqRoute
   '/tokens/$tokenId': typeof TokensTokenIdRoute
+  '/value-accrual/$protocolId': typeof ValueAccrualProtocolIdRoute
+  '/value-accrual': typeof ValueAccrualIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/faq': typeof FaqRoute
+  '/value-accrual': typeof ValueAccrualRouteWithChildren
   '/tokens/$tokenId': typeof TokensTokenIdRoute
+  '/value-accrual/$protocolId': typeof ValueAccrualProtocolIdRoute
+  '/value-accrual/': typeof ValueAccrualIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/faq' | '/tokens/$tokenId'
+  fullPaths:
+    | '/'
+    | '/faq'
+    | '/value-accrual'
+    | '/tokens/$tokenId'
+    | '/value-accrual/$protocolId'
+    | '/value-accrual/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/faq' | '/tokens/$tokenId'
-  id: '__root__' | '/' | '/faq' | '/tokens/$tokenId'
+  to:
+    | '/'
+    | '/faq'
+    | '/tokens/$tokenId'
+    | '/value-accrual/$protocolId'
+    | '/value-accrual'
+  id:
+    | '__root__'
+    | '/'
+    | '/faq'
+    | '/value-accrual'
+    | '/tokens/$tokenId'
+    | '/value-accrual/$protocolId'
+    | '/value-accrual/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   FaqRoute: typeof FaqRoute
+  ValueAccrualRoute: typeof ValueAccrualRouteWithChildren
   TokensTokenIdRoute: typeof TokensTokenIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/value-accrual': {
+      id: '/value-accrual'
+      path: '/value-accrual'
+      fullPath: '/value-accrual'
+      preLoaderRoute: typeof ValueAccrualRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/faq': {
       id: '/faq'
       path: '/faq'
@@ -75,6 +127,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/value-accrual/': {
+      id: '/value-accrual/'
+      path: '/'
+      fullPath: '/value-accrual/'
+      preLoaderRoute: typeof ValueAccrualIndexRouteImport
+      parentRoute: typeof ValueAccrualRoute
+    }
+    '/value-accrual/$protocolId': {
+      id: '/value-accrual/$protocolId'
+      path: '/$protocolId'
+      fullPath: '/value-accrual/$protocolId'
+      preLoaderRoute: typeof ValueAccrualProtocolIdRouteImport
+      parentRoute: typeof ValueAccrualRoute
+    }
     '/tokens/$tokenId': {
       id: '/tokens/$tokenId'
       path: '/tokens/$tokenId'
@@ -85,9 +151,24 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface ValueAccrualRouteChildren {
+  ValueAccrualProtocolIdRoute: typeof ValueAccrualProtocolIdRoute
+  ValueAccrualIndexRoute: typeof ValueAccrualIndexRoute
+}
+
+const ValueAccrualRouteChildren: ValueAccrualRouteChildren = {
+  ValueAccrualProtocolIdRoute: ValueAccrualProtocolIdRoute,
+  ValueAccrualIndexRoute: ValueAccrualIndexRoute,
+}
+
+const ValueAccrualRouteWithChildren = ValueAccrualRoute._addFileChildren(
+  ValueAccrualRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   FaqRoute: FaqRoute,
+  ValueAccrualRoute: ValueAccrualRouteWithChildren,
   TokensTokenIdRoute: TokensTokenIdRoute,
 }
 export const routeTree = rootRouteImport

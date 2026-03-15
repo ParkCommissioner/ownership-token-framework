@@ -121,6 +121,13 @@ export function SiteHeader() {
                 </NavigationMenuLink>
               </NavigationMenuItem>
               <NavigationMenuItem>
+                <NavigationMenuLink
+                  render={<NavLink to="/value-accrual" />}
+                >
+                  Value Accrual
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
                 <NavigationMenuLink render={<NavLink to="/faq" />}>
                   FAQ
                 </NavigationMenuLink>
@@ -221,6 +228,14 @@ export function SiteHeader() {
                 >
                   Framework
                 </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="py-3">
+                <NavLink
+                  className="flex w-full items-center"
+                  to="/value-accrual"
+                >
+                  Value Accrual
+                </NavLink>
               </DropdownMenuItem>
               <DropdownMenuItem className="py-3">
                 <NavLink className="flex w-full items-center" to="/faq">
