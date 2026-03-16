@@ -1842,14 +1842,14 @@
         "Metric 2"
       ],
       "about": "This metric evaluates whether the system's operation produces observable, onchain value flows (or token-scarcity effects) that accrue value to tokenholders under rule-based constraints that do not rely on manual transfers, trusted executors, or other unenforced expectations.",
-      "summary": "No active programmatic value accrual to ENA holders. sENA holders receive ecosystem airdrops; rsENA holders receive Symbiotic rewards. Treasury flows through multisig-controlled wallets to sUSDe stakers. All accrual mechanisms are controlled by multisigs or EOAs, not tokenholders.",
+      "summary": "No active programmatic value accrual to ENA holders. **sUSDe holders receive USDe yield** from protocol operations; **sENA holders do NOT receive this yield**, only ecosystem airdrops. rsENA holders receive Symbiotic restaking rewards. Treasury flows through multisig-controlled wallets. All accrual mechanisms are controlled by multisigs or EOAs, not tokenholders.",
       "criteria": [
         {
           "id": "val-accrual__active",
           "name": "Accrual Active",
           "about": "Assesses whether value flows to tokenholders are currently active rather than merely theoretical or proposed.",
           "status": "\u26a0\ufe0f",
-          "notes": "Fee switch received positive forum signals but awaits Snapshot vote and execution. sENA holders receive **ecosystem airdrops** from Ethena Network protocols. rsENA (~5.2M supply) is available via Mellow Finance vault with rewards for Symbiotic economic security. **No direct programmatic protocol revenue flows to ENA/sENA holders** from Ethena's core business.",
+          "notes": "**sUSDe holders receive USDe yield; sENA/ENA holders do NOT.** sENA holders receive only ecosystem airdrops from Ethena Network protocols. rsENA (~5.2M supply) earns Symbiotic restaking rewards via Mellow Finance. Fee switch (which would share protocol revenue with sENA) received positive forum signals but awaits Snapshot vote and execution.",
           "evidence": [
             {
               "name": "Fee Switch Status",
@@ -1998,15 +1998,31 @@
           "name": "Offchain Value Accrual",
           "about": "Are there additional offchain value accrual flows that benefit tokenholders?",
           "status": "\u26a0\ufe0f",
-          "notes": "Value generation happens offchain (delta-neutral strategies on CEXs), but flow to ENA/sENA tokenholders is **not programmatic**. Revenue flows to sUSDe stakers, not ENA holders.",
+          "notes": "USDe yield comes from three sources: CEX funding rates (unverifiable), ETH staking (~3-4%), and Treasury/BUIDL (~4-5%). **This yield flows to sUSDe stakers only; ENA/sENA holders receive none of it.** Revenue is controlled by multisigs, not programmatic.",
           "evidence": [
             {
-              "name": "Offchain Value Chain",
-              "summary": "1. Ethena runs delta-neutral strategies on CEXs (offchain)\n2. Revenue flows to Hot Swap multisig\n3. Hot Swap converts revenue to USDe\n4. sUSDe Payout receives USDe\n5. Operator triggers `transferInRewards()` to distribute to sUSDe stakers\n\n**ENA/sENA holders do NOT receive protocol revenue.**",
+              "name": "USDe Yield Sources",
+              "summary": "**CEX Funding Rates:** Delta-neutral hedging (long spot, short perps). Variable 5-20%+ yield. Not verifiable onchain (CEX positions).\n\n**ETH Staking:** stETH/wBETH collateral earns validator rewards (~3-4%). Partially verifiable (collateral visible).\n\n**Treasury/BUIDL:** USDtb backed by BlackRock BUIDL fund (~4-5%). Partially verifiable (USDtb holdings).",
               "urls": [
                 {
-                  "name": "Fee Switch Proposal (shows $166M+ revenue)",
-                  "url": "https://gov.ethenafoundation.com/t/ena-fee-switch-parameters/396",
+                  "name": "Coin Metrics Analysis (USDe Yield Sources)",
+                  "url": "https://coinmetrics.substack.com/p/state-of-the-network-issue-335",
+                  "type": "docs"
+                }
+              ]
+            },
+            {
+              "name": "Yield Distribution Flow",
+              "summary": "1. Yield generated offchain (CEX funding) and onchain (staking, treasury)\n2. Revenue settles through Copper ClearLoop custody (offchain)\n3. Hot Swap multisig receives and converts to USDe\n4. sUSDe Payout multisig transfers to StakingRewardsDistributor\n5. Operator EOA calls `transferInRewards()` to distribute to **sUSDe stakers only**\n\n**ENA/sENA holders do NOT receive USDe yield.**",
+              "urls": [
+                {
+                  "name": "`transferInRewards()` (lines 88-94)",
+                  "url": "https://github.com/ethena-labs/bbp-public-assets/blob/main/contracts/contracts/StakingRewardsDistributor.sol#L88-L94",
+                  "type": "github"
+                },
+                {
+                  "name": "DefiLlama - Ethena Fees",
+                  "url": "https://defillama.com/protocol/ethena",
                   "type": "docs"
                 }
               ]
