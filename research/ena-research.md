@@ -1,8 +1,8 @@
 # ENA Token Research Report
 ## Aragon Ownership Token Framework Analysis
 
-**Date:** 2026-03-06
-**Status:** Complete (Revision 4)
+**Date:** 2026-03-16
+**Status:** Complete (Revision 5)
 **Token:** ENA (Ethena Governance Token)
 **Network:** Ethereum Mainnet
 **Contract:** [`0x57e114B691Db790C35207b2e685D4A43181e6061`](https://etherscan.io/address/0x57e114B691Db790C35207b2e685D4A43181e6061)
@@ -18,7 +18,7 @@ The ENA token is the governance token of the Ethena protocol, a synthetic dollar
 | Metric | Rating | Summary |
 |--------|--------|---------|
 | **Onchain Control** | ⚠️ | Governance is Snapshot signaling only; 5-of-11 multisig executes all decisions |
-| **Value Accrual** | ⚠️ | Fee switch approved but pending activation; sENA receives ecosystem airdrops |
+| **Value Accrual** | ⚠️ | Fee switch pending; sENA receives ecosystem airdrops only (not USDe yield) |
 | **Verifiability** | ✅ | All core contracts verified and open source |
 | **Token Distribution** | ⚠️ | 70% insider allocation; ongoing vesting through 2028 |
 | **Offchain Dependencies** | ⚠️ | IP and trademarks owned by Ethena (BVI) Limited, not tokenholders |
@@ -355,7 +355,7 @@ bytes32 private constant FULL_RESTRICTED_STAKER_ROLE = keccak256("FULL_RESTRICTE
 ### 2.1 Accrual Active
 
 **Status:** ⚠️
-**Finding:** Fee switch approved in parameters but pending final activation. sENA receives ecosystem airdrops. rsENA exists but value mechanism unclear.
+**Finding:** ENA/sENA holders do NOT currently receive USDe protocol yield. sENA receives only ecosystem airdrops. Fee switch (which would share protocol revenue with sENA) is pending activation.
 
 **Current sENA Value Sources:**
 
@@ -444,16 +444,33 @@ Protocol Operations (delta-neutral strategies)
 ### 2.4 Offchain Value Accrual
 
 **Status:** ⚠️
-**Finding:** Value generation happens offchain (delta-neutral strategies on CEXs), but flow to tokenholders is not programmatic.
+**Finding:** USDe yield is generated offchain from multiple sources, but ENA/sENA holders do NOT currently receive this yield. Only sUSDe holders receive yield.
 
-**Value Chain:**
-1. Ethena runs delta-neutral strategies on centralized exchanges (offchain)
-2. Revenue flows to Hot Swap multisig
-3. Hot Swap converts revenue to USDe
-4. sUSDe Payout receives USDe
-5. Operator triggers `transferInRewards()` to distribute to sUSDe stakers
+**USDe Yield Sources (per [Coin Metrics analysis](https://coinmetrics.substack.com/p/state-of-the-network-issue-335)):**
 
-**Currently, ENA/sENA holders do NOT directly receive protocol revenue.** The fee switch, if activated, would route a portion to sENA holders, but this is pending and discretionary.
+| Source | Mechanism | Estimated Yield | Verifiable Onchain? |
+|--------|-----------|-----------------|---------------------|
+| **CEX Funding Rates** | Delta-neutral hedging (long spot, short perps) | 5-20%+ variable | No (CEX positions) |
+| **ETH Staking** | stETH/wBETH collateral earns validator rewards | ~3-4% | Partially (collateral visible) |
+| **Treasury/BUIDL** | USDtb backed by BlackRock BUIDL fund | ~4-5% | Partially (USDtb holdings) |
+
+**Yield Distribution Flow:**
+1. Yield generated offchain (CEX funding) and onchain (staking, treasury)
+2. Revenue settles through Copper ClearLoop custody (offchain)
+3. Hot Swap multisig receives and converts to USDe
+4. sUSDe Payout multisig transfers to StakingRewardsDistributor
+5. Operator EOA calls `transferInRewards()` to distribute to **sUSDe stakers only**
+
+**Code Reference:** [StakingRewardsDistributor.sol lines 88-94](https://github.com/ethena-labs/bbp-public-assets/blob/main/contracts/contracts/StakingRewardsDistributor.sol#L88-L94)
+
+**Critical Distinction for ENA Holders:**
+- **sUSDe holders** receive USDe yield (currently ~3.5-29% APY depending on market conditions)
+- **sENA holders** do NOT receive USDe yield. They receive only:
+  1. Ethena Network ecosystem airdrops (discretionary)
+  2. Potential fee switch revenue (pending activation)
+- **ENA holders** (unstaked) receive nothing
+
+**Unverifiable Onchain:** Actual CEX hedge positions, custody balances, real-time collateralization ratios, and reserve adequacy cannot be verified onchain. Users must trust Ethena's offchain operations and third-party custodians (Copper, Ceffu, Cobo).
 
 ---
 
@@ -662,3 +679,4 @@ curl -X POST https://1rpc.io/eth -d '{"jsonrpc":"2.0","method":"eth_call","param
 - [Ethena Terms of Service](https://docs.ethena.fi/resources/terms-of-service)
 - [Mellow Finance rsENA Vault](https://app.mellow.finance/vaults/ethereum-rsena)
 - [DefiLlama - Ethena](https://defillama.com/protocol/ethena)
+- [Coin Metrics - Ethena and the Mechanics of USDe](https://coinmetrics.substack.com/p/state-of-the-network-issue-335)
