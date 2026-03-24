@@ -1,29 +1,30 @@
-"use client"
+"use client";
 
-import { Link } from "@tanstack/react-router"
-import { ArrowRightIcon } from "lucide-react"
-import { useCallback, useRef, useState } from "react"
-import { AVAILABLE_PROTOCOLS } from "@/components/protocol-analysis"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Container } from "@/components/ui/container"
-import { PageWrapper } from "@/components/page-wrapper"
-import { cn } from "@/lib/utils"
+import { Link } from "@tanstack/react-router";
+import { ArrowRightIcon } from "lucide-react";
+import { useCallback, useRef, useState } from "react";
+import { AVAILABLE_PROTOCOLS } from "@/components/protocol-analysis";
+import { ValueAccrualProtocolNav } from "@/components/value-accrual-protocol-nav";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Container } from "@/components/ui/container";
+import { PageWrapper } from "@/components/page-wrapper";
+import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
 // Data
 // ---------------------------------------------------------------------------
 
-type Status = "Active" | "Deprecated" | "Proposed"
+type Status = "Active" | "Deprecated" | "Proposed";
 
 interface Protocol {
-  id: string
-  name: string
-  ticker: string
-  mechanism: string
-  status: Status
-  logo?: string
-  color: string
+  id: string;
+  name: string;
+  ticker: string;
+  mechanism: string;
+  status: Status;
+  logo?: string;
+  color: string;
 }
 
 const PROTOCOLS: Record<string, Protocol> = {
@@ -31,7 +32,8 @@ const PROTOCOLS: Record<string, Protocol> = {
     id: "AAVE",
     name: "Aave",
     ticker: "AAVE",
-    mechanism: "Protocol fees fund stkAAVE Safety Module staking yield, transitioning to Umbrella",
+    mechanism:
+      "Protocol fees fund stkAAVE Safety Module staking yield, transitioning to Umbrella",
     status: "Active",
     logo: "https://assets.coingecko.com/coins/images/12645/standard/aave-token-round.png",
     color: "bg-[#B6509E]",
@@ -40,7 +42,8 @@ const PROTOCOLS: Record<string, Protocol> = {
     id: "SKY",
     name: "Sky",
     ticker: "SKY",
-    mechanism: "Smart Burn Engine buys SKY from market, distributes via staking/farming",
+    mechanism:
+      "Smart Burn Engine buys SKY from market, distributes via staking/farming",
     status: "Active",
     logo: "https://coin-images.coingecko.com/coins/images/39925/large/sky.jpg",
     color: "bg-[#6D41D4]",
@@ -49,7 +52,8 @@ const PROTOCOLS: Record<string, Protocol> = {
     id: "CRV",
     name: "Curve",
     ticker: "CRV",
-    mechanism: "veCRV holders lock 1\u20134 yrs, receive 50% of all trading fees as crvUSD",
+    mechanism:
+      "veCRV holders lock 1\u20134 yrs, receive 50% of all trading fees as crvUSD",
     status: "Active",
     logo: "https://assets.coingecko.com/coins/images/12124/standard/Curve.png",
     color: "bg-[#FF6B6B]",
@@ -58,7 +62,8 @@ const PROTOCOLS: Record<string, Protocol> = {
     id: "PENDLE",
     name: "Pendle",
     ticker: "PENDLE",
-    mechanism: "vePENDLE (up to 2 yr lock, 80% revenue) replaced with sPENDLE liquid staking",
+    mechanism:
+      "vePENDLE (up to 2 yr lock, 80% revenue) replaced with sPENDLE liquid staking",
     status: "Deprecated",
     logo: "https://assets.coingecko.com/coins/images/15069/standard/Pendle_Logo_Normal-03.png",
     color: "bg-[#1C7ED6]",
@@ -87,8 +92,7 @@ const PROTOCOLS: Record<string, Protocol> = {
     id: "ETHFI",
     name: "Ether.fi",
     ticker: "ETHFI",
-    mechanism:
-      "sETHFI staking with revenue-backed yield and lock multipliers",
+    mechanism: "sETHFI staking with revenue-backed yield and lock multipliers",
     status: "Active",
     logo: "https://assets.coingecko.com/coins/images/35958/standard/etherfi.jpeg",
     color: "bg-[#7C3AED]",
@@ -102,6 +106,45 @@ const PROTOCOLS: Record<string, Protocol> = {
     status: "Active",
     logo: "https://coin-images.coingecko.com/coins/images/13469/large/1inch-logo.jpeg",
     color: "bg-[#1B314F]",
+  },
+  SNX: {
+    id: "SNX",
+    name: "Synthetix",
+    ticker: "SNX",
+    mechanism:
+      "Inflationary staking -> fee share -> SIP-420 delegated staking and buybacks",
+    status: "Active",
+    logo: "https://coin-images.coingecko.com/coins/images/3406/large/SNX.png",
+    color: "bg-[#39D3C6]",
+  },
+  JUP: {
+    id: "JUP",
+    name: "Jupiter",
+    ticker: "JUP",
+    mechanism:
+      "50% fee-funded buybacks define the current story, even with ASR still in the mix",
+    status: "Active",
+    logo: "https://coin-images.coingecko.com/coins/images/34188/large/jup.png",
+    color: "bg-[#8BFFB4]",
+  },
+  XSUSHI: {
+    id: "XSUSHI",
+    name: "xSUSHI",
+    ticker: "SUSHI",
+    mechanism: "Simple fee-sharing staking, later hollowed out by Kanpai",
+    status: "Deprecated",
+    logo: "https://coin-images.coingecko.com/coins/images/12271/large/512x512_Logo_no_chop.png",
+    color: "bg-[#FB7185]",
+  },
+  PSP: {
+    id: "PSP",
+    name: "ParaSwap",
+    ticker: "PSP",
+    mechanism:
+      "Social escrow staking with tiny rewards, later rebranded to VLR",
+    status: "Deprecated",
+    logo: "https://coin-images.coingecko.com/coins/images/20403/large/ep7GqM19_400x400.jpg",
+    color: "bg-[#F59E0B]",
   },
   UNI: {
     id: "UNI",
@@ -118,7 +161,7 @@ const PROTOCOLS: Record<string, Protocol> = {
     name: "Hyperliquid",
     ticker: "HYPE",
     mechanism:
-      "Buybacks fund assistance fund and burns; no staking required to benefit",
+      "Assistance Fund buyback-and-burn path; no staking required to benefit",
     status: "Active",
     logo: "https://coin-images.coingecko.com/coins/images/50882/large/hyperliquid.jpg",
     color: "bg-[#40E8A3]",
@@ -128,93 +171,97 @@ const PROTOCOLS: Record<string, Protocol> = {
     name: "CoW Protocol",
     ticker: "COW",
     mechanism:
-      "CIP-38 buyback-and-burn, net \u22123.36M COW emissions, accrues to DAO treasury",
+      "Treasury buybacks offset solver emissions, with surplus COW retained by the DAO",
     status: "Active",
     logo: "https://coin-images.coingecko.com/coins/images/24384/large/CoW-token_logo.png",
     color: "bg-[#012F6A]",
   },
-}
+};
 
-const ALL_PROTOCOL_IDS = Object.keys(PROTOCOLS)
+const ALL_PROTOCOL_IDS = Object.keys(PROTOCOLS);
 
 // ---------------------------------------------------------------------------
 // Tree structure
 // ---------------------------------------------------------------------------
 
 interface TreeNode {
-  id: string
-  question: string
-  options: BranchOption[]
+  id: string;
+  question: string;
+  options: BranchOption[];
 }
 
 interface BranchOption {
-  label: string
-  protocols: string[]
-  next: string | null
+  label: string;
+  protocols: string[];
+  next: string | null;
 }
 
 const TREE: Record<string, TreeNode> = {
   level1: {
     id: "level1",
-    question: "Does the protocol share value with token holders?",
-    options: [
-      { label: "Yes", protocols: ALL_PROTOCOL_IDS, next: "level2" },
-      { label: "No", protocols: [], next: null },
-    ],
-  },
-  level2: {
-    id: "level2",
-    question: "Is it directed via buybacks or distributed directly?",
+    question: "What is the dominant value path?",
     options: [
       {
-        label: "Buyback",
-        protocols: ["COW", "UNI", "SKY", "AAVE", "GMX", "HYPE"],
-        next: "level3a",
+        label: "Buyback-led",
+        protocols: ["UNI", "HYPE", "JUP", "SKY", "AAVE", "GMX", "SNX"],
+        next: "buybackType",
       },
       {
-        label: "Direct",
-        protocols: ["CRV", "AERO", "PENDLE", "ETHFI", "1INCH"],
-        next: "level3b",
+        label: "Direct staking / lock",
+        protocols: ["CRV", "AERO", "PENDLE", "ETHFI", "1INCH", "XSUSHI", "PSP"],
+        next: "directStaking",
       },
     ],
   },
-  level3a: {
-    id: "level3a",
-    question: "What happens after buyback?",
+  buybackType: {
+    id: "buybackType",
+    question: "Do buybacks mainly burn supply or distribute value to stakers?",
     options: [
-      { label: "Burn", protocols: ["COW", "UNI"], next: null },
       {
-        label: "Distribute",
-        protocols: ["SKY", "AAVE", "GMX", "HYPE"],
-        next: "level4",
+        label: "Buyback / burn",
+        protocols: ["UNI", "HYPE", "JUP"],
+        next: null,
+      },
+      {
+        label: "Buyback / distribute",
+        protocols: ["SKY", "AAVE", "GMX", "SNX"],
+        next: "buybackDistributeStaking",
       },
     ],
   },
-  level3b: {
-    id: "level3b",
-    question: "Is there a staking/lock requirement?",
+  directStaking: {
+    id: "directStaking",
+    question: "What kind of staking commitment does it require?",
     options: [
       {
-        label: "Yes, with lock (ve model)",
+        label: "VE / locked",
         protocols: ["CRV", "AERO", "PENDLE"],
         next: null,
       },
       {
-        label: "Yes, simple staking",
-        protocols: ["ETHFI", "1INCH"],
+        label: "Simple staking",
+        protocols: ["ETHFI", "1INCH", "XSUSHI", "PSP"],
         next: null,
       },
     ],
   },
-  level4: {
-    id: "level4",
-    question: "Is there a staking requirement?",
+  buybackDistributeStaking: {
+    id: "buybackDistributeStaking",
+    question: "What staking mechanism captures the distribution?",
     options: [
-      { label: "Yes", protocols: ["SKY", "AAVE", "GMX"], next: null },
-      { label: "No", protocols: ["HYPE"], next: null },
+      {
+        label: "Locked / vesting",
+        protocols: ["GMX"],
+        next: null,
+      },
+      {
+        label: "Simple staking",
+        protocols: ["SKY", "AAVE", "SNX"],
+        next: null,
+      },
     ],
   },
-}
+};
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -224,40 +271,45 @@ const STATUS_CLASSES: Record<Status, string> = {
   Active: "bg-green-100 text-green-800 border-green-200",
   Deprecated: "bg-red-100 text-red-800 border-red-200",
   Proposed: "bg-amber-100 text-amber-800 border-amber-200",
-}
+};
 
 function ProtocolLogo({
   id,
   dimmed = false,
   size = "default",
+  linked = false,
   style,
   className,
 }: {
-  id: string
-  dimmed?: boolean
-  size?: "default" | "sm" | "xs"
-  style?: React.CSSProperties
-  className?: string
+  id: string;
+  dimmed?: boolean;
+  size?: "default" | "sm" | "xs";
+  linked?: boolean;
+  style?: React.CSSProperties;
+  className?: string;
 }) {
-  const p = PROTOCOLS[id]
-  if (!p) return null
+  const p = PROTOCOLS[id];
+  if (!p) return null;
+  const analysisSlug = PROTOCOL_SLUGS[id];
+  const hasAnalysis =
+    linked && analysisSlug && AVAILABLE_PROTOCOLS.has(analysisSlug);
 
-  const sizeMap = { xs: "size-6", sm: "size-7", default: "size-9" }
-  const textMap = { xs: "text-[8px]", sm: "text-[10px]", default: "text-xs" }
+  const sizeMap = { xs: "size-6", sm: "size-7", default: "size-9" };
+  const textMap = { xs: "text-[8px]", sm: "text-[10px]", default: "text-xs" };
 
-  return (
+  const content = (
     <div
       className={cn(
         "flex flex-col items-center gap-1 transition-all duration-500",
         dimmed ? "opacity-20 scale-75" : "opacity-100 scale-100",
-        className
+        className,
       )}
       style={style}
     >
       <div
         className={cn(
           "rounded-full flex items-center justify-center shrink-0 overflow-hidden ring-1 ring-border",
-          sizeMap[size]
+          sizeMap[size],
         )}
         title={p.name}
       >
@@ -273,7 +325,7 @@ function ProtocolLogo({
             className={cn(
               "size-full flex items-center justify-center text-white font-semibold",
               textMap[size],
-              p.color
+              p.color,
             )}
           >
             {p.ticker.slice(0, 2)}
@@ -286,7 +338,21 @@ function ProtocolLogo({
         </span>
       )}
     </div>
-  )
+  );
+
+  if (hasAnalysis && analysisSlug) {
+    return (
+      <Link
+        className="rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/40"
+        params={{ protocolId: analysisSlug }}
+        to="/value-accrual/$protocolId"
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return content;
 }
 
 function StatusPill({ status }: { status: Status }) {
@@ -294,12 +360,12 @@ function StatusPill({ status }: { status: Status }) {
     <span
       className={cn(
         "inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold leading-none",
-        STATUS_CLASSES[status]
+        STATUS_CLASSES[status],
       )}
     >
       {status}
     </span>
-  )
+  );
 }
 
 function ConnectorLine({ visible }: { visible: boolean }) {
@@ -308,11 +374,11 @@ function ConnectorLine({ visible }: { visible: boolean }) {
       <div
         className={cn(
           "w-px bg-border transition-all duration-700 ease-out",
-          visible ? "h-12 opacity-100" : "h-0 opacity-0"
+          visible ? "h-12 opacity-100" : "h-0 opacity-0",
         )}
       />
     </div>
-  )
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -323,8 +389,8 @@ function ProtocolRow({
   ids,
   size = "sm",
 }: {
-  ids: string[]
-  size?: "default" | "sm" | "xs"
+  ids: string[];
+  size?: "default" | "sm" | "xs";
 }) {
   return (
     <div className="flex items-center justify-center gap-2 flex-wrap">
@@ -334,11 +400,11 @@ function ProtocolRow({
           key={id}
           style={{ animationDelay: `${i * 60}ms`, animationDuration: "400ms" }}
         >
-          <ProtocolLogo id={id} size={size} />
+          <ProtocolLogo id={id} linked size={size} />
         </div>
       ))}
     </div>
-  )
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -354,20 +420,24 @@ const PROTOCOL_SLUGS: Record<string, string> = {
   GMX: "gmx",
   ETHFI: "ethfi",
   "1INCH": "1inch",
+  SNX: "snx",
+  JUP: "jup",
+  XSUSHI: "xsushi",
+  PSP: "psp",
   SKY: "sky",
   UNI: "uni",
   HYPE: "hype",
   COW: "cow",
-}
+};
 
 function TerminalPanel({ protocolIds }: { protocolIds: string[] }) {
-  const protocols = protocolIds.map((id) => PROTOCOLS[id]).filter(Boolean)
+  const protocols = protocolIds.map((id) => PROTOCOLS[id]).filter(Boolean);
 
   return (
     <div className="grid gap-3">
       {protocols.map((p, i) => {
-        const slug = PROTOCOL_SLUGS[p.id]
-        const hasAnalysis = slug && AVAILABLE_PROTOCOLS.has(slug)
+        const slug = PROTOCOL_SLUGS[p.id];
+        const hasAnalysis = slug && AVAILABLE_PROTOCOLS.has(slug);
 
         const cardContent = (
           <div className="flex items-start gap-3">
@@ -416,7 +486,7 @@ function TerminalPanel({ protocolIds }: { protocolIds: string[] }) {
               )}
             </div>
           </div>
-        )
+        );
 
         if (hasAnalysis && slug) {
           return (
@@ -432,7 +502,7 @@ function TerminalPanel({ protocolIds }: { protocolIds: string[] }) {
             >
               {cardContent}
             </Link>
-          )
+          );
         }
 
         return (
@@ -446,10 +516,10 @@ function TerminalPanel({ protocolIds }: { protocolIds: string[] }) {
           >
             {cardContent}
           </div>
-        )
+        );
       })}
     </div>
-  )
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -460,13 +530,13 @@ function OverviewNode({
   nodeId,
   depth = 0,
 }: {
-  nodeId: string
-  depth?: number
+  nodeId: string;
+  depth?: number;
 }) {
-  const node = TREE[nodeId]
-  if (!node) return null
+  const node = TREE[nodeId];
+  if (!node) return null;
 
-  const optionCount = node.options.length
+  const optionCount = node.options.length;
 
   return (
     <div className="flex flex-col items-center">
@@ -482,8 +552,12 @@ function OverviewNode({
 
       {/* Horizontal bar spanning all branches */}
       {optionCount > 1 && (
-        <div className="relative shrink-0" style={{ width: `${optionCount * 200 + (optionCount - 1) * 24}px` }}>
-          <div className="absolute top-0 left-[calc(50%/(var(--count)))] right-[calc(50%/(var(--count)))] h-px bg-border"
+        <div
+          className="relative shrink-0"
+          style={{ width: `${optionCount * 200 + (optionCount - 1) * 24}px` }}
+        >
+          <div
+            className="absolute top-0 left-[calc(50%/(var(--count)))] right-[calc(50%/(var(--count)))] h-px bg-border"
             style={{
               left: `${100 / (2 * optionCount)}%`,
               right: `${100 / (2 * optionCount)}%`,
@@ -505,7 +579,7 @@ function OverviewNode({
               {option.protocols.length > 0 && (
                 <div className="flex items-center justify-center gap-1.5 mt-2 flex-wrap">
                   {option.protocols.map((id) => (
-                    <ProtocolLogo id={id} key={id} size="xs" />
+                    <ProtocolLogo id={id} key={id} linked size="xs" />
                   ))}
                 </div>
               )}
@@ -522,61 +596,63 @@ function OverviewNode({
         ))}
       </div>
     </div>
-  )
+  );
 }
 
 function PannableOverview() {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [zoom, setZoom] = useState(0.85)
-  const [pan, setPan] = useState({ x: 0, y: 0 })
-  const dragRef = useRef<{ startX: number; startY: number; startPanX: number; startPanY: number } | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [zoom, setZoom] = useState(0.85);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const dragRef = useRef<{
+    startX: number;
+    startY: number;
+    startPanX: number;
+    startPanY: number;
+  } | null>(null);
 
-  const handleWheel = useCallback(
-    (e: React.WheelEvent) => {
-      if (e.ctrlKey || e.metaKey) {
-        e.preventDefault()
-        const delta = e.deltaY > 0 ? -0.05 : 0.05
-        setZoom((z) => Math.min(2, Math.max(0.3, z + delta)))
-      } else {
-        setPan((p) => ({
-          x: p.x - e.deltaX,
-          y: p.y - e.deltaY,
-        }))
-      }
-    },
-    []
-  )
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -0.05 : 0.05;
+      setZoom((z) => Math.min(2, Math.max(0.3, z + delta)));
+    } else {
+      setPan((p) => ({
+        x: p.x - e.deltaX,
+        y: p.y - e.deltaY,
+      }));
+    }
+  }, []);
 
   const handlePointerDown = useCallback(
     (e: React.PointerEvent) => {
-      if (e.button !== 0) return
-      ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
+      if (e.button !== 0) return;
+      (e.target as HTMLElement).setPointerCapture(e.pointerId);
       dragRef.current = {
         startX: e.clientX,
         startY: e.clientY,
         startPanX: pan.x,
         startPanY: pan.y,
-      }
+      };
     },
-    [pan]
-  )
+    [pan],
+  );
 
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    if (!dragRef.current) return
+    if (!dragRef.current) return;
     setPan({
       x: dragRef.current.startPanX + (e.clientX - dragRef.current.startX),
       y: dragRef.current.startPanY + (e.clientY - dragRef.current.startY),
-    })
-  }, [])
+    });
+  }, []);
 
   const handlePointerUp = useCallback(() => {
-    dragRef.current = null
-  }, [])
+    dragRef.current = null;
+  }, []);
 
   const resetView = useCallback(() => {
-    setZoom(0.85)
-    setPan({ x: 0, y: 0 })
-  }, [])
+    setZoom(0.85);
+    setPan({ x: 0, y: 0 });
+  }, []);
 
   return (
     <div className="space-y-2">
@@ -621,7 +697,7 @@ function PannableOverview() {
           <div className="flex flex-col items-center">
             <div className="flex items-center justify-center gap-2 mb-6">
               {ALL_PROTOCOL_IDS.map((id) => (
-                <ProtocolLogo id={id} key={id} size="sm" />
+                <ProtocolLogo id={id} key={id} linked size="sm" />
               ))}
             </div>
             <OverviewNode nodeId="level1" />
@@ -632,7 +708,7 @@ function PannableOverview() {
         Drag to pan. Scroll to pan vertically. Ctrl+scroll or pinch to zoom.
       </p>
     </div>
-  )
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -640,115 +716,115 @@ function PannableOverview() {
 // ---------------------------------------------------------------------------
 
 interface PathStep {
-  nodeId: string
-  chosenIndex: number
+  nodeId: string;
+  chosenIndex: number;
 }
 
 export function ValueAccrualFlowchart() {
-  const [path, setPath] = useState<PathStep[]>([])
-  const [showOverview, setShowOverview] = useState(false)
-  const levelRefs = useRef<Map<string, HTMLDivElement>>(new Map())
+  const [path, setPath] = useState<PathStep[]>([]);
+  const [showOverview, setShowOverview] = useState(false);
+  const levelRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
   const activeProtocols = (() => {
-    if (path.length === 0) return ALL_PROTOCOL_IDS
-    const last = path[path.length - 1]
-    const node = TREE[last.nodeId]
-    return node?.options[last.chosenIndex]?.protocols ?? []
-  })()
+    if (path.length === 0) return ALL_PROTOCOL_IDS;
+    const last = path[path.length - 1];
+    const node = TREE[last.nodeId];
+    return node?.options[last.chosenIndex]?.protocols ?? [];
+  })();
 
   const visibleNodeIds = (() => {
-    const ids: string[] = ["level1"]
+    const ids: string[] = ["level1"];
     for (const step of path) {
-      const node = TREE[step.nodeId]
-      const option = node?.options[step.chosenIndex]
-      if (option?.next) ids.push(option.next)
+      const node = TREE[step.nodeId];
+      const option = node?.options[step.chosenIndex];
+      if (option?.next) ids.push(option.next);
     }
-    return ids
-  })()
+    return ids;
+  })();
 
   const isTerminal = (() => {
-    if (path.length === 0) return false
-    const last = path[path.length - 1]
-    const node = TREE[last.nodeId]
-    return node?.options[last.chosenIndex]?.next === null
-  })()
+    if (path.length === 0) return false;
+    const last = path[path.length - 1];
+    const node = TREE[last.nodeId];
+    return node?.options[last.chosenIndex]?.next === null;
+  })();
 
   const scrollToNode = useCallback((nodeId: string) => {
     // Double-rAF to ensure the DOM has rendered new content
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        const el = levelRefs.current.get(nodeId)
+        const el = levelRefs.current.get(nodeId);
         if (el) {
-          el.scrollIntoView({ behavior: "smooth", block: "center" })
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
         }
-      })
-    })
-  }, [])
+      });
+    });
+  }, []);
 
   const handleBranch = useCallback(
     (nodeId: string, optionIndex: number) => {
-      const node = TREE[nodeId]
-      const option = node?.options[optionIndex]
-      if (!node || !option) return
+      const node = TREE[nodeId];
+      const option = node?.options[optionIndex];
+      if (!node || !option) return;
 
-      const existingIdx = path.findIndex((s) => s.nodeId === nodeId)
+      const existingIdx = path.findIndex((s) => s.nodeId === nodeId);
       const newPath =
         existingIdx >= 0
           ? [
               ...path.slice(0, existingIdx),
               { nodeId, chosenIndex: optionIndex },
             ]
-          : [...path, { nodeId, chosenIndex: optionIndex }]
+          : [...path, { nodeId, chosenIndex: optionIndex }];
 
-      setPath(newPath)
+      setPath(newPath);
 
       // Scroll to the next card, or to this card if terminal
-      const scrollTarget = option.next ?? nodeId
-      scrollToNode(scrollTarget)
+      const scrollTarget = option.next ?? nodeId;
+      scrollToNode(scrollTarget);
     },
-    [path, scrollToNode]
-  )
+    [path, scrollToNode],
+  );
 
   const handleStartOver = useCallback(() => {
-    setPath([])
-    scrollToNode("level1")
-  }, [scrollToNode])
+    setPath([]);
+    scrollToNode("level1");
+  }, [scrollToNode]);
 
   const handleBreadcrumbClick = useCallback(
     (stepIndex: number) => {
       if (stepIndex < 0) {
-        handleStartOver()
+        handleStartOver();
       } else {
-        const truncated = path.slice(0, stepIndex + 1)
-        setPath(truncated)
-        const last = truncated[truncated.length - 1]
-        const option = TREE[last.nodeId]?.options[last.chosenIndex]
-        if (option?.next) scrollToNode(option.next)
+        const truncated = path.slice(0, stepIndex + 1);
+        setPath(truncated);
+        const last = truncated[truncated.length - 1];
+        const option = TREE[last.nodeId]?.options[last.chosenIndex];
+        if (option?.next) scrollToNode(option.next);
       }
     },
-    [path, handleStartOver, scrollToNode]
-  )
+    [path, handleStartOver, scrollToNode],
+  );
 
   const getProtocolsEnteringNode = useCallback(
     (nodeId: string): string[] => {
-      if (nodeId === "level1") return ALL_PROTOCOL_IDS
+      if (nodeId === "level1") return ALL_PROTOCOL_IDS;
       const step = path.find((s) => {
-        const n = TREE[s.nodeId]
-        return n?.options[s.chosenIndex]?.next === nodeId
-      })
+        const n = TREE[s.nodeId];
+        return n?.options[s.chosenIndex]?.next === nodeId;
+      });
       if (step) {
-        return TREE[step.nodeId]?.options[step.chosenIndex]?.protocols ?? []
+        return TREE[step.nodeId]?.options[step.chosenIndex]?.protocols ?? [];
       }
-      return ALL_PROTOCOL_IDS
+      return ALL_PROTOCOL_IDS;
     },
-    [path]
-  )
+    [path],
+  );
 
   const breadcrumbs = path.map((step) => {
-    const node = TREE[step.nodeId]
-    const option = node?.options[step.chosenIndex]
-    return { chosenLabel: option?.label ?? "" }
-  })
+    const node = TREE[step.nodeId];
+    const option = node?.options[step.chosenIndex];
+    return { chosenLabel: option?.label ?? "" };
+  });
 
   return (
     <PageWrapper>
@@ -757,15 +833,30 @@ export function ValueAccrualFlowchart() {
         <Container className="py-10">
           <div className="flex flex-col gap-4">
             <h1 className="text-2xl font-bold leading-10 tracking-tight text-accent-foreground md:text-4xl">
-              Value Accrual Mechanisms
+              Value accrual flow diagram
             </h1>
             <div className="max-w-[800px] text-lg leading-7 text-accent-foreground">
               <p>
-                Compare how DeFi protocols distribute value to token holders.
-                Navigate the decision tree to explore buybacks, burns, staking
-                models, and ve-locks across the comparative set.
+                Navigate the decision tree to classify how protocols route value
+                to token holders. Tokens with full analysis pages are linked
+                directly from the diagram.
               </p>
             </div>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                className={buttonVariants({ size: "sm" })}
+                to="/value-accrual"
+              >
+                Back to overview
+              </Link>
+              <Link
+                className={buttonVariants({ size: "sm", variant: "outline" })}
+                to="/value-accrual/compare"
+              >
+                Open comparison charts
+              </Link>
+            </div>
+            <ValueAccrualProtocolNav activeSection="flowchart" theme="light" />
           </div>
         </Container>
       </section>
@@ -793,7 +884,7 @@ export function ValueAccrualFlowchart() {
                           "font-medium cursor-pointer",
                           i < breadcrumbs.length - 1
                             ? "text-primary hover:underline"
-                            : "text-foreground"
+                            : "text-foreground",
                         )}
                         onClick={() => handleBreadcrumbClick(i)}
                         type="button"
@@ -823,6 +914,23 @@ export function ValueAccrualFlowchart() {
             </Button>
           </div>
 
+          <div className="mb-6 rounded-xl border border-dashed bg-muted/30 p-4">
+            <div className="flex items-start gap-3">
+              <ProtocolLogo id="COW" linked size="sm" />
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-foreground">
+                  Outside the strict hierarchy: CoW Protocol
+                </p>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                  CoW currently uses treasury-retained buybacks to offset solver
+                  emissions rather than a clean burn or staker distribution
+                  path, so it is kept as an explicit outlier instead of being
+                  forced into the wrong branch.
+                </p>
+              </div>
+            </div>
+          </div>
+
           {showOverview ? (
             /* ---- Full pannable/zoomable overview ---- */
             <div className="animate-in fade-in duration-300">
@@ -838,6 +946,7 @@ export function ValueAccrualFlowchart() {
                     dimmed={path.length > 0 && !activeProtocols.includes(id)}
                     id={id}
                     key={id}
+                    linked
                   />
                 ))}
               </div>
@@ -845,19 +954,19 @@ export function ValueAccrualFlowchart() {
               {/* Flowchart cards */}
               <div className="flex flex-col items-center max-w-2xl mx-auto">
                 {visibleNodeIds.map((nodeId, idx) => {
-                  const node = TREE[nodeId]
-                  if (!node) return null
+                  const node = TREE[nodeId];
+                  if (!node) return null;
 
-                  const stepForThis = path.find((s) => s.nodeId === nodeId)
-                  const isChosen = stepForThis !== undefined
-                  const activeHere = getProtocolsEnteringNode(nodeId)
+                  const stepForThis = path.find((s) => s.nodeId === nodeId);
+                  const isChosen = stepForThis !== undefined;
+                  const activeHere = getProtocolsEnteringNode(nodeId);
 
                   return (
                     <div
                       className={cn(
                         "w-full",
                         idx > 0 &&
-                          "animate-in fade-in slide-in-from-top-4 duration-500 fill-mode-both"
+                          "animate-in fade-in slide-in-from-top-4 duration-500 fill-mode-both",
                       )}
                       key={nodeId}
                     >
@@ -874,7 +983,7 @@ export function ValueAccrualFlowchart() {
                       {/* Decision card */}
                       <div
                         ref={(el) => {
-                          if (el) levelRefs.current.set(nodeId, el)
+                          if (el) levelRefs.current.set(nodeId, el);
                         }}
                       >
                         <Card className="w-full">
@@ -888,8 +997,8 @@ export function ValueAccrualFlowchart() {
                               {node.options.map((option, optIdx) => {
                                 const isSelected =
                                   isChosen &&
-                                  stepForThis.chosenIndex === optIdx
-                                const isOther = isChosen && !isSelected
+                                  stepForThis.chosenIndex === optIdx;
+                                const isOther = isChosen && !isSelected;
 
                                 return (
                                   <Button
@@ -897,16 +1006,12 @@ export function ValueAccrualFlowchart() {
                                       "min-w-[120px] transition-all duration-300",
                                       isSelected &&
                                         "ring-2 ring-primary ring-offset-2",
-                                      isOther && "opacity-40"
+                                      isOther && "opacity-40",
                                     )}
                                     key={optIdx}
-                                    onClick={() =>
-                                      handleBranch(nodeId, optIdx)
-                                    }
+                                    onClick={() => handleBranch(nodeId, optIdx)}
                                     size="lg"
-                                    variant={
-                                      isSelected ? "default" : "outline"
-                                    }
+                                    variant={isSelected ? "default" : "outline"}
                                   >
                                     {option.label}
                                     {option.protocols.length > 0 && (
@@ -915,7 +1020,7 @@ export function ValueAccrualFlowchart() {
                                       </span>
                                     )}
                                   </Button>
-                                )
+                                );
                               })}
                             </div>
 
@@ -925,21 +1030,21 @@ export function ValueAccrualFlowchart() {
                               stepForThis.nodeId === nodeId &&
                               (() => {
                                 const option =
-                                  node.options[stepForThis.chosenIndex]
-                                if (option?.next !== null) return null
+                                  node.options[stepForThis.chosenIndex];
+                                if (option?.next !== null) return null;
                                 return (
                                   <div className="mt-6 animate-in fade-in slide-in-from-top-2 duration-500">
                                     <TerminalPanel
                                       protocolIds={option.protocols}
                                     />
                                   </div>
-                                )
+                                );
                               })()}
                           </CardContent>
                         </Card>
                       </div>
                     </div>
-                  )
+                  );
                 })}
               </div>
             </>
@@ -947,5 +1052,5 @@ export function ValueAccrualFlowchart() {
         </Container>
       </section>
     </PageWrapper>
-  )
+  );
 }

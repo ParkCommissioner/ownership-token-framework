@@ -13,6 +13,8 @@ import { Route as ValueAccrualRouteImport } from './routes/value-accrual'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ValueAccrualIndexRouteImport } from './routes/value-accrual.index'
+import { Route as ValueAccrualFlowchartRouteImport } from './routes/value-accrual.flowchart'
+import { Route as ValueAccrualCompareRouteImport } from './routes/value-accrual.compare'
 import { Route as ValueAccrualProtocolIdRouteImport } from './routes/value-accrual.$protocolId'
 import { Route as TokensTokenIdRouteImport } from './routes/tokens/$tokenId'
 
@@ -36,6 +38,16 @@ const ValueAccrualIndexRoute = ValueAccrualIndexRouteImport.update({
   path: '/',
   getParentRoute: () => ValueAccrualRoute,
 } as any)
+const ValueAccrualFlowchartRoute = ValueAccrualFlowchartRouteImport.update({
+  id: '/flowchart',
+  path: '/flowchart',
+  getParentRoute: () => ValueAccrualRoute,
+} as any)
+const ValueAccrualCompareRoute = ValueAccrualCompareRouteImport.update({
+  id: '/compare',
+  path: '/compare',
+  getParentRoute: () => ValueAccrualRoute,
+} as any)
 const ValueAccrualProtocolIdRoute = ValueAccrualProtocolIdRouteImport.update({
   id: '/$protocolId',
   path: '/$protocolId',
@@ -53,6 +65,8 @@ export interface FileRoutesByFullPath {
   '/value-accrual': typeof ValueAccrualRouteWithChildren
   '/tokens/$tokenId': typeof TokensTokenIdRoute
   '/value-accrual/$protocolId': typeof ValueAccrualProtocolIdRoute
+  '/value-accrual/compare': typeof ValueAccrualCompareRoute
+  '/value-accrual/flowchart': typeof ValueAccrualFlowchartRoute
   '/value-accrual/': typeof ValueAccrualIndexRoute
 }
 export interface FileRoutesByTo {
@@ -60,6 +74,8 @@ export interface FileRoutesByTo {
   '/faq': typeof FaqRoute
   '/tokens/$tokenId': typeof TokensTokenIdRoute
   '/value-accrual/$protocolId': typeof ValueAccrualProtocolIdRoute
+  '/value-accrual/compare': typeof ValueAccrualCompareRoute
+  '/value-accrual/flowchart': typeof ValueAccrualFlowchartRoute
   '/value-accrual': typeof ValueAccrualIndexRoute
 }
 export interface FileRoutesById {
@@ -69,6 +85,8 @@ export interface FileRoutesById {
   '/value-accrual': typeof ValueAccrualRouteWithChildren
   '/tokens/$tokenId': typeof TokensTokenIdRoute
   '/value-accrual/$protocolId': typeof ValueAccrualProtocolIdRoute
+  '/value-accrual/compare': typeof ValueAccrualCompareRoute
+  '/value-accrual/flowchart': typeof ValueAccrualFlowchartRoute
   '/value-accrual/': typeof ValueAccrualIndexRoute
 }
 export interface FileRouteTypes {
@@ -79,6 +97,8 @@ export interface FileRouteTypes {
     | '/value-accrual'
     | '/tokens/$tokenId'
     | '/value-accrual/$protocolId'
+    | '/value-accrual/compare'
+    | '/value-accrual/flowchart'
     | '/value-accrual/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -86,6 +106,8 @@ export interface FileRouteTypes {
     | '/faq'
     | '/tokens/$tokenId'
     | '/value-accrual/$protocolId'
+    | '/value-accrual/compare'
+    | '/value-accrual/flowchart'
     | '/value-accrual'
   id:
     | '__root__'
@@ -94,6 +116,8 @@ export interface FileRouteTypes {
     | '/value-accrual'
     | '/tokens/$tokenId'
     | '/value-accrual/$protocolId'
+    | '/value-accrual/compare'
+    | '/value-accrual/flowchart'
     | '/value-accrual/'
   fileRoutesById: FileRoutesById
 }
@@ -134,6 +158,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ValueAccrualIndexRouteImport
       parentRoute: typeof ValueAccrualRoute
     }
+    '/value-accrual/flowchart': {
+      id: '/value-accrual/flowchart'
+      path: '/flowchart'
+      fullPath: '/value-accrual/flowchart'
+      preLoaderRoute: typeof ValueAccrualFlowchartRouteImport
+      parentRoute: typeof ValueAccrualRoute
+    }
+    '/value-accrual/compare': {
+      id: '/value-accrual/compare'
+      path: '/compare'
+      fullPath: '/value-accrual/compare'
+      preLoaderRoute: typeof ValueAccrualCompareRouteImport
+      parentRoute: typeof ValueAccrualRoute
+    }
     '/value-accrual/$protocolId': {
       id: '/value-accrual/$protocolId'
       path: '/$protocolId'
@@ -153,11 +191,15 @@ declare module '@tanstack/react-router' {
 
 interface ValueAccrualRouteChildren {
   ValueAccrualProtocolIdRoute: typeof ValueAccrualProtocolIdRoute
+  ValueAccrualCompareRoute: typeof ValueAccrualCompareRoute
+  ValueAccrualFlowchartRoute: typeof ValueAccrualFlowchartRoute
   ValueAccrualIndexRoute: typeof ValueAccrualIndexRoute
 }
 
 const ValueAccrualRouteChildren: ValueAccrualRouteChildren = {
   ValueAccrualProtocolIdRoute: ValueAccrualProtocolIdRoute,
+  ValueAccrualCompareRoute: ValueAccrualCompareRoute,
+  ValueAccrualFlowchartRoute: ValueAccrualFlowchartRoute,
   ValueAccrualIndexRoute: ValueAccrualIndexRoute,
 }
 

@@ -1,21 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { ProtocolAnalysis } from "@/components/protocol-analysis"
 import { generateOpenGraphMetadata } from "@/lib/metadata"
-
-const PROTOCOL_TITLES: Record<string, string> = {
-  aave: "stkAAVE Safety Module - Chronological Analysis",
-  aerodrome: "veAERO Vote-Escrow - Chronological Analysis",
-}
+import { getValueAccrualProtocol } from "@/lib/value-accrual-data"
 
 export const Route = createFileRoute("/value-accrual/$protocolId")({
   head: ({ params }) => {
-    const title =
-      PROTOCOL_TITLES[params.protocolId] ??
-      `${params.protocolId.toUpperCase()} - Value Accrual Analysis`
+    const protocol = getValueAccrualProtocol(params.protocolId)
+    const title = protocol
+      ? `${protocol.name} value accrual chart`
+      : `${params.protocolId.toUpperCase()} - Value Accrual Analysis`
     return {
       meta: generateOpenGraphMetadata({
         title: `${title} - Ownership Token Framework`,
-        description: `Chronological analysis of value accrual mechanisms for ${params.protocolId}.`,
+        description: protocol
+          ? `Interactive value accrual comparison chart for ${protocol.name}, including indexed performance, supply, price, and research annotations.`
+          : `Chronological analysis of value accrual mechanisms for ${params.protocolId}.`,
         twitterCard: "summary_large_image",
         url: `/value-accrual/${params.protocolId}`,
       }),
